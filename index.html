@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/editor.css">
+    <script type="module" src="js/index.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div class="row">
+        <div class="column">
+            <h3>Controls</h3>
+            <div class="scrollable" id="controls_list">
+
+            </div>
+            <button id="add_control">Add</button>
+            <h3>Settings</h3>
+            <div class="column" id="settings"></div>
+        </div>
+        <div class="column">
+            <div width=100 height=100 class="display" id="gui_container">
+                <div id="wampad"></div>
+            </div>
+            <canvas width=100 height=100 class="display"></canvas>
+        </div>
+        <div class="column">
+            <h3>Parameters</h3>
+            <select id="parameters">
+                <option>Param</option>
+            </select>
+            <span> <strong>Id: </strong> <span id="parameter_id">none</span> </span>
+            <span> <strong>Label: </strong> <span id="parameter_label">none</span> </span>
+            <span> <strong>Type: </strong> <span id="parameter_type">none</span> </span>
+            <span> <strong>Min: </strong> <span id="parameter_minValue">none</span> </span>
+            <span> <strong>Step: </strong> <span id="parameter_discreteStep">none</span> </span>
+            <span> <strong>Max: </strong> <span id="parameter_maxValue">none</span> </span>
+            <span> <strong>Value: </strong> <span id="parameter_value">none</span> </span>
+            <h3>Base Style</h3>
+            <label>Shape</label>
+            <input type="number" step="0.1" max="5" min="0.2" id="aspect_ratio" value="1" autocomplete="off"/>
+            <input type="color" id="top_color" autocomplete="off" value="#000000">
+            <input type="color" id="bottom_color" autocomplete="off" value="#ffffff">
+        </div>
+        <div class="column">
+            <h3>WAM</h3>
+            <input type="text" id="wam_url" autocomplete="off">
+            <div class="indicator">Attente</div>
+            <div id="wam_holder"></div>
+            <h3>Save/Load</h3>
+            <textarea id="save_data"></textarea>
+        </div>
+    </div>
+</body>
+</html>

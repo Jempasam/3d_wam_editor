@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "outDir": "bin",
+        "allowJs": true,
+        "checkJs": true,
+        "rootDir": "js",
+        "moduleResolution": "Node",
+        "target": "ESNext",
+        "module": "ESNext"
+    },
+    "include": ["js/**/*.js"],
+    "exclude": ["bin"]
+}
