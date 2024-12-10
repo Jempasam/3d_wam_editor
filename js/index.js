@@ -2,6 +2,7 @@
 
 import { Control } from "./control/Control.js"
 import controls from "./control/controls.js"
+import { Transformer } from "./gui/Transformer.js"
 import { html } from "./utils/doc.js"
 
 
@@ -341,3 +342,23 @@ add_control.onclick=()=>{
 }
 
 updateWamBase()
+
+
+//// Transformer ////
+let transformer = new Transformer()
+gui_container.appendChild(transformer.element)
+document.onkeydown=(e)=>{
+    if(e.key=="ArrowUp") transformer.y += -10
+    if(e.key=="ArrowDown") transformer.y += 10
+    if(e.key=="ArrowLeft") transformer.x += -10
+    if(e.key=="ArrowRight") transformer.x += 10
+    
+    if(e.key=="i") transformer.height += -10
+    if(e.key=="k") transformer.height += 10
+    if(e.key=="j") transformer.width += -10
+    if(e.key=="l") transformer.width += 10
+
+    if(e.key=="p") transformer.setSizeAround(0.5, 0.5, transformer.width+10, transformer.height+10)
+    if(e.key=="o") transformer.setSizeAround(0.5, 0.5, transformer.width-10, transformer.height-10)
+}
+transformer.registerEvents()
