@@ -13,7 +13,7 @@ export class Selector{
 
     #selecteds = new Set()
     
-    /** @type {Transformer|null} */  #transformer = null
+    /** @type {Transformer|null} */  transformer = null
 
     /**
      * @param {(value:T)=>{x:number,y:number,width:number,height:number}} get_position
@@ -70,9 +70,9 @@ export class Selector{
         this.#selecteds.delete(selection)
         this.on_unselect(selection)
 
-        if(this.#transformer){
-            this.#transformer.element.remove()
-            this.#transformer = null
+        if(this.transformer){
+            this.transformer.element.remove()
+            this.transformer = null
         }
 
         this.#placeTransformer()
@@ -93,23 +93,23 @@ export class Selector{
                 if(x+width>right) right = x+width
                 if(y+height>bottom) bottom = y+height
             }
-            if(!this.#transformer){
-                this.#transformer = new Transformer()
-                this.#transformer.registerEvents()
-                this.container.appendChild(this.#transformer.element)
+            if(!this.transformer){
+                this.transformer = new Transformer()
+                this.transformer.registerEvents()
+                this.container.appendChild(this.transformer.element)
             }
             else{
-                this.#transformer.onmove = ()=>{}   
-                this.#transformer.left=0
-                this.#transformer.top=0
-                this.#transformer.width=1
-                this.#transformer.height=1
+                this.transformer.onmove = ()=>{}   
+                this.transformer.left=0
+                this.transformer.top=0
+                this.transformer.width=1
+                this.transformer.height=1
             }
 
-            this.#transformer.left = left
-            this.#transformer.top = top
-            this.#transformer.right = right
-            this.#transformer.bottom = bottom
+            this.transformer.left = left
+            this.transformer.top = top
+            this.transformer.right = right
+            this.transformer.bottom = bottom
 
             /* Get the element relative positions */
             let relative_positions = []
@@ -119,7 +119,7 @@ export class Selector{
             }
 
             /* On move */
-            this.#transformer.onmove = (gx,gy,gw,gh)=>{
+            this.transformer.onmove = (gx,gy,gw,gh)=>{
                 const selecteds= [...this.selecteds]
                 for(let i=0; i<selecteds.length; i++){
                     const selected = selecteds[i]
@@ -136,8 +136,8 @@ export class Selector{
             }
         }
         else{
-            if(this.#transformer)this.#transformer.element.remove()
-            this.#transformer = null
+            if(this.transformer)this.transformer.element.remove()
+            this.transformer = null
         }
     }
 }

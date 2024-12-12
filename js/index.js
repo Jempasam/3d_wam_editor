@@ -243,6 +243,7 @@ function updateControls(){
             e.stopPropagation()
             if(e.shiftKey) selector.select({element:container,control:control_info})
             else selector.selecteds = [{element:container,control:control_info}]
+            selector.transformer?.startMoving(e.pageX,e.pageY)
             selected_gui_control = control_info
         }
         

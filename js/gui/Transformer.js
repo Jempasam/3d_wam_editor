@@ -141,66 +141,90 @@ export class Transformer {
     }
     get top(){ return this.y }
 
+    
+    //// Handle mouse controls ////
+    dragged=null
+
+    /**
+     * Start resizing the given border of the transformer.
+     * @param {0|1|2|3} border 
+     * @param {number} startMousePageX 
+     * @param {number} startMousePageY
+     */
+    startResizing(border, startMousePageX, startMousePageY){
+        const [left, right, top, bottom] = (()=>{
+            if(border==0) return [true, false, true, false]
+            if(border==2) return [false, true, false, true]
+            if(border==1) return [false, true, true, false]
+            if(border==3) return [true, false, false, true]
+            throw new Error("Invalid border id")
+        })()
+
+        this.dragged = this.element.children[border]
+        this.dragged.classList.add("_dragged")
+
+        const originalWidth = this.width, originalHeight = this.height
+        const oLeft = this.left, oRight = this.right, oTop = this.top, oBottom = this.bottom
+        const bounds = this.element.getBoundingClientRect() 
+        /** @param {MouseEvent} e */
+        let fn = (e)=>{
+            let offset_x = (e.pageX-startMousePageX)/bounds.width*originalWidth
+            let offset_y = (e.pageY-startMousePageY)/bounds.height*originalHeight
+            console.log("offset",offset_x,offset_y)
+            console.log("new",originalWidth+offset_x, originalHeight+offset_y)
+            if(left) this.left = oLeft+offset_x
+            if(right) this.right = oRight+offset_x
+            if(top) this.top = oTop+offset_y
+            if(bottom) this.bottom = oBottom+offset_y
+            if(this.dragged!=this.element.children[border]){
+                window.removeEventListener("mousemove", fn)
+                this.element.children[border].classList.remove("_dragged")
+            } 
+        }
+        window.addEventListener("mousemove", fn)
+    }
+
+    /**
+     * Start moving the transformer.
+     * @param {number} startMousePageX
+     * @param {number} startMousePageY
+     */
+    startMoving(startMousePageX, startMousePageY){
+        if(this.dragged) this.dragged.classList.remove("_dragged")
+        this.dragged = this.element.children[4]
+        this.dragged.classList.add("_dragged")
+        const bounds = this.element.getBoundingClientRect()
+        const oX = this.x, oY = this.y
+        /** @param {MouseEvent} e */
+        let fn = (e)=>{
+            this.x = oX + (e.pageX-startMousePageX)/bounds.width*this.width
+            this.y = oY + (e.pageY-startMousePageY)/bounds.height*this.height
+            if(this.dragged!=this.element.children[4]){
+                window.removeEventListener("mousemove", fn)
+                this.element.children[4].classList.remove("_dragged")
+            }
+        }
+        window.addEventListener("mousemove", fn)
+    }
+    
+
     /**
      * Register the events that allow the transformer to
      * be manually moved and resized.
      */
     registerEvents(){
-        let dragged = null
-        
-        let undrag = ()=>{
-            if(dragged)dragged.classList.remove("_dragged")
-            dragged = null
-        }
+        let undrag = ()=> this.dragged = null
         window.addEventListener("mouseup", undrag)
         window.addEventListener("blur", undrag)
-        
-        /** @param {boolean} left @param {boolean} right @param {boolean} top @param {boolean} bottom */
-        const resizeHandler = (left, right, top, bottom)=>{
-            /** @param {MouseEvent} e */
-            return (e)=>{
-                e.preventDefault()
-                dragged=/** @type {HTMLElement} */ (e.currentTarget)
-                dragged.classList.add("_dragged")
-                const oldx = e.pageX, oldy = e.pageY
-                const originalWidth = this.width, originalHeight = this.height
-                const oLeft = this.left, oRight = this.right, oTop = this.top, oBottom = this.bottom
-                const bounds = this.element.getBoundingClientRect() 
-                /** @param {MouseEvent} e */
-                let fn = (e)=>{
-                    let offset_x = (e.pageX-oldx)/bounds.width*originalWidth
-                    let offset_y = (e.pageY-oldy)/bounds.height*originalHeight
-                    console.log("offset",offset_x,offset_y)
-                    console.log("new",originalWidth+offset_x, originalHeight+offset_y)
-                    if(left) this.left = oLeft+offset_x
-                    if(right) this.right = oRight+offset_x
-                    if(top) this.top = oTop+offset_y
-                    if(bottom) this.bottom = oBottom+offset_y
-                    if(dragged==null) window.removeEventListener("mousemove", fn)
-                }
-                window.addEventListener("mousemove", fn)
-            }
-        }
 
-        this.element.children[0].addEventListener("mousedown", resizeHandler(true, false, true, false))
-        this.element.children[2].addEventListener("mousedown", resizeHandler(false, true, false, true))
-        this.element.children[1].addEventListener("mousedown", resizeHandler(false, true, true, false))
-        this.element.children[3].addEventListener("mousedown", resizeHandler(true, false, false, true))
+        const handler = (border) => /** @param {MouseEvent} e */(e)=>{ e.preventDefault(); this.startResizing(border, e.pageX, e.pageY) }
+        this.element.children[0].addEventListener("mousedown", handler(0))
+        this.element.children[2].addEventListener("mousedown", handler(2))
+        this.element.children[1].addEventListener("mousedown", handler(1))
+        this.element.children[3].addEventListener("mousedown", handler(3))
         this.element.children[4].addEventListener("mousedown", /** @param {MouseEvent} e */(e)=>{
             e.preventDefault()
-            dragged=/** @type {HTMLElement} */ (e.currentTarget)
-            dragged.classList.add("_dragged")
-            let oldx = e.pageX, oldy = e.pageY
-            const bounds = this.element.getBoundingClientRect()
-            /** @param {MouseEvent} e */
-            let fn = (e)=>{
-                this.x += (e.pageX-oldx)/bounds.width*this.width
-                this.y += (e.pageY-oldy)/bounds.height*this.height
-                oldx = e.pageX
-                oldy = e.pageY
-                if(dragged==null) window.removeEventListener("mousemove", fn)
-            }
-            window.addEventListener("mousemove", fn)
+            this.startMoving(e.pageX, e.pageY)
         })
     }
 
