@@ -2,6 +2,8 @@
 
 import { Control } from "./control/Control.js"
 import controls from "./control/controls.js"
+import { ControlSettingsGUI } from "./control/settings.js"
+import { Selector } from "./gui/Selector.js"
 import { Transformer } from "./gui/Transformer.js"
 import { html } from "./utils/doc.js"
 
@@ -119,6 +121,7 @@ let wam_gui={
     aspect_ratio: 1,
     top_color: "#000000",
     bottom_color: "#ffffff",
+    /** @type {{position:[number,number], dimensions:[number,number], values:any, key:string}[]} */
     controls: []
 }
 function updateWamBase(){
@@ -184,51 +187,12 @@ function setControlSettings(settings,default_values={}){
     control_values = {}
 
     if(settings){
-        for(let [label,type] of Object.entries(settings)){
-            let element
-            let value=""
-            
-            if(type=="color"){
-                value = default_values[label]??"#ffffff"
-                element = html.a`<input type="color" value="${value}">`
-                element.oninput = ()=> setValue(label,element.value)
-            }
-            else if(type=="text"){
-                value = default_values[label]??"Text"
-                element = html.a`<input type="text" value="${value}">`
-                element.oninput = ()=> setValue(label,element.value)
-            }
-            else if(Array.isArray(type)){
-                value = default_values[label]??type[0]
-                element = html.a`<input type="range" min="${type[0]}" step="${(type[1]-type[0])/100}" max="${type[1]}" value="${value}">`
-                element.oninput = ()=> setValue(label,element.value)
-            }
-            else if(typeof type == "object" && "min" in type){
-                value = default_values[label]??type.min
-                element = html.a`<input type="range" min="${type.min}" step="${type.step}" max="${type.max}" value="${value}">`
-                element.oninput = ()=> setValue(label,element.value)
-            }
-            else if(type=="choice_parameter" || type=="value_parameter"){
-                if(current_wam_parameters){
-                    value = default_values[label]??null
-                    element = html.a`<select></select>`
-                    for(let [id,info] of Object.entries(current_wam_parameters)){
-                        if(value==null) value = id
-                        console.log(info)
-                        if(type=="choice_parameter" && info.type!="choice") continue
-                        if(type=="value_parameter" && info.type!="float") continue
-                        let option = html.a`<option>${info.label??info.id}</option>`
-                        option.onchange = ()=> setValue(label,id)
-                        element.appendChild(option)
-                    }
-                }
-            }
-            else element = html.a`<span style="color:red;">Unsupported Setting</span>`
-
-            control_values[label] = value
-            elem_settings.appendChild(html`<label>${label}</label>${element}`)
-        }
+        let gui = new ControlSettingsGUI(settings,current_wam_parameters??{})
+        for(let [label,value] of Object.entries(default_values)) gui.setValue(label,value)
+        gui.on_value_change = (label,value)=> setValue(label,value)
+        elem_settings.replaceChildren(gui.element)
     }
+    else elem_settings.replaceChildren()
 }
 
 
@@ -243,8 +207,6 @@ save_text_area.onchange=()=>{
     }
 }
 
-
-
 //// CONTROLS ////
 const gui_container = /** @type {HTMLElement} */ (document.querySelector("#gui_container"))
 const add_control = /** @type {HTMLButtonElement} */ (document.querySelector("#add_control"))
@@ -256,7 +218,8 @@ gui_container.style.position="relative"
 function updateControls(){
     // Cleanup
     for(let control of added_controls) control.destroy(current_wam_instance)
-    while(gui_container.children.length>1) gui_container.lastChild.remove()
+    for(let child of [...gui_container.children]) if(child.classList.contains("control_container")) child.remove()
+    selector.selecteds = []
 
     // Controls
     save_text_area.innerText = JSON.stringify(wam_gui)
@@ -269,63 +232,18 @@ function updateControls(){
         for(let [label,value] of Object.entries(values)){
             control_element.setValue(label,value)
         }
-        let container = html.a`<div>${control_element}</div>`
+        let container = html.a`<div class="control_container">${control_element}</div>`
         container.style.position="absolute"
         container.style.left = `${x*100}%`
         container.style.top = `${y*100}%`
         container.style.width = `${width*100}%`
         container.style.height = `${height*100}%`
         
-        container.onmousedown=()=>{
-            for(let control of added_containers) control.classList.remove("selected")
-            container.classList.toggle("selected")
+        container.onmousedown=/** @type {MouseEvent} */  (e)=>{
+            e.stopPropagation()
+            if(e.shiftKey) selector.select({element:container,control:control_info})
+            else selector.selecteds = [{element:container,control:control_info}]
             selected_gui_control = control_info
-        }
-        container.draggable=true
-        container.ondragstart=(e)=>{
-            e.dataTransfer.effectAllowed = "move";
-            let rect = gui_container.getBoundingClientRect()
-            let x = e.clientX-rect.left
-            let y = e.clientY-rect.top
-            e.dataTransfer.setData("position", JSON.stringify([x,y]));
-            e.dataTransfer.setData("text/plain", JSON.stringify(control_info));
-        }
-        container.ondragend = (e)=>{
-            let rect = gui_container.getBoundingClientRect()
-            let x = e.clientX-rect.left
-            let y = e.clientY-rect.top
-            let [xx,yy] = JSON.parse(e.dataTransfer.getData("position"))
-            control_info.position[0] += (x-xx)/rect.width
-            control_info.position[1] += (y-yy)/rect.height
-            if (control_info.position[0]<0) control_info.position[0]=0
-            if (control_info.position[1]<0) control_info.position[1]=0
-            if (control_info.position[0]+control_info.dimensions[0]>1) control_info.position[0]=1-control_info.dimensions[0]
-            if (control_info.position[1]+control_info.dimensions[1]>1) control_info.position[1]=1-control_info.dimensions[1]
-            updateControls()
-        }
-        container.onwheel = (e)=>{
-            e.preventDefault()
-            if(e.deltaY<0){
-                control_info.position[0] -= control_info.dimensions[0]*0.05
-                control_info.position[1] -= control_info.dimensions[1]*0.05
-                control_info.dimensions[0]*=1.1
-                control_info.dimensions[1]*=1.1
-            }
-            else{
-                control_info.position[0] += control_info.dimensions[0]*0.05
-                control_info.position[1] += control_info.dimensions[1]*0.05
-                control_info.dimensions[0]*=0.9
-                control_info.dimensions[1]*=0.9
-            }
-            if (control_info.dimensions[0]<0.05) control_info.dimensions[0]=0.05
-            if (control_info.dimensions[1]<0.05) control_info.dimensions[1]=0.05
-            if (control_info.dimensions[0]>1) control_info.dimensions[0]=1
-            if (control_info.dimensions[1]>1) control_info.dimensions[1]=1
-            if (control_info.position[0]<0) control_info.position[0]=0
-            if (control_info.position[1]<0) control_info.position[1]=0
-            if (control_info.position[0]+control_info.dimensions[0]>1) control_info.position[0]=1-control_info.dimensions[0]
-            if (control_info.position[1]+control_info.dimensions[1]>1) control_info.position[1]=1-control_info.dimensions[1]
-            updateControls()
         }
         
         added_controls.push(control_element)
@@ -333,6 +251,24 @@ function updateControls(){
         gui_container.appendChild(container)
     }
 }
+
+//// Transformer ////
+let selector = /** @type {Selector<{element:HTMLElement,control:wam_gui['controls'][0]}>} */ (new Selector(
+    ({control})=>({x:control.position[0], y:control.position[1], width:control.dimensions[0], height:control.dimensions[1] }),
+    gui_container
+))
+
+selector.on_move = (moved, x,y, width,height)=>{
+    moved.control.position[0] = x
+    moved.control.position[1] = y
+    moved.control.dimensions[0] = width
+    moved.control.dimensions[1] = height
+    moved.element.style.left = `${x*100}%`
+    moved.element.style.top = `${y*100}%`
+    moved.element.style.width = `${width*100}%`
+    moved.element.style.height = `${height*100}%`
+}
+
 
 add_control.onclick=()=>{
     if(selected_control){
@@ -342,23 +278,3 @@ add_control.onclick=()=>{
 }
 
 updateWamBase()
-
-
-//// Transformer ////
-let transformer = new Transformer()
-gui_container.appendChild(transformer.element)
-document.onkeydown=(e)=>{
-    if(e.key=="ArrowUp") transformer.y += -10
-    if(e.key=="ArrowDown") transformer.y += 10
-    if(e.key=="ArrowLeft") transformer.x += -10
-    if(e.key=="ArrowRight") transformer.x += 10
-    
-    if(e.key=="i") transformer.height += -10
-    if(e.key=="k") transformer.height += 10
-    if(e.key=="j") transformer.width += -10
-    if(e.key=="l") transformer.width += 10
-
-    if(e.key=="p") transformer.setSizeAround(0.5, 0.5, transformer.width+10, transformer.height+10)
-    if(e.key=="o") transformer.setSizeAround(0.5, 0.5, transformer.width-10, transformer.height-10)
-}
-transformer.registerEvents()

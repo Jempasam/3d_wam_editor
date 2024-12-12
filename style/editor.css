@@ -272,6 +272,9 @@ button{
     box-sizing: border-box;
     width: 10rem;
     height: 10rem;
+    z-index: 1;
+
+    pointer-events: none;
 
     >div{
         position: absolute;
@@ -279,6 +282,7 @@ button{
         height: .7rem;
         background-color: var(--select2);
         cursor: move;
+        pointer-events: all;
         &:hover{ background-color: var(--select-hover); }
         &._dragged{ background-color: var(--select-hover); scale:1.5; }
         &:nth-child(1){ left: -.4rem; top: -.4rem; }

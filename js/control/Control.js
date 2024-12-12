@@ -1,7 +1,7 @@
 
 
 /**
- * @typedef {{ [label:string]: "color"|"text"|[number,number]|{min:number,max:number,step:number}|"value_parameter"|"choice_parameter" }} ControlSettings
+ * @typedef {import("./settings.js").ControlSettings} ControlSettings
  * 
  * The superclass for custom elements controls.
  * They should be put in a div container that center them using flexboxes.

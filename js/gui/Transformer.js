@@ -1,8 +1,10 @@
 import { html } from "../utils/doc.js";
 
+function to_css(v) { return (Math.round(v*10000)/100)+"%" }
 
 /**
  * A transformer element.
+ * Coordinates are expressed as numbers between 0 and 1.
  */
 export class Transformer {
 
@@ -23,21 +25,23 @@ export class Transformer {
                 <div></div>
             </div>
         `
-        this.#width = 100;
-        this.#height = 100;
+        this.#width = 1;
+        this.#height = 1;
         this.#x = 0;
         this.#y = 0;
-        this.element.style.width = this.width + "%";
-        this.element.style.height = this.height + "%";
-        this.element.style.left = this.x + "%";
-        this.element.style.top = this.y + "%";
+
+        
+        this.element.style.width =  to_css(this.width)
+        this.element.style.height = to_css(this.height)
+        this.element.style.left = to_css(this.x)
+        this.element.style.top = to_css(this.y)
     }
 
     /** Get the transformer left x coordinate. */
     set x(value){
-        if(value+this.#width > 100) value = 100-this.#width
+        if(value+this.#width > 1) value = 1-this.#width
         if(value < 0) value = 0
-        this.element.style.left = value + "%"
+        this.element.style.left = to_css(value)
         this.#x = value
         this.onmove(this.x, this.y, this.width, this.height)
     }
@@ -45,9 +49,9 @@ export class Transformer {
 
     /** Get the transformer top y coordinate. */
     set y(value){
-        if(value+this.#height > 100) value = 100-this.#height
+        if(value+this.#height > 1) value = 1-this.#height
         if(value < 0) value = 0
-        this.element.style.top = value + "%"
+        this.element.style.top = to_css(value)
         this.#y = value
         this.onmove(this.x, this.y, this.width, this.height)
     }
@@ -55,9 +59,9 @@ export class Transformer {
 
     /** Get the transformer width. */
     set width(value){
-        if(this.#x+value > 100) value = 100-this.#x
-        if(value < 5) value = 5
-        this.element.style.width = value + "%"
+        if(this.#x+value > 1) value = 1-this.#x
+        if(value < 0.05) value = 0.05
+        this.element.style.width = to_css(value)
         this.#width = value
         this.onmove(this.x, this.y, this.width, this.height)
     }
@@ -65,9 +69,9 @@ export class Transformer {
 
     /** Get the transformer height. */
     set height(value){
-        if(this.#y+value > 100) value = 100-this.#y
-        if(value < 5) value = 5
-        this.element.style.height = value + "%"
+        if(this.#y+value > 1) value = 1-this.#y
+        if(value < 0.05) value = 0.05
+        this.element.style.height = to_css(value)
         this.#height = value
         this.onmove(this.x, this.y, this.width, this.height)
     }
@@ -91,14 +95,14 @@ export class Transformer {
     setSizeAround(x, y, width, height){
         console.assert(x >= 0 && x <= 1 && y >= 0 && y <= 1)
 
-        if(width < 5) width = 5
-        if(height < 5) height = 5
+        if(width < 0.05) width = 0.05
+        if(height < 0.05) height = 0.05
 
         const lx = this.x + this.width*x
         const ly = this.y + this.height*y
 
-        width =  Math.min(width,  lx/(x+0.0001), (100-lx)/(1.000001-x), 100)
-        height = Math.min(height, ly/(y+0.0001), (100-ly)/(1.000001-y), 100)
+        width =  Math.min(width,  lx/(x+0.000001), (1-lx)/(1.00000001-x), 1)
+        height = Math.min(height, ly/(y+0.000001), (1-ly)/(1.00000001-y), 1)
 
         const newx = lx - width*x
         const newy = ly - height*y
@@ -106,10 +110,10 @@ export class Transformer {
         this.#height = height
         this.#x = newx
         this.#y = newy
-        this.element.style.width = this.#width + "%"
-        this.element.style.height = this.#height + "%"
-        this.element.style.left = this.#x + "%"
-        this.element.style.top = this.#y + "%"
+        this.element.style.width = to_css(this.#width) + "%"
+        this.element.style.height = to_css(this.#height) + "%"
+        this.element.style.left = to_css(this.#x) + "%"
+        this.element.style.top = to_css(this.#y) + "%"
         this.onmove(this.x, this.y, this.width, this.height)
     }
 
