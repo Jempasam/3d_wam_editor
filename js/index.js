@@ -1,6 +1,7 @@
 // import { Engine, MeshBuilder, Scene } from "./babylonjs/core/index.js";
 
 import { Control } from "./control/Control.js"
+import { ControlMap } from "./control/ControlMap.js"
 import controls from "./control/controls.js"
 import { ControlSettingsGUI } from "./control/settings.js"
 import { Selector } from "./gui/Selector.js"
@@ -121,8 +122,6 @@ let wam_gui={
     aspect_ratio: 1,
     top_color: "#000000",
     bottom_color: "#ffffff",
-    /** @type {{position:[number,number], dimensions:[number,number], values:any, key:string}[]} */
-    controls: []
 }
 function updateWamBase(){
     let [width,height] = wam_gui.aspect_ratio>1 ? [1,1/wam_gui.aspect_ratio] : [wam_gui.aspect_ratio,1]
@@ -161,7 +160,7 @@ function setControl(key){
         selected_control_key = key
         options.forEach( it => it.classList.remove("selected"))
         elem_control_list.querySelector(`option[value="${key}"]`).classList.add("selected")
-        setControlSettings(controls[key].getSettings())
+        // TODO setControlSettings(controls[key].getSettings())
     }
 }
 
@@ -174,21 +173,20 @@ for(let [key,control] of Object.entries(controls)){
 
 //// CONTROL SETTINGS ////
 const elem_settings = document.querySelector("#settings")
-let control_settings = {}
 let control_values = {}
 
-function setValue(label,value){
-    control_values[label] = value
-}
-
-/** @param {import("./control/Control.js").ControlSettings|null} settings */
-function setControlSettings(settings,default_values={}){
-    elem_settings.replaceChildren()
-    control_values = {}
-
+/**
+ * @param {import("./control/Control.js").ControlSettings|null} settings
+ * @param {(label:string)=>string|undefined} getValue
+ * @param {(label:string,value:string)=>void} setValue
+ **/
+function setControlSettings(settings, getValue= ()=>undefined, setValue = ()=>{}){
     if(settings){
         let gui = new ControlSettingsGUI(settings,current_wam_parameters??{})
-        for(let [label,value] of Object.entries(default_values)) gui.setValue(label,value)
+        for(let [label,value] of Object.entries(settings)){
+            const value = getValue(label)
+            if(value) gui.setValue(label,value)
+        }
         gui.on_value_change = (label,value)=> setValue(label,value)
         elem_settings.replaceChildren(gui.element)
     }
@@ -201,7 +199,6 @@ const save_text_area = /** @type {HTMLTextAreaElement} */ (document.querySelecto
 save_text_area.onchange=()=>{
     try{
         wam_gui = JSON.parse(save_text_area.value)
-        updateControls()
     }catch(e){
         console.error(e)
     }
@@ -210,71 +207,60 @@ save_text_area.onchange=()=>{
 //// CONTROLS ////
 const gui_container = /** @type {HTMLElement} */ (document.querySelector("#gui_container"))
 const add_control = /** @type {HTMLButtonElement} */ (document.querySelector("#add_control"))
-let added_controls = /** @type {Control[]} */ ([])
-let added_containers = /** @type {HTMLElement[]} */ ([])
-let selected_gui_control = null
 gui_container.style.position="relative"
-
-function updateControls(){
-    // Cleanup
-    for(let control of added_controls) control.destroy(current_wam_instance)
-    for(let child of [...gui_container.children]) if(child.classList.contains("control_container")) child.remove()
-    selector.selecteds = []
-
-    // Controls
-    save_text_area.innerText = JSON.stringify(wam_gui)
-    for(let control_info of wam_gui.controls){
-        let control_type= controls[control_info.key]
-        let values = control_info.values
-        let [x,y] = control_info.position
-        let [width,height] = control_info.dimensions
-        let control_element = new control_type(current_wam_instance)
-        for(let [label,value] of Object.entries(values)){
-            control_element.setValue(label,value)
-        }
-        let container = html.a`<div class="control_container">${control_element}</div>`
-        container.style.position="absolute"
-        container.style.left = `${x*100}%`
-        container.style.top = `${y*100}%`
-        container.style.width = `${width*100}%`
-        container.style.height = `${height*100}%`
-        
-        container.onmousedown=/** @type {MouseEvent} */  (e)=>{
-            e.stopPropagation()
-            if(e.shiftKey) selector.select({element:container,control:control_info})
-            else selector.selecteds = [{element:container,control:control_info}]
-            selector.transformer?.startMoving(e.pageX,e.pageY)
-            selected_gui_control = control_info
-        }
-        
-        added_controls.push(control_element)
-        added_containers.push(container)
-        gui_container.appendChild(container)
+const controls_map = new ControlMap(gui_container)
+controls_map.on_add = function(item){
+    const {control,container} = item
+    container.onmousedown=/** @type {MouseEvent} */  (e)=>{
+        e.stopPropagation()
+        if(e.shiftKey) selector.select({element:container, infos:item})
+        else selector.selecteds = [{element:container, infos:item}]
+        selector.transformer?.startMoving(e.pageX,e.pageY)
     }
 }
+controls_map.on_remove = function(item){
+    const {control,container} = item
+    for(const s of selector.selecteds) if(s.infos==item) selector.unselect(s)
+}
 
-//// Transformer ////
-let selector = /** @type {Selector<{element:HTMLElement,control:wam_gui['controls'][0]}>} */ (new Selector(
-    ({control})=>({x:control.position[0], y:control.position[1], width:control.dimensions[0], height:control.dimensions[1] }),
-    gui_container
-))
+
+//// Selector and Transformer ////
+/** @type {Selector<{element:HTMLElement,infos:ReturnType<ControlMap['get']>}>} */
+let selector = new Selector(it=>it.infos, gui_container)
+
+function unselectall(e){
+    console.log("aa")
+    if(e.target==e.currentTarget) selector.unselect_all()
+}
+gui_container.addEventListener("mousedown",unselectall)
+wampad.addEventListener("mousedown",unselectall)
 
 selector.on_move = (moved, x,y, width,height)=>{
-    moved.control.position[0] = x
-    moved.control.position[1] = y
-    moved.control.dimensions[0] = width
-    moved.control.dimensions[1] = height
-    moved.element.style.left = `${x*100}%`
-    moved.element.style.top = `${y*100}%`
-    moved.element.style.width = `${width*100}%`
-    moved.element.style.height = `${height*100}%`
+    const index = controls_map.values.indexOf(moved.infos)
+    controls_map.move(index,x,y)
+    controls_map.resize(index,width,height)
+}
+
+selector.on_select = selection=>{
+    const settings = selection.infos.control.constructor.getSettings()
+    setControlSettings(
+        settings,
+        (label) => selection.infos.control.getValue(label),
+        (label,value) => {
+            for(const {infos:{control}} of selector.selecteds) control.setValue(label,value)
+        }
+    )
+}
+
+selector.on_unselect = selection=>{
+    
 }
 
 
 add_control.onclick=()=>{
     if(selected_control){
-        wam_gui.controls.push({key:selected_control_key, values:control_values, position:[0,0], dimensions:[0.1,0.1]})
-        updateControls()
+        const control = new selected_control(current_wam_instance)
+        controls_map.splice(controls_map.length, 0, {control, values:control_values, x:0, y:0, width:0.1, height:0.1})
     }
 }
 

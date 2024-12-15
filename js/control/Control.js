@@ -24,6 +24,14 @@ export class Control extends HTMLElement{
     }
 
     /**
+     * The default values of the parameters.
+     * @returns {{[label:string]:string}}
+     */
+    static getDefaultValues(){
+        return {}
+    }
+
+    /**
      * Set a value of a parameter
      * @param {string} label 
      * @param {string} value 
@@ -43,13 +51,12 @@ export class Control extends HTMLElement{
 
     /**
      * Free the resources used by the control
-     * @param {any} wam
      */
-    destroy(wam){
+    destroy(){
         throw new Error("Not implemented")
     }
 
     static name = "Unnamed Control"
-    
+
 }
 

@@ -12,8 +12,8 @@ export class TestControl extends Control{
         this.style.display="block"
         this.style.width="100%"
         this.style.height="100%"
-        this.style.backgroundColor="red"
-        this.style.borderColor="yellow"
+        this.style.backgroundColor="#ff0000"
+        this.style.borderColor="#0000ff"
         this.style.borderWidth=".2rem"
         this.style.borderStyle="solid"
         this.style.boxSizing="border-box";
@@ -21,12 +21,15 @@ export class TestControl extends Control{
 
     /** @type {(typeof Control)['getSettings']} */
     static getSettings(){
-        return {"Center":"color", "Outline":"color", "Param": "value_parameter"}
+        return {"Text":"text", "Center":"color", "Outline":"color", "Param": "value_parameter"}
     }
 
     /** @type {Control['setValue']} */
     setValue(label, value){
         switch(label){
+            case "Text":
+                this.textContent = value
+                break
             case "Center":
                 this.style.backgroundColor = value
                 break
@@ -39,17 +42,23 @@ export class TestControl extends Control{
     /** @type {Control['getValue']} */
     getValue(label){
         switch(label){
+            case "Text":
+                return this.textContent
             case "Center":
-                return this.style.backgroundColor
+                return cssRgbToHex(this.style.backgroundColor)
             case "Outline":
-                return this.style.borderColor
+                return cssRgbToHex(this.style.borderColor)
         }
     }
 
     /** @type {Control['destroy']} */
-    destroy(wam){
+    destroy(){
     }
 }
 
+function cssRgbToHex(rgb){
+    let rgba = rgb.match(/\d+/g)
+    return "#" + rgba.map(v=>parseInt(v).toString(16).padStart(2,"0")).join("") 
+}
 
 customElements.define('wam3d-testcontrol', TestControl);

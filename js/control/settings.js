@@ -73,7 +73,9 @@ export class ControlSettingsGUI{
      * @param {any} value 
      */
     setValue(label, value){
-        let element = /** @type {HTMLInputElement} */ (this.element.querySelector(`[--data-parameter-name="${label}"]`))
+        let element = /** @type {HTMLInputElement} */ (this.element.querySelector(`[data-parameter-name="${label}"]`))
+        console.log(element)
+        console.log(value)
         if(element) element.value= ""+value
     }
 }
