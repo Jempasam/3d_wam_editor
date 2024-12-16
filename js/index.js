@@ -259,7 +259,10 @@ selector.on_select = selection=>{
         settings,
         (label) => selection.infos.control.getValue(label),
         (label,value) => {
-            for(const {infos:{control}} of selector.selecteds) control.setValue(label,value)
+            for(const {infos:{control}} of selector.selecteds){
+                const index = controls_map.values.findIndex(it=>it.control==control)
+                controls_map.setValue(index,label,value)
+            }
         }
     )
 }
@@ -277,5 +280,39 @@ add_control.onclick=()=>{
         controls_map.splice(controls_map.length, 0, {control, values:control_values, x:0, y:0, width:0.1, height:0.1})
     }
 }
+
+
+//// REMOVE, COPY, PASTE ////
+/** @type {{x:number,y:number,width:number,height:number,control:typeof Control,values:any}[]} */  let copied = []
+document.addEventListener("keydown",e=>{
+    if(document.activeElement!=document.body) return
+    console.log(e.key)
+    switch(e.key){
+        case "Delete":
+        case "Backspace":
+            for(const {infos} of [...selector.selecteds]){
+                const index = controls_map.values.indexOf(infos)
+                controls_map.splice(index,1)
+            }
+            break
+        case "c":
+            copied = [
+                ...selector.selecteds.values()
+                .map(({infos})=>({x:infos.x+0.02, y:infos.y+0.02, width:infos.width, height:infos.height, values:{...infos.values}, control:infos.control.constructor}))
+            ]
+            break
+        case "v":
+            let first = controls_map.length
+            let count = copied.length
+            for(const {x,y,width,height,values,control} of copied){
+                console.log(copied,values)
+                const control_instance = new control(current_wam_instance)
+                controls_map.splice(controls_map.length, 0, {control:control_instance, values, x, y, width, height})
+            }
+            selector.selecteds = [...controls_map.values].slice(first,first+count).map(infos=>({element:infos.container, infos}))
+            break
+    }
+})
+
 
 updateWamBase()
