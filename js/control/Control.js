@@ -12,7 +12,12 @@ export class Control extends HTMLElement{
      * A factory for creating custom elements controls.
      * @param {any|null} wam The WAM instance. If null, the control is disabled and serve just a display purpose.
      */
-    constructor(wam){super()}
+    constructor(wam){
+        super()
+        this.setDefaultValues()
+        /** @type {typeof Control} */ 
+        this.constructor
+    }
     
 
     /**
@@ -21,6 +26,14 @@ export class Control extends HTMLElement{
      */
     static getSettings(){
         return {}
+    }
+
+    /**
+     * Get the list of parameters names.
+     * @returns {string[]}
+     */
+    static getSettingsNames(){
+        return Object.keys(this.getSettings())
     }
 
     /**
@@ -50,6 +63,16 @@ export class Control extends HTMLElement{
     }
 
     /**
+     * Reset the values of the parameters to the default values.
+     * It is called in the constructor.
+     */
+    setDefaultValues(){
+        for(let [label,value] of Object.entries(this.constructor.getDefaultValues())){
+            this.setValue(label,value)
+        }
+    }
+
+    /**
      * Free the resources used by the control
      */
     destroy(){
@@ -59,4 +82,3 @@ export class Control extends HTMLElement{
     static name = "Unnamed Control"
 
 }
-

@@ -168,6 +168,11 @@ export class Transformer {
         const bounds = this.element.getBoundingClientRect() 
         /** @param {MouseEvent} e */
         let fn = (e)=>{
+            if(this.dragged!=this.element.children[border]){
+                window.removeEventListener("mousemove", fn)
+                this.element.children[border].classList.remove("_dragged")
+                return
+            } 
             let offset_x = (e.pageX-startMousePageX)/bounds.width*originalWidth
             let offset_y = (e.pageY-startMousePageY)/bounds.height*originalHeight
             console.log("offset",offset_x,offset_y)
@@ -176,10 +181,6 @@ export class Transformer {
             if(right) this.right = oRight+offset_x
             if(top) this.top = oTop+offset_y
             if(bottom) this.bottom = oBottom+offset_y
-            if(this.dragged!=this.element.children[border]){
-                window.removeEventListener("mousemove", fn)
-                this.element.children[border].classList.remove("_dragged")
-            } 
         }
         window.addEventListener("mousemove", fn)
     }
@@ -197,12 +198,13 @@ export class Transformer {
         const oX = this.x, oY = this.y
         /** @param {MouseEvent} e */
         let fn = (e)=>{
-            this.x = oX + (e.pageX-startMousePageX)/bounds.width*this.width
-            this.y = oY + (e.pageY-startMousePageY)/bounds.height*this.height
             if(this.dragged!=this.element.children[4]){
                 window.removeEventListener("mousemove", fn)
                 this.element.children[4].classList.remove("_dragged")
+                return
             }
+            this.x = oX + (e.pageX-startMousePageX)/bounds.width*this.width
+            this.y = oY + (e.pageY-startMousePageY)/bounds.height*this.height
         }
         window.addEventListener("mousemove", fn)
     }

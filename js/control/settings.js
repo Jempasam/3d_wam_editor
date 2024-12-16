@@ -1,7 +1,8 @@
 
-/** @typedef {{[label:string]: "color"|"text"|[number,number]|{min:number,max:number,step:number}|{"choice":string[]}|"value_parameter"|"choice_parameter" }} ControlSettings */
+/** @typedef {{[label:string]: "color"|"text"|"font"|[number,number]|{min:number,max:number,step:number}|{"choice":string[]}|"value_parameter"|"choice_parameter" }} ControlSettings */
 
 import { html } from "../utils/doc.js"
+
 
 /**
  * A GUI for control settings.
@@ -47,6 +48,16 @@ export class ControlSettingsGUI{
                 element.options[0].selected = true
                 element.onchange = ()=> this.on_value_change(label,element.value)
             }
+            else if(type == "font"){
+                /** @type {HTMLSelectElement} */
+                element =  html.a`<select></select>`
+                for(let [name,value] of Object.entries(FONTS)){
+                    let option = html.a`<option value="${value}">${name}</option>`
+                    option.style.fontFamily = value
+                    element.appendChild(option)
+                }
+                element.onchange = (event)=> this.on_value_change(label,element.value)
+            }
             // WAM Parameter input : String value
             else if(type=="choice_parameter" || type=="value_parameter"){
                 element = html.a`<select><option selected="true" value="">None</option></select>`
@@ -78,4 +89,30 @@ export class ControlSettingsGUI{
         console.log(value)
         if(element) element.value= ""+value
     }
+}
+
+const FONTS = {
+    "Arial": `Arial`,
+    "Courier New": `"Courier New", Courier, monospace`,
+    "Comic Sans MS": `Comic Sans MS, Chalkboard SE, Comic Neue, sans-serif`,
+    "Arial Black": `Arial Black, Arial Bold, Gadget, sans-serif`,
+    "Century Gothic": `Century Gothic, CenturyGothic, AppleGothic, sans-serif`,
+    "Geneva": `Verdana, Geneva, sans-serif`,
+    "Georgia": `Georgia, Times, Times New Roman, serif`,
+    "Times New Roman": `TimesNewRoman, Times New Roman, Times, Baskerville, Georgia, serif`,
+    "Goudy Old Style": `Goudy Old Style, Garamond, Big Caslon, Times New Roman, serif`,
+    "Courier": `Courier New, Courier, Lucida Sans Typewriter, Lucida Typewriter, monospace`,
+    "Copperplate": `Copperplate, Copperplate Gothic Light, fantasy`,
+    "Papyrus": `Papyrus, fantasy`,
+    "Brush Script MT": `Brush Script MT, Brush Script Std, cursive`,
+    "Impact": `Impact, fantasy`,
+    "Lucida Console": `Lucida Console, Monaco, monospace`,
+    "Lucida Sans Unicode": `Lucida Sans Unicode, Lucida Grande, sans-serif`,
+    "Tahoma": `Tahoma, Geneva, sans-serif`,
+    "Trebuchet MS": `Trebuchet MS, Helvetica, sans-serif`,
+    "Verdana": `Verdana, Geneva, sans-serif`,
+    "Cambria": `Cambria, Georgia, serif`,
+    "Rounded": `ui-rounded, 'Hiragino Maru Gothic ProN', Quicksand, Comfortaa, Manjari, 'Arial Rounded MT', 'Arial Rounded MT Bold', Calibri, source-sans-pro, sans-serif`,
+    "Slab": `Rockwell, 'Rockwell Nova', 'Roboto Slab', 'DejaVu Serif', 'Sitka Small', serif`,
+    "Handwritten": `'Segoe Print', 'Bradley Hand', Chilanka, TSCu_Comic, casual, cursive`
 }

@@ -1,4 +1,4 @@
-import { Control } from "./Control.js";
+import { Control } from "../Control.js";
 
 /**
  * A test control
@@ -12,8 +12,6 @@ export class TestControl extends Control{
         this.style.display="block"
         this.style.width="100%"
         this.style.height="100%"
-        this.style.backgroundColor="#ff0000"
-        this.style.borderColor="#0000ff"
         this.style.borderWidth=".2rem"
         this.style.borderStyle="solid"
         this.style.boxSizing="border-box";
@@ -22,6 +20,11 @@ export class TestControl extends Control{
     /** @type {(typeof Control)['getSettings']} */
     static getSettings(){
         return {"Text":"text", "Center":"color", "Outline":"color", "Param": "value_parameter"}
+    }
+
+    /** @type {(typeof Control)['getDefaultValues']} */
+    static getDefaultValues(){
+        return {"Text":"", "Center":"#ff0000", "Outline":"#0000ff"}
     }
 
     /** @type {Control['setValue']} */

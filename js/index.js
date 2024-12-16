@@ -150,18 +150,30 @@ document.querySelector("#bottom_color").oninput=()=>{
 
 //// CONTROL LIST ////
 const elem_control_list = document.querySelector("#controls_list")
-let selected_control = null
-let selected_control_key = null
+/** @type {{key:string, control:typeof Control}|null} */  let selected_control = null
 
 function setControl(key){
     let options = elem_control_list.querySelectorAll(":scope > *")
     if(controls[key]){
-        selected_control = controls[key]
-        selected_control_key = key
+        const control = controls[key]
+        selected_control = {key, control}
         options.forEach( it => it.classList.remove("selected"))
         elem_control_list.querySelector(`option[value="${key}"]`).classList.add("selected")
+        showSelectedControlSettings()
         // TODO setControlSettings(controls[key].getSettings())
     }
+}
+
+function showSelectedControlSettings(){
+    if(selected_control){
+        control_values=selected_control.control.getDefaultValues()
+        setControlSettings(
+            selected_control.control.getSettings(),
+            (label) => control_values[label],
+            (label,value) => control_values[label]=value
+        )
+    }
+    else setControlSettings(undefined)
 }
 
 for(let [key,control] of Object.entries(controls)){
@@ -185,7 +197,7 @@ function setControlSettings(settings, getValue= ()=>undefined, setValue = ()=>{}
         let gui = new ControlSettingsGUI(settings,current_wam_parameters??{})
         for(let [label,value] of Object.entries(settings)){
             const value = getValue(label)
-            if(value) gui.setValue(label,value)
+            if(value!=undefined) gui.setValue(label,value)
         }
         gui.on_value_change = (label,value)=> setValue(label,value)
         elem_settings.replaceChildren(gui.element)
@@ -253,13 +265,15 @@ selector.on_select = selection=>{
 }
 
 selector.on_unselect = selection=>{
-    
+    if(selector.selecteds.size==0){
+        showSelectedControlSettings()
+    }
 }
 
 
 add_control.onclick=()=>{
     if(selected_control){
-        const control = new selected_control(current_wam_instance)
+        const control = new selected_control.control(current_wam_instance)
         controls_map.splice(controls_map.length, 0, {control, values:control_values, x:0, y:0, width:0.1, height:0.1})
     }
 }
