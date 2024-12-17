@@ -1,27 +1,48 @@
 // import { Engine, MeshBuilder, Scene } from "./babylonjs/core/index.js";
 
+import { Engine } from "./babylonjs/core/Engines/engine.js"
+import { MeshBuilder } from "./babylonjs/core/Meshes/meshBuilder.js"
+import { Scene } from "./babylonjs/core/scene.js"
+import "./babylonjs/core/Helpers/sceneHelpers.js"
 import { Control } from "./control/Control.js"
 import { ControlMap } from "./control/ControlMap.js"
 import controls from "./control/controls.js"
 import { ControlSettingsGUI } from "./control/settings.js"
 import { Selector } from "./gui/Selector.js"
-import { Transformer } from "./gui/Transformer.js"
 import { html } from "./utils/doc.js"
+import { StandardMaterial } from "./babylonjs/core/Materials/standardMaterial.js"
+import { Color3 } from "./babylonjs/core/Maths/math.color.js"
+import { Vector3 } from "./babylonjs/core/Maths/math.vector.js"
+import { FreeCamera } from "./babylonjs/core/Cameras/freeCamera.js"
+import { UniversalCamera } from "./babylonjs/core/Cameras/universalCamera.js"
+import { ArcRotateCamera } from "./babylonjs/core/Cameras/arcRotateCamera.js"
+import { Color4 } from "./babylonjs/core/Maths/math.color.js"
+import { BackgroundMaterial } from "./babylonjs/core/Materials/Background/backgroundMaterial.js"
 
 
-// let canvas= /** @type {HTMLCanvasElement} */ (document.getElementById("game"));
-// let ctx= canvas.getContext("webgl2");
-// let engine= new Engine(ctx);
-// let scene= new Scene(engine);
-// scene.createDefaultLight();
-// scene.createDefaultCamera(true, true, true);
-// scene.createDefaultEnvironment();
+/* 3D */
+let canvas= /** @type {HTMLCanvasElement} */ (document.getElementById("3d_display"));
+let ctx= canvas.getContext("webgl2");
+let engine= new Engine(ctx);
+let scene= new Scene(engine);
+scene.createDefaultLight();
+scene.clearColor = new Color4(0,0,0,0)
 
-// const box = MeshBuilder.CreateBox("box", {size: 2}, scene);
-// box.rotation.x = Math.PI / 4;
-// box.rotation.y = Math.PI / 4;
+const camera = new ArcRotateCamera("camera", 0, 0, 1.7, new Vector3(0,0,0),scene);
+camera.wheelPrecision = 100
+camera.attachControl()
+camera.setTarget(Vector3.Zero())
 
-// engine.runRenderLoop(()=>scene.render());
+const box = MeshBuilder.CreateBox("box", {size: 1.}, scene);
+box.material = new StandardMaterial("mat", scene);
+box.material.diffuseColor = new Color3(1, 0, 0);
+box.material.specularColor = new Color3(0, 0, 0);
+
+const ground = MeshBuilder.CreateGround("ground", {width: 2, height: 2}, scene);
+ground.material = new BackgroundMaterial("ground_mat", scene);
+//MeshBuilder.CreatePlane("plane",{size:100},scene)
+
+engine.runRenderLoop(()=>scene.render());
 
 
 //// INDICATOR ////
