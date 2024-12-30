@@ -1,4 +1,8 @@
+import { MeshBuilder } from "../../babylonjs/core/Meshes/meshBuilder.js";
 import { Control } from "../Control.js";
+
+const droidSansBold = await (await fetch("ressources/droid_sans_bold.json")).json();
+
 
 /**
  * A text display control
@@ -9,12 +13,6 @@ export class TextControl extends Control{
 
     constructor(wam){
         super()
-        this.style.display="block"
-        this.style.textAlign="center"
-        this.style.verticalAlign="middle"
-        this.style.width="100%"
-        this.style.height="100%"
-        this.style.boxSizing="border-box";
     }
 
     /** @type {(typeof Control)['getSettings']} */
@@ -38,23 +36,54 @@ export class TextControl extends Control{
     /** @type {Control['setValue']} */
     setValue(label, value){
         switch(label){
-            case "Text": this.textContent = value; break
-            case "Color": this.style.color = value; break
-            case "Font": this.style.fontFamily = value; break
-            case "Size": this.style.fontSize = value+"rem"; break
-            case "Weight": this.style.fontWeight = value; break
+            case "Text": this.#element.textContent = value; break
+            case "Color": this.#element.style.color = value; break
+            case "Font": this.#element.style.fontFamily = value; break
+            case "Size": this.#element.style.fontSize = value+"rem"; break
+            case "Weight": this.#element.style.fontWeight = value; break
         }
     }
 
     /** @type {Control['getValue']} */
     getValue(label){
         switch(label){
-            case "Text": return this.textContent
-            case "Color": return cssRgbToHex(this.style.color)
-            case "Font": return this.style.fontFamily
-            case "Size": return this.style.fontSize.replace("rem","")
-            case "Weight": return this.style.fontWeight
+            case "Text": return this.#element.textContent
+            case "Color": return cssRgbToHex(this.#element.style.color)
+            case "Font": return this.#element.style.fontFamily
+            case "Size": return this.#element.style.fontSize.replace("rem","")
+            case "Weight": return this.#element.style.fontWeight
         }
+    }
+
+    /** @type {HTMLElement} */  #element
+    
+    /** @type {Control['createElement']} */
+    createElement(){
+        this.#element = document.createElement("div")
+        this.#element.style.display="block"
+        this.#element.style.width="100%"
+        this.#element.style.height="100%"
+        this.#element.style.boxSizing="border-box";
+        this.#element.style.textAlign="center"
+        this.#element.style.verticalAlign="middle"
+        return this.#element
+    }
+
+    /** @type {Control['destroyElement']}  */
+    destroyElement(){
+        this.#element.remove()
+        this.#element=null
+    }
+
+    /** @type {Control['createNode']} */
+    createNode(scene){
+        const ret = MeshBuilder.CreateText("test", "Salade", droidSansBold, {size:1}, scene)
+        return ret
+    }
+
+    /** @type {Control['destroyNode']}  */
+    destroyNode(){
+
     }
 
     /** @type {Control['destroy']} */
@@ -66,5 +95,3 @@ function cssRgbToHex(rgb){
     let rgba = rgb.match(/\d+/g)
     return "#" + rgba.map(v=>parseInt(v).toString(16).padStart(2,"0")).join("") 
 }
-
-customElements.define('wam3d-textcontrol', TextControl);

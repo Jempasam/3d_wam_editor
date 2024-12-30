@@ -1,5 +1,3 @@
-// import { Engine, MeshBuilder, Scene } from "./babylonjs/core/index.js";
-
 import { Engine } from "./babylonjs/core/Engines/engine.js"
 import { MeshBuilder } from "./babylonjs/core/Meshes/meshBuilder.js"
 import { Scene } from "./babylonjs/core/scene.js"
@@ -13,11 +11,10 @@ import { html } from "./utils/doc.js"
 import { StandardMaterial } from "./babylonjs/core/Materials/standardMaterial.js"
 import { Color3 } from "./babylonjs/core/Maths/math.color.js"
 import { Vector3 } from "./babylonjs/core/Maths/math.vector.js"
-import { FreeCamera } from "./babylonjs/core/Cameras/freeCamera.js"
-import { UniversalCamera } from "./babylonjs/core/Cameras/universalCamera.js"
 import { ArcRotateCamera } from "./babylonjs/core/Cameras/arcRotateCamera.js"
 import { Color4 } from "./babylonjs/core/Maths/math.color.js"
 import { BackgroundMaterial } from "./babylonjs/core/Materials/Background/backgroundMaterial.js"
+import { TransformNode } from "./babylonjs/core/Meshes/transformNode.js"
 
 
 /* 3D */
@@ -28,15 +25,27 @@ let scene= new Scene(engine);
 scene.createDefaultLight();
 scene.clearColor = new Color4(0,0,0,0)
 
-const camera = new ArcRotateCamera("camera", 0, 0, 1.7, new Vector3(0,0,0),scene);
+const camera = new ArcRotateCamera("camera", -Math.PI/2, 0, 1.7, new Vector3(0,0,0),scene);
 camera.wheelPrecision = 100
 camera.attachControl()
 camera.setTarget(Vector3.Zero())
 
-const box = MeshBuilder.CreateBox("box", {size: 1.}, scene);
-box.material = new StandardMaterial("mat", scene);
-box.material.diffuseColor = new Color3(1, 0, 0);
-box.material.specularColor = new Color3(0, 0, 0);
+const wampad3d = MeshBuilder.CreateBox("box", {size: 1., height:.1}, scene)
+wampad3d.material = new StandardMaterial("mat", scene)
+wampad3d.material.diffuseColor = new Color3(1, 0, 0)
+wampad3d.material.specularColor = new Color3(0, 0, 0)
+
+const node_container = new TransformNode("node_container", scene)
+
+document.addEventListener("keypress",(event)=>{
+    console.log("lala",event.key)
+    switch(event.key){
+        case "z": node_container.position.x+=0.1; break
+        case "s": node_container.position.x-=0.1; break
+        case "q": node_container.position.z-=0.1; break
+        case "d": node_container.position.z+=0.1; break
+    }
+})
 
 const ground = MeshBuilder.CreateGround("ground", {width: 2, height: 2}, scene);
 ground.material = new BackgroundMaterial("ground_mat", scene);
@@ -146,10 +155,10 @@ let wam_gui={
 }
 function updateWamBase(){
     let [width,height] = wam_gui.aspect_ratio>1 ? [1,1/wam_gui.aspect_ratio] : [wam_gui.aspect_ratio,1]
-    wampad.style.width = `${Math.floor(90*width)}%`
-    wampad.style.height = `${Math.floor(90*height)}%`
-    wampad.style.marginLeft = `${Math.floor(5+45*(1-width))}%`
-    wampad.style.marginTop = `${Math.floor(5+45*(1-height))}%`
+    wampad.style.width = `${Math.floor(100*width)}%`
+    wampad.style.height = `${Math.floor(100*height)}%`
+    wampad.style.marginLeft = `${Math.floor(50*(1-width))}%`
+    wampad.style.marginTop = `${Math.floor(50*(1-height))}%`
     wampad.style.backgroundImage = `linear-gradient(${wam_gui.top_color},${wam_gui.bottom_color})`
     save_text_area.value = JSON.stringify(wam_gui)
 }
@@ -199,7 +208,9 @@ function showSelectedControlSettings(){
 
 for(let [key,control] of Object.entries(controls)){
     let example = new control(null)
-    let option = elem_control_list.appendChild(html.a`<option value="${key}">${example}</option>`)
+    let element = example.createElement()
+    let option = elem_control_list.appendChild(html.a`<option value="${key}">${element}</option>`)
+    example.setDefaultValues()
     option.onclick=()=>setControl(key)
 }
 
@@ -241,7 +252,7 @@ save_text_area.onchange=()=>{
 const gui_container = /** @type {HTMLElement} */ (document.querySelector("#gui_container"))
 const add_control = /** @type {HTMLButtonElement} */ (document.querySelector("#add_control"))
 gui_container.style.position="relative"
-const controls_map = new ControlMap(gui_container)
+const controls_map = new ControlMap(gui_container, node_container)
 controls_map.on_add = function(item){
     const {control,container} = item
     container.onmousedown=/** @type {MouseEvent} */  (e)=>{

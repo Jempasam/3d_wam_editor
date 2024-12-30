@@ -1,3 +1,7 @@
+import { StandardMaterial } from "../../babylonjs/core/Materials/standardMaterial.js";
+import { Color3 } from "../../babylonjs/core/Maths/math.color.js";
+import { MeshBuilder } from "../../babylonjs/core/Meshes/meshBuilder.js";
+import { Node } from "../../babylonjs/core/node.js";
 import { Control } from "../Control.js";
 
 /**
@@ -9,12 +13,6 @@ export class TestControl extends Control{
 
     constructor(wam){
         super()
-        this.style.display="block"
-        this.style.width="100%"
-        this.style.height="100%"
-        this.style.borderWidth=".2rem"
-        this.style.borderStyle="solid"
-        this.style.boxSizing="border-box";
     }
 
     /** @type {(typeof Control)['getSettings']} */
@@ -24,20 +22,20 @@ export class TestControl extends Control{
 
     /** @type {(typeof Control)['getDefaultValues']} */
     static getDefaultValues(){
-        return {"Text":"", "Center":"#ff0000", "Outline":"#0000ff"}
+        return {"Text":"tarte", "Center":"#ff0000", "Outline":"#0000ff"}
     }
 
     /** @type {Control['setValue']} */
     setValue(label, value){
         switch(label){
             case "Text":
-                this.textContent = value
+                this.#element.textContent = value
                 break
             case "Center":
-                this.style.backgroundColor = value
-                break
+                this.#element.style.backgroundColor = value
+                if(this.material) this.material.diffuseColor = Color3.FromHexString(value)
             case "Outline":
-                this.style.borderColor = value
+                this.#element.style.borderColor = value
                 break
         }
     }
@@ -45,13 +43,44 @@ export class TestControl extends Control{
     /** @type {Control['getValue']} */
     getValue(label){
         switch(label){
-            case "Text":
-                return this.textContent
-            case "Center":
-                return cssRgbToHex(this.style.backgroundColor)
-            case "Outline":
-                return cssRgbToHex(this.style.borderColor)
+            case "Text": return this.#element.textContent
+            case "Center": return cssRgbToHex(this.#element.style.backgroundColor)
+            case "Outline": return cssRgbToHex(this.#element.style.borderColor)
         }
+    }
+
+    /** @type {HTMLElement} */  #element
+    /** @type {StandardMaterial} */  material
+    
+    /** @type {Control['createElement']} */
+    createElement(){
+        this.#element = document.createElement("div")
+        this.#element.style.display="block"
+        this.#element.style.width="100%"
+        this.#element.style.height="100%"
+        this.#element.style.borderWidth=".2rem"
+        this.#element.style.borderStyle="solid"
+        this.#element.style.boxSizing="border-box";
+        return this.#element
+    }
+
+    /** @type {Control['destroyElement']}  */
+    destroyElement(){
+        this.#element.remove()
+        this.#element=null
+    }
+
+    /** @type {Control['createNode']} */
+    createNode(scene){
+        const ret = MeshBuilder.CreateBox("test", {size:1}, scene)
+        this.material = new StandardMaterial("test", scene)
+        ret.material = this.material
+        return ret
+    }
+
+    /** @type {Control['destroyNode']}  */
+    destroyNode(){
+
     }
 
     /** @type {Control['destroy']} */
@@ -64,4 +93,3 @@ function cssRgbToHex(rgb){
     return "#" + rgba.map(v=>parseInt(v).toString(16).padStart(2,"0")).join("") 
 }
 
-customElements.define('wam3d-testcontrol', TestControl);
