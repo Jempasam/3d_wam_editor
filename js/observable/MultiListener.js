@@ -8,10 +8,10 @@ class MultiListener{
     
     /**
      * Register multiple listeners and save them to be able to unregister them later.
+     * @param  {OSource<T>[]} sources
      * @param {(T)=>void} listener 
-     * @param  {...OSource<T>} sources 
      */
-    constructor(listener, ...sources){
+    constructor(sources, listener){
         this.listener = listener
         this.observables = sources
         for(let o of sources)o.register(this.listener)
@@ -29,9 +29,9 @@ class MultiListener{
  * Register a listener on multiple observables.
  * Returns an object that can be used to unregister the listener.
  * @template T
+ * @param  {OSource<T>[]} observables 
  * @param {(T)=>void} listener 
- * @param  {...OSource<T>} observables 
  */
-export function listen_all(listener, ...observables){
-    return new MultiListener(listener, ...observables)
+export function listen_all(observables, listener){
+    return new MultiListener(observables, listener)
 }

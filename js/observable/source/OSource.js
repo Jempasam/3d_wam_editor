@@ -43,8 +43,14 @@ export class OSource extends Observable{
      * @override
      */
     notify(notification){
-        for(let o of this.#observers)o(notification)
-        if(this.parent)this.parent.notify(notification)
+        this.#depth++
+        if(this.#depth==1){
+            for(let o of this.#observers)o(notification)
+            if(this.parent)this.parent.notify(notification)
+        }
+        this.#depth=0
     }
+
+    #depth=0
     
 }

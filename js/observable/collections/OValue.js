@@ -1,3 +1,4 @@
+import { Observable } from "../../babylonjs/core/index.js"
 import { OSource } from "../source/OSource.js"
 
 
@@ -63,5 +64,15 @@ export class MOValue extends OValue{
      * @returns {T}
      */
     get value(){ return this.get() }
+
+
+    /**
+     * Register a listener and call it immediately with the current value.
+     * @param {Parameters<this['observable']['add']>[0]} listener
+     */
+    link(listener){
+        listener({from:this._value,to:this._value})
+        return this.observable.add(listener)
+    }
 
 }

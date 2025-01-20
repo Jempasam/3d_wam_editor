@@ -15,6 +15,9 @@ import { ArcRotateCamera } from "./babylonjs/core/Cameras/arcRotateCamera.js"
 import { Color4 } from "./babylonjs/core/Maths/math.color.js"
 import { BackgroundMaterial } from "./babylonjs/core/Materials/Background/backgroundMaterial.js"
 import { TransformNode } from "./babylonjs/core/Meshes/transformNode.js"
+import { MOValue, OValue } from "./observable/collections/OValue.js"
+import { listen_all } from "./observable/MultiListener.js"
+import { VertexBuffer } from "./babylonjs/core/index.js"
 
 
 /* 3D */
@@ -31,9 +34,9 @@ camera.attachControl()
 camera.setTarget(Vector3.Zero())
 
 const wampad3d = MeshBuilder.CreateBox("box", {size: 1., height:.1}, scene)
-wampad3d.material = new StandardMaterial("mat", scene)
-wampad3d.material.diffuseColor = new Color3(1, 0, 0)
-wampad3d.material.specularColor = new Color3(0, 0, 0)
+const wampad3dMaterial = wampad3d.material = new StandardMaterial("mat", scene)
+wampad3dMaterial.diffuseColor = new Color3(1, 1, 1)
+wampad3dMaterial.specularColor = new Color3(0, 0, 0)
 
 const node_container = new TransformNode("node_container", scene)
 
@@ -147,35 +150,49 @@ parameter_list.onchange=()=>selectParam(parameter_list.value)
 
 
 //// WAM BASE ////
+const aspect_ratio = new MOValue(1)
+const top_color = new MOValue("#aa4444")
+const bottom_color = new MOValue("#cc8888")
 const wampad = /** @type {HTMLElement} */ (document.querySelector("#wampad"))
-let wam_gui={
-    aspect_ratio: 1,
-    top_color: "#000000",
-    bottom_color: "#ffffff",
-}
-function updateWamBase(){
-    let [width,height] = wam_gui.aspect_ratio>1 ? [1,1/wam_gui.aspect_ratio] : [wam_gui.aspect_ratio,1]
-    wampad.style.width = `${Math.floor(100*width)}%`
-    wampad.style.height = `${Math.floor(100*height)}%`
-    wampad.style.marginLeft = `${Math.floor(50*(1-width))}%`
-    wampad.style.marginTop = `${Math.floor(50*(1-height))}%`
-    wampad.style.backgroundImage = `linear-gradient(${wam_gui.top_color},${wam_gui.bottom_color})`
-    save_text_area.value = JSON.stringify(wam_gui)
-}
 
-document.querySelector("#aspect_ratio").oninput=()=>{
-    wam_gui.aspect_ratio = parseFloat(document.querySelector("#aspect_ratio").value) ?? 1
-    updateWamBase()
-}
-document.querySelector("#top_color").oninput=()=>{
-    wam_gui.top_color = document.querySelector("#top_color").value
-    updateWamBase()
-}
 
-document.querySelector("#bottom_color").oninput=()=>{
-    wam_gui.bottom_color = document.querySelector("#bottom_color").value
-    updateWamBase()
-}
+// Link inputs and visual to values
+;(()=>{
+    const aspect_ratio_input = /** @type {HTMLInputElement} */ (document.querySelector("#aspect_ratio"))
+    const top_color_input = /** @type {HTMLInputElement} */ (document.querySelector("#top_color"))
+    const bottom_color_input = /** @type {HTMLInputElement} */ (document.querySelector("#bottom_color"))
+    
+    aspect_ratio_input.oninput = ()=>{ aspect_ratio.value = parseFloat(document.querySelector("#aspect_ratio").value) ?? 1 }
+    top_color_input.oninput = ()=>{ top_color.value = document.querySelector("#top_color").value }
+    bottom_color_input.oninput = ()=>{ bottom_color.value = document.querySelector("#bottom_color").value }
+
+    aspect_ratio.link(({to})=>{
+        let [width,height] = to>1 ? [1,1/to] : [to,1]
+        wampad.style.width = `${Math.floor(100*width)}%`
+        wampad.style.height = `${Math.floor(100*height)}%`
+        wampad.style.marginLeft = `${Math.floor(50*(1-width))}%`
+        wampad.style.marginTop = `${Math.floor(50*(1-height))}%`
+        wampad3d.scaling = new Vector3(width,1,height)
+        aspect_ratio_input.value = to.toString()
+    })
+    
+    for(const it of [top_color,bottom_color]) it.link(()=>{
+        wampad.style.backgroundImage = `linear-gradient(${top_color.value},${bottom_color.value})`
+        const bottom = Color4.FromHexString(bottom_color.value).asArray()
+        const top = Color4.FromHexString(top_color.value).asArray()
+        wampad3d.setVerticesData(VertexBuffer.ColorKind,[
+            ...top, ...top, ...top, ...top,
+            ...bottom, ...bottom, ...bottom, ...bottom,
+            ...bottom, ...bottom, ...top, ...top,
+            ...top, ...top, ...bottom, ...bottom,
+            ...top, ...bottom, ...bottom, ...top,
+            ...bottom, ...top, ...top, ...bottom
+        ])
+        top_color_input.value = top_color.value
+        bottom_color_input.value = bottom_color.value
+    })
+    
+})()
 
 
 //// CONTROL LIST ////
@@ -238,15 +255,6 @@ function setControlSettings(settings, getValue= ()=>undefined, setValue = ()=>{}
 }
 
 
-//// SAVE ////
-const save_text_area = /** @type {HTMLTextAreaElement} */ (document.querySelector("#save_data"))
-save_text_area.onchange=()=>{
-    try{
-        wam_gui = JSON.parse(save_text_area.value)
-    }catch(e){
-        console.error(e)
-    }
-}
 
 //// CONTROLS ////
 const gui_container = /** @type {HTMLElement} */ (document.querySelector("#gui_container"))
@@ -265,6 +273,38 @@ controls_map.on_add = function(item){
 controls_map.on_remove = function(item){
     const {control,container} = item
     for(const s of selector.selecteds) if(s.infos==item) selector.unselect(s)
+}
+
+
+//// SAVE ////
+const save_text_area = /** @type {HTMLTextAreaElement} */ (document.querySelector("#save_data"))
+save_text_area.onfocus = ()=>{
+    const wam_code = {
+        top_color: top_color.value,
+        bottom_color: bottom_color.value,
+        aspect_ratio: aspect_ratio.value,
+        controls: controls_map.values.map(({control,values,x,y,width,height})=>({
+            control: Object.keys(controls).find(key=>controls[key]==control.constructor),
+            values, x, y, width, height
+        }))
+    }
+    save_text_area.value = JSON.stringify(wam_code)
+}
+save_text_area.onchange = ()=>{
+    const wam_code = JSON.parse(save_text_area.value)
+    top_color.value = wam_code.top_color
+    bottom_color.value = wam_code.bottom_color
+    aspect_ratio.value = wam_code.aspect_ratio
+    for(let control_data of wam_code.controls??[]){
+        const {control, values, x, y, width, height} = control_data
+        const type = controls[control]
+        if(control===undefined) continue
+        controls_map.splice(controls_map.length,0,{
+            control: new type(current_wam_instance),
+            x: x??0, y: y??0, width: width??0.1, height: height??0.1,
+            values: values??type.getDefaultValues()
+        })
+    }
 }
 
 
@@ -345,6 +385,3 @@ document.addEventListener("keydown",e=>{
             break
     }
 })
-
-
-updateWamBase()

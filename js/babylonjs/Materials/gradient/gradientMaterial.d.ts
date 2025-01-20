@@ -1,13 +1,13 @@
-import type { Nullable } from "@babylonjs/core/types.js";
-import type { Matrix } from "@babylonjs/core/Maths/math.vector.js";
-import { Color3 } from "@babylonjs/core/Maths/math.color.js";
-import type { IAnimatable } from "@babylonjs/core/Animations/animatable.interface.js";
-import type { BaseTexture } from "@babylonjs/core/Materials/Textures/baseTexture.js";
-import { PushMaterial } from "@babylonjs/core/Materials/pushMaterial.js";
-import type { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh.js";
-import type { SubMesh } from "@babylonjs/core/Meshes/subMesh.js";
-import type { Mesh } from "@babylonjs/core/Meshes/mesh.js";
-import { Scene } from "@babylonjs/core/scene.js";
+import type { Nullable } from "../../core/types.js";
+import type { Matrix } from "../../core/Maths/math.vector.js";
+import { Color3 } from "../../core/Maths/math.color.js";
+import type { IAnimatable } from "../../core/Animations/animatable.interface.js";
+import type { BaseTexture } from "../../core/Materials/Textures/baseTexture.js";
+import { PushMaterial } from "../../core/Materials/pushMaterial.js";
+import type { AbstractMesh } from "../../core/Meshes/abstractMesh.js";
+import type { SubMesh } from "../../core/Meshes/subMesh.js";
+import type { Mesh } from "../../core/Meshes/mesh.js";
+import { Scene } from "../../core/scene.js";
 import "./gradient.fragment";
 import "./gradient.vertex";
 export declare class GradientMaterial extends PushMaterial {
