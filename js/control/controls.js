@@ -1,4 +1,7 @@
 import { Control } from "./Control.js"
+import { ColorControl } from "./controls/ColorControl.js"
+import { CursorControl } from "./controls/CursorControl.js"
+import { GrowControl } from "./controls/GrowControl.js"
 import { TestControl } from "./controls/TestControl.js"
 import { TextControl } from "./controls/TextControl.js"
 
@@ -7,10 +10,11 @@ import { TextControl } from "./controls/TextControl.js"
  * @type {{ [label:string]: typeof Control }}
  */
 const controls = {
+    "color_control": ColorControl,
+    "cursor_control": CursorControl,
+    "grow_control": GrowControl,
     "test": TestControl,
     "text": TextControl,
-    "test2": TestControl,
-    "test3": TestControl,
 }
 
 export default controls

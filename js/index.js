@@ -91,12 +91,14 @@ document.onclick=async ()=>{
 
 
 //// CURRENT WAM ////
-let elem_wam_url = /** @type {HTMLTextAreaElement} */ (document.querySelector("#wam_url"))
+const current_wam_url = new MOValue(/** @type {string?} */ (null))
 let current_wam = null
 let current_wam_instance = null
 let current_wam_ui = null
 let current_wam_parameters = null
-async function setWam(url){
+let current_wam_url_element = /** @type {HTMLTextAreaElement} */ (document.querySelector("#wam_url"))
+current_wam_url.observable.add(async({to})=>{
+    current_wam_url_element.value = to
 
     // Remove old WAM
     if(current_wam!=null){
@@ -107,11 +109,10 @@ async function setWam(url){
     // Load new WAM
     setIndicator("wait","Loading the WAM")
     try{
-        current_wam = (await import(url))?.default
+        current_wam = (await import(to))?.default
         current_wam_instance = await current_wam.createInstance(host,audioContext)
         current_wam_ui = await current_wam_instance.createGui()
         document.querySelector("#wam_holder").replaceChildren(current_wam_ui)
-        elem_wam_url.value=url
         setIndicator("valid","WAM loaded")
     }catch(e){
         setIndicator("invalid","Error loading the WAM")
@@ -125,9 +126,9 @@ async function setWam(url){
         parameter_list.appendChild(html`<option value="${id}">${info.label??info.id}</option>`)
     }
     if(parameter_list.options.length>0)selectParam(parameter_list.options[0].value)
-    
-}
-elem_wam_url.onchange= () => setWam(elem_wam_url.value) 
+})
+
+current_wam_url_element.onchange= () => current_wam_url.value = current_wam_url_element.value
 
 
 //// PARAMETER LIST ////
@@ -283,6 +284,7 @@ save_text_area.onfocus = ()=>{
         top_color: top_color.value,
         bottom_color: bottom_color.value,
         aspect_ratio: aspect_ratio.value,
+        wam_url: current_wam_url.value,
         controls: controls_map.values.map(({control,values,x,y,width,height})=>({
             control: Object.keys(controls).find(key=>controls[key]==control.constructor),
             values, x, y, width, height
@@ -295,6 +297,7 @@ save_text_area.onchange = ()=>{
     top_color.value = wam_code.top_color
     bottom_color.value = wam_code.bottom_color
     aspect_ratio.value = wam_code.aspect_ratio
+    current_wam_url.value = wam_code.wam_url
     for(let control_data of wam_code.controls??[]){
         const {control, values, x, y, width, height} = control_data
         const type = controls[control]

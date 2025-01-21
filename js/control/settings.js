@@ -65,7 +65,7 @@ export class ControlSettingsGUI{
                     if(type=="choice_parameter" && info.type!="choice") continue
                     if(type=="value_parameter" && info.type!="float") continue
                     let option = html.a`<option>${info.label??info.id}</option>`
-                    option.onchange = ()=> this.on_value_change(label,id)
+                    option.onclick = ()=> this.on_value_change(label,id)
                     element.appendChild(option)
                 }
             }
