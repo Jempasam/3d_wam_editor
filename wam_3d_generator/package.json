@@ -1,0 +1,20 @@
+{
+  "name": "wam3dgenerator",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@webaudiomodules/api": "^2.0.0-alpha.6",
+    "typescript": "~5.7.2",
+    "vite": "^6.1.0"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^7.48.3",
+    "@webaudiomodules/sdk": "^0.0.12"
+  }
+}

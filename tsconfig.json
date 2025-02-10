@@ -8,6 +8,6 @@
         "target": "ESNext",
         "module": "ESNext"
     },
-    "include": ["js/**/*.js"],
+    "include": ["js/**/*.js", "wam_3d_generator/src/index.js"],
     "exclude": ["bin"]
 }

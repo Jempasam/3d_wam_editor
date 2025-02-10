@@ -1,0 +1,2 @@
+The fonts are under SIL Open Font License and downloaded from https://fontlibrary.org/
+The fonts are converted in a BabylonJS Compatible format with http://gero3.github.io/facetype.js/
