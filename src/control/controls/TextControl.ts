@@ -90,9 +90,9 @@ export class TextControl extends Control{
             const old_material= this.mesh?.material
             const old_scaling= this.mesh?.scaling
             if(this.mesh) this.mesh.dispose()
-            const ret = MeshBuilder.CreateText("Text", this.text, FONTS[this.font].babylon, {size:.6, depth:.2}, this.transform.getScene())!!
+            const ret = MeshBuilder.CreateText("Text", this.text, FONTS[this.font].babylon, {size:.6, depth:.15}, this.transform.getScene())!!
             ret.rotation.set(Math.PI/2,0,0)
-            ret.position.set(0,-.4,-.25)
+            ret.position.set(0,-.37,-.25)
             ret.parent = this.transform
             if(old_material)ret.material = old_material
             else{
@@ -104,7 +104,9 @@ export class TextControl extends Control{
         }
     }
 
-    override destroyNode(){}
+    override destroyNode(){
+        this.transform?.dispose()
+    }
 
     override destroy(){}
 }
