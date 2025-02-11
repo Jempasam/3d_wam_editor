@@ -370,7 +370,7 @@ document.addEventListener("keydown",e=>{
             for(const {x,y,width,height,values,control} of copied){
                 console.log(copied,values)
                 // @ts-ignore
-                const control_instance = new control(current_wam.instance)
+                const control_instance = new control(current_wam?.instance??null)
                 controls_map.splice(controls_map.length, 0, {control:control_instance, values, x, y, width, height})
             }
             selector.selecteds = [...controls_map.values].slice(first,first+count).map(infos=>({element:infos.container!!, infos}))

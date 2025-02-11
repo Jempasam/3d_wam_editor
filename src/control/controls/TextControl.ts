@@ -1,15 +1,17 @@
-import { IFontData, Mesh, MeshBuilder, Scene } from "@babylonjs/core";
+import { IFontData, Mesh, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
 import { Control } from "../Control.ts";
 import { WebAudioModule } from "@webaudiomodules/api";
-import { ControlSettings } from "../settings.ts";
+import { ControlSettings, FONTS } from "../settings.ts";
 
+//@ts-ignore
+window.earcut = (await import("earcut")).default
 
 /**
  * A text display control
  */
 export class TextControl extends Control{
 
-    static name = "Test Control"
+    static name = "Text Control"
 
     constructor(wam: WebAudioModule|null){
         super(wam)
@@ -70,10 +72,28 @@ export class TextControl extends Control{
         this.element?.remove()
         this.element=undefined
     }
+    
+    scene: Scene|null = null
+    mesh: Mesh|null = null
 
     override createNode(scene: Scene){
-        const ret = MeshBuilder.CreateText("test", "Salade", {} as IFontData, {size:1}, scene)
+        const ret = MeshBuilder.CreateText("test", "Salade", Object.entries(FONTS)[0][1].babylon, {size:1}, scene)!!
+        ret.showBoundingBox=true
+        ret.buildBoundingInfo(new Vector3(-100,-100,-100), new Vector3(100,100,100))
+        ret.scaling.copyFrom(Vector3.One().divideInPlace(ret.getBoundingInfo().boundingBox.extendSize.scale(2)).scaleInPlace(0.1))
+        ret.rotation.set(Math.PI/2,0,0)
         return ret as Mesh
+    }
+
+    private generateTextMesh(){
+        /*if(this.scene){
+            if(this.mesh) this.mesh.dispose()
+            const ret = MeshBuilder.CreateText("test", "", Object.entries(FONTS)[0][1].babylon, {size:1}, scene)!!
+            ret.showBoundingBox=true
+            ret.scaling.set(1,1,1).divideInPlace(ret.getBoundingInfo().boundingBox.extendSize)
+            ret.rotation.set(Math.PI/2,0,0)
+            return ret as Mesh
+        }*/
     }
 
     override destroyNode(){}

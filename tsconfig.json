@@ -1,13 +1,24 @@
 {
-    "compilerOptions": {
-        "outDir": "bin",
-        "allowJs": true,
-        "checkJs": true,
-        "rootDir": "js",
-        "moduleResolution": "Node",
-        "target": "ESNext",
-        "module": "ESNext"
-    },
-    "include": ["js/**/*.js", "wam_3d_generator/src/index.js"],
-    "exclude": ["bin"]
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src"]
 }

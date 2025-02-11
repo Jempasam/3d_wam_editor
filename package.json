@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@babylonjs/core": "^7.48.3",
-    "@webaudiomodules/sdk": "^0.0.12"
+    "@webaudiomodules/sdk": "^0.0.12",
+    "earcut": "^3.0.1"
   }
 }
