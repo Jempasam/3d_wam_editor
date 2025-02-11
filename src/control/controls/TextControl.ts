@@ -1,4 +1,4 @@
-import { IFontData, Mesh, MeshBuilder, Scene, Vector3 } from "@babylonjs/core";
+import { Color3, IFontData, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
 import { Control } from "../Control.ts";
 import { WebAudioModule } from "@webaudiomodules/api";
 import { ControlSettings, FONTS } from "../settings.ts";
@@ -22,17 +22,13 @@ export class TextControl extends Control{
             Text: "text", 
             Color: "color", 
             Font: "font", 
-            Size: {min:0.1, max:10, step:0.1},
-            Weight: {min:100, max:900, step:100},
         }
     }
 
     static getDefaultValues = ()=>({
         Text: "Text", 
         Color: "#000000", 
-        Font: "Arial", 
-        Size: "1",
-        Weight: "400",
+        Font: Object.entries(FONTS)[0][0], 
     })
 
     setValue(label: string, value: string){
@@ -40,8 +36,11 @@ export class TextControl extends Control{
             case "Text": this.element.textContent = value; break
             case "Color": this.element.style.color = value; break
             case "Font": this.element.style.fontFamily = value; break
-            case "Size": this.element.style.fontSize = value+"rem"; break
-            case "Weight": this.element.style.fontWeight = value; break
+        }
+        if(this.mesh)switch(label){
+            case "Text": this.text = value; this.generateTextMesh(); break
+            case "Font": this.font = value; this.generateTextMesh(); break
+            case "Color": (this.mesh.material as StandardMaterial).diffuseColor = Color3.FromHexString(value); break
         }
     }
 
@@ -50,8 +49,6 @@ export class TextControl extends Control{
             case "Text": return this.element?.textContent ?? undefined
             case "Color": return cssRgbToHex(this.element?.style.color??"") ?? undefined
             case "Font": return this.element?.style.fontFamily ?? undefined
-            case "Size": return this.element?.style.fontSize.replace("rem","") ?? undefined
-            case "Weight": return this.element?.style.fontWeight ?? undefined
         }
     }
 
@@ -59,12 +56,14 @@ export class TextControl extends Control{
     
     createElement(){
         this.element = document.createElement("div")
-        this.element.style.display="block"
+        this.element.style.display="flex"
         this.element.style.width="100%"
         this.element.style.height="100%"
         this.element.style.boxSizing="border-box";
-        this.element.style.textAlign="center"
-        this.element.style.verticalAlign="middle"
+        this.element.style.justifyContent="center"
+        this.element.style.alignItems="center"
+        const onresize = new ResizeObserver((entries)=>this.element!!.style.fontSize=this.element!!.clientHeight+"px")
+        onresize.observe(this.element)
         return this.element
     }
 
@@ -74,26 +73,35 @@ export class TextControl extends Control{
     }
     
     scene: Scene|null = null
+    transform: TransformNode|null = null
     mesh: Mesh|null = null
 
+    private text = "_"
+    private font = Object.entries(FONTS)[0][0]
     override createNode(scene: Scene){
-        const ret = MeshBuilder.CreateText("test", "Salade", Object.entries(FONTS)[0][1].babylon, {size:1}, scene)!!
-        ret.showBoundingBox=true
-        ret.buildBoundingInfo(new Vector3(-100,-100,-100), new Vector3(100,100,100))
-        ret.scaling.copyFrom(Vector3.One().divideInPlace(ret.getBoundingInfo().boundingBox.extendSize.scale(2)).scaleInPlace(0.1))
-        ret.rotation.set(Math.PI/2,0,0)
-        return ret as Mesh
+        const transform = new TransformNode("text_transform",scene)
+        this.transform = transform
+        this.generateTextMesh()
+        return transform
     }
 
     private generateTextMesh(){
-        /*if(this.scene){
+        if(this.transform){
+            const old_material= this.mesh?.material
+            const old_scaling= this.mesh?.scaling
             if(this.mesh) this.mesh.dispose()
-            const ret = MeshBuilder.CreateText("test", "", Object.entries(FONTS)[0][1].babylon, {size:1}, scene)!!
-            ret.showBoundingBox=true
-            ret.scaling.set(1,1,1).divideInPlace(ret.getBoundingInfo().boundingBox.extendSize)
+            const ret = MeshBuilder.CreateText("Text", this.text, FONTS[this.font].babylon, {size:.6, depth:.2}, this.transform.getScene())!!
             ret.rotation.set(Math.PI/2,0,0)
-            return ret as Mesh
-        }*/
+            ret.position.set(0,-.4,-.25)
+            ret.parent = this.transform
+            if(old_material)ret.material = old_material
+            else{
+                const mat = ret.material = new StandardMaterial("text_material", this.transform.getScene())
+                mat.specularColor.set(0,0,0)
+            } 
+            if(old_scaling)ret.scaling.copyFrom(old_scaling)
+            this.mesh = ret
+        }
     }
 
     override destroyNode(){}

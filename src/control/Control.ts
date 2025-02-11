@@ -1,6 +1,7 @@
 import { WebAudioModule } from "@webaudiomodules/api"
 import { ControlSettings } from "./settings.js"
 import { Scene, TransformNode } from "@babylonjs/core"
+import { ControlLibrary } from "../WamGUIGenerator.js"
 
 
 /**
@@ -22,7 +23,7 @@ export abstract class Control{
     
 
     // @ts-ignore
-    get factory(): typeof Control { return this.constructor }
+    get factory(): ControlLibrary[0] { return this.constructor }
 
     
     /** Get the list of parameters */

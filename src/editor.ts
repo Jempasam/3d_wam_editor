@@ -1,4 +1,4 @@
-import { ArcRotateCamera, BackgroundMaterial, Color3, Color4, Engine, MeshBuilder, Scene, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
+import { ArcRotateCamera, BackgroundMaterial, Color4, Engine, MeshBuilder, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import { WamParameterInfoMap, WebAudioModule } from "@webaudiomodules/api";
 import { initializeWamHost } from "@webaudiomodules/sdk";
 import { Control } from "./control/Control.ts";
@@ -8,7 +8,7 @@ import { ControlSettings, ControlSettingsGUI } from "./control/settings.ts";
 import { Selector } from "./gui/Selector.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
 import { html } from "./utils/doc.ts";
-import { WamGUIGenerator } from "./WamGUIGenerator.ts";
+import { ControlLibrary, WamGUIGenerator } from "./WamGUIGenerator.ts";
 
 
 /* 3D */
@@ -183,7 +183,7 @@ wam.link(async({from,to})=>{
             original_ui.replaceChildren(await to.createGui())
         }
 
-        wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container}, to)
+        wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container}, to??undefined)
         
         wam_gui_generator.aspect_ratio.link(({to}) => iAspectRatio.value=to.toString())
         
@@ -278,7 +278,7 @@ iAddControl.onclick=()=>{
 
 
 //// REMOVE, COPY, PASTE ////
-let copied: {x:number, y:number, width:number, height:number, control:typeof Control, values:Record<string,string>}[] = []
+let copied: {x:number, y:number, width:number, height:number, control:ControlLibrary[0], values:Record<string,string>}[] = []
 document.addEventListener("keydown",e=>{
     if(document.activeElement!=document.body) return
     const controls = wam_gui_generator.controls
