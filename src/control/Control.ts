@@ -1,5 +1,5 @@
 import { WebAudioModule } from "@webaudiomodules/api"
-import { ControlSettings, ControlSettingsGUI } from "./settings.js"
+import { ControlSettings } from "./settings.js"
 import { Scene, TransformNode } from "@babylonjs/core"
 
 

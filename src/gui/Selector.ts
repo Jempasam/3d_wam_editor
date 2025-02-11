@@ -77,7 +77,6 @@ export class Selector<T>{
             let bottom = Number.MIN_SAFE_INTEGER
             for(const selected of this.selecteds){
                 const {x,y,width,height} = this.get_position(selected)
-                console.log(this.get_position(selected))
                 if(x<left) left = x
                 if(y<top) top = y
                 if(x+width>right) right = x+width

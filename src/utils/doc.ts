@@ -90,7 +90,6 @@ html.opt= function(strings: TemplateStringsArray, ...values: any): DocumentFragm
  * The search for undefined, null, and empty arrays is NOT recursive.
  */
 html.not_empty= function(strings: TemplateStringsArray, ...values: any): DocumentFragment|undefined{
-    console.log(values)
     if(values.every((v:any)=>v===null || v===undefined || (v.length && v.length===0)))return undefined
     else return html(strings, ...values)
 }

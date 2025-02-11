@@ -5,7 +5,6 @@ const fonts = {}
 const files = readdirSync("../media/fonts")
 
 for(let file of files){
-    console.log(file)
     let type = null
     if(file.endsWith(".ttf")) type = "ttf"
     if(file.endsWith(".otf")) type = "otf"

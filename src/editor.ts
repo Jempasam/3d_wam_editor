@@ -1,13 +1,15 @@
-import { ArcRotateCamera, BackgroundMaterial, Color3, Color4, Engine, MeshBuilder, Scene, StandardMaterial, TransformNode, Vector3, VertexBuffer } from "@babylonjs/core";
-import { initializeWamHost } from "@webaudiomodules/sdk";
-import { MOValue } from "./observable/collections/OValue.ts";
+import { ArcRotateCamera, BackgroundMaterial, Color3, Color4, Engine, MeshBuilder, Scene, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
 import { WamParameterInfoMap, WebAudioModule } from "@webaudiomodules/api";
-import { html } from "./utils/doc.ts";
-import { ControlMap } from "./control/ControlMap.ts";
-import { Selector } from "./gui/Selector.ts";
-import { ControlSettings, ControlSettingsGUI } from "./control/settings.ts";
-import controls from "./control/controls.ts";
+import { initializeWamHost } from "@webaudiomodules/sdk";
 import { Control } from "./control/Control.ts";
+import { ControlMap } from "./control/ControlMap.ts";
+import controls from "./control/controls.ts";
+import { ControlSettings, ControlSettingsGUI } from "./control/settings.ts";
+import { Selector } from "./gui/Selector.ts";
+import { MOValue } from "./observable/collections/OValue.ts";
+import { html } from "./utils/doc.ts";
+import { WamGUIGenerator } from "./WamGUIGenerator.ts";
+
 
 /* 3D */
 let canvas= (document.getElementById("3d_display") as HTMLCanvasElement);
@@ -21,11 +23,6 @@ const camera = new ArcRotateCamera("camera", -Math.PI/2, 0, 1.7, new Vector3(0,0
 camera.wheelPrecision = 100
 camera.attachControl()
 camera.setTarget(Vector3.Zero())
-
-const wampad3d = MeshBuilder.CreateBox("box", {size: 1., height:.1}, scene)
-const wampad3dMaterial = wampad3d.material = new StandardMaterial("mat", scene)
-wampad3dMaterial.diffuseColor = new Color3(1, 1, 1)
-wampad3dMaterial.specularColor = new Color3(0, 0, 0)
 
 const node_container = new TransformNode("node_container", scene)
 
@@ -41,9 +38,22 @@ document.addEventListener("keypress",(event)=>{
 
 const ground = MeshBuilder.CreateGround("ground", {width: 2, height: 2}, scene);
 ground.material = new BackgroundMaterial("ground_mat", scene);
-//MeshBuilder.CreatePlane("plane",{size:100},scene)
 
 engine.runRenderLoop(()=>scene.render());
+
+
+/* 2D */
+
+
+//// INPUTS ////
+const iAspectRatio = document.querySelector<HTMLInputElement>("#aspect_ratio")!!
+const iTopColor = document.querySelector<HTMLInputElement>("#top_color")!!
+const iBottomColor = document.querySelector<HTMLInputElement>("#bottom_color")!!
+const iControlList = document.querySelector<HTMLElement>("#controls_list")!!
+const gui_container = document.querySelector<HTMLElement>("#gui_container")!!
+const iAddControl = document.querySelector<HTMLButtonElement>("#add_control")!!
+const iWamUrl = document.querySelector<HTMLTextAreaElement>("#wam_url")!!
+const original_ui = document.querySelector<HTMLElement>("#original_ui")!!
 
 
 //// INDICATOR ////
@@ -75,130 +85,37 @@ document.onclick=async ()=>{
 
 
 //// CURRENT WAM ////
-let current_wam: {
-    type: typeof WebAudioModule,
-    instance: WebAudioModule,
-    gui: Element,
-    parameters: WamParameterInfoMap,
-}|null = null
-
 const current_wam_url = new MOValue("")
 
-let current_wam_url_element = document.querySelector<HTMLTextAreaElement>("#wam_url")!!
 current_wam_url.observable.add(async({to})=>{
-    current_wam_url_element.value = to
+    iWamUrl.value = to
 
-    // Remove old WAM
-    if(current_wam!=null){
-        current_wam.gui.remove()
-        current_wam.instance.destroyGui(current_wam.gui)
-    }
-
-    // Load new WAM
-    setIndicator("wait","Loading the WAM")
+    setIndicator("wait","Downloading the WAM")
     try{
         let type = (await import(to))?.default as typeof WebAudioModule
         let instance = await type.createInstance(host,audioContext)
-        let gui = await instance.createGui()
-
-        let parameters = await instance.audioNode.getParameterInfo()
-        parameter_list.replaceChildren()
-        for(let [id,info] of Object.entries(parameters)){
-            parameter_list.appendChild(html`<option value="${id}">${info.label??info.id}</option>`)
-        }
-        if(parameter_list.options.length>0)selectParam(parameter_list.options[0].value)
-
-        document.querySelector("#wam_holder")?.replaceChildren(gui)
-        current_wam = {type, instance, gui, parameters}
         setIndicator("valid","WAM loaded")
+        wam.value = instance
     }catch(e){
         setIndicator("invalid","Error loading the WAM")
         console.error(e)
     }
 })
 
-current_wam_url_element.onchange= () => current_wam_url.value = current_wam_url_element.value
-
-
-//// PARAMETER LIST ////
-let parameter_list= (document.querySelector("#parameters") as HTMLSelectElement)
-async function selectParam(id: string){
-    if(current_wam==null) return
-    let value = (await current_wam.instance.audioNode.getParameterValues(false,id))[id]
-    let info = (await current_wam.instance.audioNode.getParameterInfo(id))[id]
-    console.log(value)
-    if(info){
-        console.log(info)
-        for(let [key,value] of Object.entries(info)){
-            console.log(key,value)
-            const elem = document.querySelector(`#parameter_${key}`)
-            if(elem) elem.textContent=value
-        }
-        document.querySelector("#parameter_value")!!.textContent = value.value.toString()
-    }
-}
-parameter_list.onchange=()=>selectParam(parameter_list.value)
-
-
-//// WAM BASE ////
-const aspect_ratio = new MOValue(1)
-const top_color = new MOValue("#aa4444")
-const bottom_color = new MOValue("#cc8888")
-const wampad = (document.querySelector("#wampad") as HTMLElement)
-
-
-// Link inputs and visual to values
-;(()=>{
-    const aspect_ratio_input = (document.querySelector("#aspect_ratio") as HTMLInputElement)
-    const top_color_input = (document.querySelector("#top_color") as HTMLInputElement)
-    const bottom_color_input = (document.querySelector("#bottom_color") as HTMLInputElement)
-    
-    aspect_ratio_input.oninput = ()=>{ aspect_ratio.value = parseFloat(document.querySelector<HTMLInputElement>("#aspect_ratio")!!.value) ?? 1 }
-    top_color_input.oninput = ()=>{ top_color.value = document.querySelector<HTMLInputElement>("#top_color")!!.value }
-    bottom_color_input.oninput = ()=>{ bottom_color.value = document.querySelector<HTMLInputElement>("#bottom_color")!!.value }
-
-    aspect_ratio.link(({to})=>{
-        let [width,height] = to>1 ? [1,1/to] : [to,1]
-        wampad.style.width = `${Math.floor(100*width)}%`
-        wampad.style.height = `${Math.floor(100*height)}%`
-        wampad.style.marginLeft = `${Math.floor(50*(1-width))}%`
-        wampad.style.marginTop = `${Math.floor(50*(1-height))}%`
-        wampad3d.scaling = new Vector3(width,1,height)
-        aspect_ratio_input.value = to.toString()
-    })
-    
-    for(const it of [top_color,bottom_color]) it.link(()=>{
-        wampad.style.backgroundImage = `linear-gradient(${top_color.value},${bottom_color.value})`
-        const bottom = Color4.FromHexString(bottom_color.value).asArray()
-        const top = Color4.FromHexString(top_color.value).asArray()
-        wampad3d.setVerticesData(VertexBuffer.ColorKind,[
-            ...top, ...top, ...top, ...top,
-            ...bottom, ...bottom, ...bottom, ...bottom,
-            ...bottom, ...bottom, ...top, ...top,
-            ...top, ...top, ...bottom, ...bottom,
-            ...top, ...bottom, ...bottom, ...top,
-            ...bottom, ...top, ...top, ...bottom
-        ])
-        top_color_input.value = top_color.value
-        bottom_color_input.value = bottom_color.value
-    })
-    
-})()
+iWamUrl.onchange=()=>current_wam_url.value=iWamUrl.value
 
 
 //// CONTROL LIST ////
-const elem_control_list = document.querySelector("#controls_list")!!
 let selected_control: {key:string, control:typeof Control}|null = null
 
 function setControl(key: string){
-    let options = elem_control_list.querySelectorAll(":scope > *")
+    let options = iControlList.querySelectorAll(":scope > *")
     if(controls[key]){
         const control = controls[key]
         selected_control = {key, control}
         options.forEach( it => it.classList.remove("selected"))
-        elem_control_list.querySelector(`option[value="${key}"]`)!!.classList.add("selected")
+        iControlList.querySelector(`option[value="${key}"]`)!!.classList.add("selected")
         showSelectedControlSettings()
-        // TODO setControlSettings(controls[key].getSettings())
     }
 }
 
@@ -217,7 +134,7 @@ function showSelectedControlSettings(){
 for(let [key,control] of Object.entries(controls)){
     let example = new control(null)
     let element = example.createElement()
-    let option = elem_control_list.appendChild(html.a`<option value="${key}">${element}</option>`)
+    let option = iControlList.appendChild(html.a`<option value="${key}">${element}</option>`)
     example.setDefaultValues()
     option.onclick=()=>setControl(key)
 }
@@ -233,7 +150,7 @@ function setControlSettings(
     setValue = (label:string, value:string)=>{}
 ){
     if(settings){
-        let gui = new ControlSettingsGUI(settings,current_wam?.parameters??{})
+        let gui = new ControlSettingsGUI(settings,parameters_infos)
         for(let [label,value] of Object.entries(settings)){
             const value = getValue(label)
             if(value!=undefined) gui.setValue(label,value)
@@ -245,58 +162,72 @@ function setControlSettings(
 }
 
 
+//// WAM BASE ////
+let wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container})
+let parameters_infos: WamParameterInfoMap = {}
+const wam = new MOValue(null as WebAudioModule|null)
 
-//// CONTROLS ////
-const gui_container = (document.querySelector("#gui_container") as HTMLElement)
-const add_control = (document.querySelector("#add_control") as HTMLButtonElement)
-gui_container.style.position="relative"
-const controls_map = new ControlMap(gui_container, node_container)
-controls_map.on_add = function(item){
-    const {control,container} = item
-    if(!container)return
-    container.onmousedown = (e: MouseEvent)=>{
-        e.stopPropagation()
-        if(e.shiftKey) selector.select({element:container, infos:item})
-        else selector.selecteds = [{element:container, infos:item}]
-        selector.transformer?.startMoving(e.pageX,e.pageY)
+wam.link(async({from,to})=>{
+    try{
+        setIndicator("wait","Destroying previous WAM")
+        wam_gui_generator.dispose()
+        if(from!=null){
+            from.audioNode.destroy()
+            from.destroyGui(original_ui.children[0])
+        }
+        setIndicator("wait","Loading the WAM")
+
+        original_ui.replaceChildren()
+        if(to!=null){
+            parameters_infos = await to.audioNode.getParameterInfo()
+            original_ui.replaceChildren(await to.createGui())
+        }
+
+        wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container}, to)
+        
+        wam_gui_generator.aspect_ratio.link(({to}) => iAspectRatio.value=to.toString())
+        
+        wam_gui_generator.top_color.link(({to}) => iTopColor.value=to)
+        
+        wam_gui_generator.bottom_color.link(({to}) => iBottomColor.value=to)
+        
+        console.log("register")
+        wam_gui_generator.controls.on_add.register((item)=>{
+            const {container} = item
+            console.log(container)
+            if(container)container.onmousedown = (e: MouseEvent)=>{
+                e.stopPropagation()
+                if(e.shiftKey) selector.select({element:container, infos:item})
+                else selector.selecteds = [{element:container, infos:item}]
+                selector.transformer?.startMoving(e.pageX,e.pageY)
+                console.log("start moving")
+            }
+        })
+
+        wam_gui_generator.controls.on_remove.add((item)=>{
+            for(const s of selector.selecteds) if(s.infos==item) selector.unselect(s)
+        })
+
+        wam_gui_generator.pad_element?.addEventListener("mousedown",unselectall)
+
+        setIndicator("valid","WAM Loaded")
+    }catch(e){
+        setIndicator("invalid","WAM Loading Failed")
     }
-}
-controls_map.on_remove = function(item){
-    for(const s of selector.selecteds) if(s.infos==item) selector.unselect(s)
-}
+})
 
+iTopColor.oninput = ()=> wam_gui_generator.top_color.value = iTopColor.value
+iBottomColor.oninput = ()=> wam_gui_generator.bottom_color.value = iBottomColor.value
+iAspectRatio.oninput = ()=> wam_gui_generator.aspect_ratio.value = parseFloat(iAspectRatio.value)
 
 //// SAVE ////
 const save_text_area = (document.querySelector("#save_data") as HTMLTextAreaElement)
 save_text_area.onfocus = ()=>{
-    const wam_code = {
-        top_color: top_color.value,
-        bottom_color: bottom_color.value,
-        aspect_ratio: aspect_ratio.value,
-        wam_url: current_wam_url.value,
-        controls: controls_map.values.map(({control,values,x,y,width,height})=>({
-            control: Object.keys(controls).find(key=>controls[key]==control.constructor),
-            values, x, y, width, height
-        }))
-    }
-    save_text_area.value = JSON.stringify(wam_code)
+    save_text_area.value = JSON.stringify(wam_gui_generator.save(controls)??{})
 }
 save_text_area.onchange = ()=>{
     const wam_code = JSON.parse(save_text_area.value)
-    top_color.value = wam_code.top_color
-    bottom_color.value = wam_code.bottom_color
-    aspect_ratio.value = wam_code.aspect_ratio
-    current_wam_url.value = wam_code.wam_url
-    for(let control_data of wam_code.controls??[]){
-        const {control, values, x, y, width, height} = control_data
-        const type = controls[control]
-        if(control===undefined) continue
-        controls_map.splice(controls_map.length,0,{
-            control: new type(current_wam?.instance??null),
-            x: x??0, y: y??0, width: width??0.1, height: height??0.1,
-            values: values??type.getDefaultValues()
-        })
-    }
+    if(Object.entries(wam_code).length>0) wam_gui_generator.load(wam_code, controls)
 }
 
 
@@ -307,23 +238,24 @@ function unselectall(e: MouseEvent){
     if(e.target==e.currentTarget) selector.unselect_all()
 }
 gui_container.addEventListener("mousedown",unselectall)
-wampad.addEventListener("mousedown",unselectall)
 
 selector.on_move = (moved, x,y, width,height)=>{
-    const index = controls_map.values.indexOf(moved.infos)
-    controls_map.move(index,x,y)
-    controls_map.resize(index,width,height)
+    const controls = wam_gui_generator.controls; if(!controls)return
+    const index = controls.values.indexOf(moved.infos)
+    controls.move(index,x,y)
+    controls.resize(index,width,height)
 }
 
 selector.on_select = selection=>{
+    const controls = wam_gui_generator.controls; if(!controls)return
     const settings = selection.infos.control.factory.getSettings()
     setControlSettings(
         settings,
         (label: string) => selection.infos.control.getValue(label),
         (label,value) => {
             for(const {infos:{control}} of selector.selecteds){
-                const index = controls_map.values.findIndex(it=>it.control==control)
-                controls_map.setValue(index,label,value)
+                const index = controls.values.findIndex(it=>it.control==control)
+                controls.setValue(index,label,value)
             }
         }
     )
@@ -336,11 +268,11 @@ selector.on_unselect = (selection)=>{
 }
 
 
-add_control.onclick=()=>{
-    if(selected_control){
-        //@ts-ignore
-        const control = new selected_control.control(current_wam?.instance) as Control
-        controls_map.splice(controls_map.length, 0, {control, values:control_values, x:0, y:0, width:0.1, height:0.1})
+iAddControl.onclick=()=>{
+    const controls = wam_gui_generator.controls
+    if(selected_control && controls){
+        // @ts-ignore
+        wam_gui_generator.addControl({control: selected_control.control, values:control_values, x:0, y:0, width:0.1, height:0.1})
     }
 }
 
@@ -349,13 +281,16 @@ add_control.onclick=()=>{
 let copied: {x:number, y:number, width:number, height:number, control:typeof Control, values:Record<string,string>}[] = []
 document.addEventListener("keydown",e=>{
     if(document.activeElement!=document.body) return
-    console.log(e.key)
+    const controls = wam_gui_generator.controls
+
     switch(e.key){
         case "Delete":
         case "Backspace":
-            for(const {infos} of [...selector.selecteds]){
-                const index = controls_map.values.indexOf(infos)
-                controls_map.splice(index,1)
+            if(controls){
+                for(const {infos} of [...selector.selecteds]){
+                    const index = controls.values.indexOf(infos)
+                    controls.splice(index,1)
+                }
             }
             break
         case "c":
@@ -365,15 +300,14 @@ document.addEventListener("keydown",e=>{
             ]
             break
         case "v":
-            let first = controls_map.length
-            let count = copied.length
-            for(const {x,y,width,height,values,control} of copied){
-                console.log(copied,values)
-                // @ts-ignore
-                const control_instance = new control(current_wam?.instance??null)
-                controls_map.splice(controls_map.length, 0, {control:control_instance, values, x, y, width, height})
+            if(controls){
+                let first = controls.length
+                let count = copied.length
+                for(const {x,y,width,height,values,control} of copied){
+                    wam_gui_generator.addControl({control, values, x, y, width, height})
+                }
+                selector.selecteds = [...controls.values].slice(first,first+count).map(infos=>({element:infos.container!!, infos}))
             }
-            selector.selecteds = [...controls_map.values].slice(first,first+count).map(infos=>({element:infos.container!!, infos}))
             break
     }
 })

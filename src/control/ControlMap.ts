@@ -2,6 +2,7 @@ import { Node, TransformNode, Vector3 } from "@babylonjs/core"
 import { Control } from "./Control.ts"
 import { FriendlyIterable } from "../utils/FriendlyIterable.ts"
 import { html } from "../utils/doc.ts"
+import { OSource } from "../observable/source/OSource.ts"
 
 
 export interface Item{
@@ -19,9 +20,9 @@ export class ControlMap{
 
     #controls: Item[] =  []
 
-    on_add = (added:Item)=>{}
+    readonly on_add = new OSource<Item>() 
 
-    on_remove = (removed:Item)=>{}
+    readonly on_remove = new OSource<Item>()
     
     constructor(
         private gui_container?: HTMLElement, 
@@ -62,13 +63,13 @@ export class ControlMap{
 
             const item = {x,y,width,height,values,control,container,node}
             added_controls.push(item)
-            this.on_add(item)
+            this.on_add.notify(item)
         }
 
         // Remove
         for(let i=0; i<deleteCount; i++){
             let control_info = this.#controls[index+i]
-            this.on_remove(control_info)
+            this.on_remove.notify(control_info)
             control_info.container?.remove()
             control_info.control.destroy()
             control_info.control.destroyElement()

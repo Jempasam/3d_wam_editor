@@ -1,5 +1,6 @@
 import { IFontData } from "@babylonjs/core"
 import {html} from "../utils/doc.ts"
+import { WamParameterInfo, WamParameterInfoMap } from "@webaudiomodules/api"
 
 
 export type ControlSettings = {
@@ -25,7 +26,7 @@ export class ControlSettingsGUI{
     declare element: DocumentFragment
 
     /** Generate the control settings html GUI. */
-    constructor(settings: ControlSettings, wam_parameters_infos: {[id:string]:{label:string,id:string,type:string}}){
+    constructor(settings: ControlSettings, wam_parameters_infos: WamParameterInfoMap){
         let elements = []
         for(let [label,type] of Object.entries(settings)){
             let element: HTMLElement|null = null
@@ -64,7 +65,7 @@ export class ControlSettingsGUI{
                     option.style.fontFamily = `'${css}'`
                     element.appendChild(option)
                 }
-                element.onchange = (event)=> {
+                element.onchange = ()=> {
                     this.on_value_change(label, (element as HTMLInputElement).value)
                     element!!.style.fontFamily = `'${(element as HTMLInputElement).value}'`
                 }
@@ -92,13 +93,10 @@ export class ControlSettingsGUI{
     /** The the value of a setting */
     setValue(label: string, value: any){
         let element = /** @type {HTMLInputElement} */ (this.element.querySelector(`[data-parameter-name="${label}"]`))
-        console.log(element)
-        console.log(value)
         if(element) (element as HTMLInputElement).value= ""+value
     }
 }
 
-console.log(">")
 
 export const FONTS: Record<string,{css:string, babylon:IFontData}> = {}
 for(const [file, url] of Object.entries(import.meta.glob("../../media/fonts/*"))){
@@ -107,10 +105,8 @@ for(const [file, url] of Object.entries(import.meta.glob("../../media/fonts/*"))
     FONTS[name] ??= {css:"", babylon:{} as IFontData}
     if(extension=="ttf" || extension=="otf"){
         const font_url = ((await url()) as any).default as string
-        console.log(font_url)
         document.fonts.add(await new FontFace(name, `url(${font_url})`).load())
         FONTS[name].css = name
-        console.log(FONTS[name].css)
     }
     else{
         FONTS[name].babylon = (await url()) as IFontData
