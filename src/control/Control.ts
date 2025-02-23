@@ -1,8 +1,34 @@
 import { WebAudioModule } from "@webaudiomodules/api"
 import { ControlSettings } from "./settings.js"
-import { Scene, TransformNode } from "@babylonjs/core"
+import { AbstractMesh, Scene, TransformNode } from "@babylonjs/core"
 import { ControlLibrary } from "../WamGUIGenerator.js"
 
+/**
+ * The context of creation of the control.
+ */
+export interface ControlContext{
+
+    /**
+     * The web audio module associated to the control.
+     * If null the control is just a display and not a functionnal parameter.
+     */
+    wam: WebAudioModule|null
+
+    /**
+     * A callback called when a field of the control is changed.
+     * @param label The label of the field.
+     * @param value The new value of the field. 
+     */
+    on_field_change: (label: string, value: string) => void
+
+    /**
+     * A callback called when a control when to register
+     * a function to be called when the user drag the control.
+     *  
+     */
+    add_on_drag: (mesh:AbstractMesh, on_drag:(offset: number)=>void) => void
+
+}
 
 /**
  * @typedef {import("./settings.js").ControlSettings} ControlSettings
@@ -12,13 +38,15 @@ import { ControlLibrary } from "../WamGUIGenerator.js"
  */
 export abstract class Control{
 
+    wam: WebAudioModule|null
 
     /**
      * A factory for creating custom elements controls.
      * @param wam The wam associated to this controls, should be null if 
      * the parameters is just a display and not a fonctionnal parameter.
      */
-    constructor(readonly wam: WebAudioModule|null){
+    constructor(readonly context: ControlContext){
+        this.wam = context.wam
     }
     
 
@@ -33,10 +61,7 @@ export abstract class Control{
     static getDefaultValues(): {[label:string]:string}{ throw new Error("Not implemented") }
 
     /** Set a value of a parameter */
-    abstract setValue(label: string, value: string): void
-
-    /** Get a value of a parameter */
-    abstract getValue(label: string): string|undefined
+    abstract updateValue(label: string, value: string): void
 
     /** Free the resources used by the control */
     abstract destroy(): void
@@ -65,7 +90,7 @@ export abstract class Control{
      */
     setDefaultValues(){
         for(let [label,value] of Object.entries(this.factory.getDefaultValues())){
-            this.setValue(label,value)
+            this.updateValue(label,value)
         }
     }
 

@@ -50,6 +50,7 @@ const iAspectRatio = document.querySelector<HTMLInputElement>("#aspect_ratio")!!
 const iTopColor = document.querySelector<HTMLInputElement>("#top_color")!!
 const iBottomColor = document.querySelector<HTMLInputElement>("#bottom_color")!!
 const iControlList = document.querySelector<HTMLElement>("#controls_list")!!
+const iControlName = document.querySelector<HTMLInputElement>("#control_name")!!
 const gui_container = document.querySelector<HTMLElement>("#gui_container")!!
 const iAddControl = document.querySelector<HTMLButtonElement>("#add_control")!!
 const iWamUrl = document.querySelector<HTMLTextAreaElement>("#wam_url")!!
@@ -122,17 +123,21 @@ function setControl(key: string){
 function showSelectedControlSettings(){
     if(selected_control){
         control_values = selected_control.control.getDefaultValues()
+        iControlName.textContent = selected_control.control.name
         setControlSettings(
             selected_control.control.getSettings(),
             (label) => control_values[label],
             (label,value) => control_values[label]=value
         )
     }
-    else setControlSettings(null)
+    else{
+        iControlName.textContent=""
+        setControlSettings(null)
+    }
 }
 
 for(let [key,control] of Object.entries(controls)){
-    let example = new control(null)
+    let example = new control({})
     let element = example.createElement()
     let option = iControlList.appendChild(html.a`<option value="${key}">${element}</option>`)
     example.setDefaultValues()
@@ -251,7 +256,7 @@ selector.on_select = selection=>{
     const settings = selection.infos.control.factory.getSettings()
     setControlSettings(
         settings,
-        (label: string) => selection.infos.control.getValue(label),
+        (label: string) => selection.infos.values[label],
         (label,value) => {
             for(const {infos:{control}} of selector.selecteds){
                 const index = controls.values.findIndex(it=>it.control==control)

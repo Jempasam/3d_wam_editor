@@ -1,5 +1,5 @@
-import { Control } from "../Control.ts"
-import { WamParameterInfo, WebAudioModule } from "@webaudiomodules/api"
+import { WamParameterInfo } from "@webaudiomodules/api"
+import { Control, ControlContext } from "../Control.ts"
 import { ControlSettings } from "../settings.ts"
 
 /**
@@ -9,8 +9,8 @@ export abstract class ParameterControl extends Control{
 
     value: number
 
-    constructor(wam: WebAudioModule|null){
-        super(wam)
+    constructor(context: ControlContext){
+        super(context)
         this.value = 0
     }
 
@@ -20,7 +20,7 @@ export abstract class ParameterControl extends Control{
 
     parameter: WamParameterInfo|null = null
 
-    override setValue(label: string, value: string){
+    override updateValue(label: string, value: string){
         switch(label){
             case "Target":
                 this.wam?.audioNode?.getParameterInfo(value)?.then(it=>{
@@ -28,13 +28,6 @@ export abstract class ParameterControl extends Control{
                     this.updateParamValue()
                 })
                 break
-        }
-    }
-
-    override getValue(label: string){
-        switch(label){
-            case "Target":
-                return this.parameter?.id
         }
     }
 

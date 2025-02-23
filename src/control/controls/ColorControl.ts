@@ -1,7 +1,7 @@
-import { WebAudioModule } from "@webaudiomodules/api"
-import { ParameterControl } from "./ParameterControl.ts"
 import { AbstractMesh, Color3, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
+import { ControlContext } from "../Control.ts"
 import { ControlSettings } from "../settings.ts"
+import { ParameterControl } from "./ParameterControl.ts"
 
 
 /**
@@ -11,8 +11,8 @@ export class ColorControl extends ParameterControl{
 
     static name = "Color Changing Control"
 
-    constructor(wam: WebAudioModule|null){
-        super(wam)
+    constructor(context: ControlContext){
+        super(context)
     }
 
     static override getSettings(): ControlSettings{
@@ -26,7 +26,7 @@ export class ColorControl extends ParameterControl{
     ;["Low Color"]: Color3 = Color3.White()
     ;["High Color"]: Color3 = Color3.White()
 
-    override setValue(label: string, value: string){
+    override updateValue(label: string, value: string){
         switch(label){
             case "Low Color":
             case "High Color":
@@ -34,17 +34,7 @@ export class ColorControl extends ParameterControl{
                 this.updateColor()
                 break
             default:
-                super.setValue(label,value)
-        }
-    }
-
-    override getValue(label: string){
-        switch(label){
-            case "Low Color":
-            case "High Color":
-                return this[label]?.toHexString()
-            default:
-                return super.getValue(label)
+                super.updateValue(label,value)
         }
     }
 

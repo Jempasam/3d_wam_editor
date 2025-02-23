@@ -1,6 +1,5 @@
-import { Color3, IFontData, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
-import { Control } from "../Control.ts";
-import { WebAudioModule } from "@webaudiomodules/api";
+import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
+import { Control, ControlContext } from "../Control.ts";
 import { ControlSettings, FONTS } from "../settings.ts";
 
 //@ts-ignore
@@ -11,10 +10,10 @@ window.earcut = (await import("earcut")).default
  */
 export class TextControl extends Control{
 
-    static name = "Text Control"
+    static name = "Text"
 
-    constructor(wam: WebAudioModule|null){
-        super(wam)
+    constructor(context: ControlContext){
+            super(context)
     }
 
     static getSettings(): ControlSettings{
@@ -31,7 +30,7 @@ export class TextControl extends Control{
         Font: Object.entries(FONTS)[0][0], 
     })
 
-    setValue(label: string, value: string){
+    updateValue(label: string, value: string){
         if(this.element)switch(label){
             case "Text": this.element.textContent = value; break
             case "Color": this.element.style.color = value; break
@@ -41,14 +40,6 @@ export class TextControl extends Control{
             case "Text": this.text = value; this.generateTextMesh(); break
             case "Font": this.font = value; this.generateTextMesh(); break
             case "Color": (this.mesh.material as StandardMaterial).diffuseColor = Color3.FromHexString(value); break
-        }
-    }
-
-    getValue(label: string){
-        switch(label){
-            case "Text": return this.element?.textContent ?? undefined
-            case "Color": return cssRgbToHex(this.element?.style.color??"") ?? undefined
-            case "Font": return this.element?.style.fontFamily ?? undefined
         }
     }
 
@@ -62,7 +53,7 @@ export class TextControl extends Control{
         this.element.style.boxSizing="border-box";
         this.element.style.justifyContent="center"
         this.element.style.alignItems="center"
-        const onresize = new ResizeObserver((entries)=>this.element!!.style.fontSize=this.element!!.clientHeight+"px")
+        const onresize = new ResizeObserver(()=>this.element!!.style.fontSize=this.element!!.clientHeight+"px")
         onresize.observe(this.element)
         return this.element
     }
@@ -109,9 +100,4 @@ export class TextControl extends Control{
     }
 
     override destroy(){}
-}
-
-function cssRgbToHex(rgb: string){
-    let rgba = rgb.match(/\d+/g) ?? []
-    return "#" + rgba.map(v=>parseInt(v).toString(16).padStart(2,"0")).join("") 
 }

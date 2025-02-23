@@ -2,10 +2,10 @@ import { Color3, Color4, Mesh, MeshBuilder, StandardMaterial, TransformNode, Ver
 import { WebAudioModule } from "@webaudiomodules/api";
 import { ControlMap } from "./control/ControlMap.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
-import { Control } from "./control/Control.ts";
+import { Control, ControlContext } from "./control/Control.ts";
 
 export interface ControlLibrary{
-    [id:string]: (new(wam:WebAudioModule|null)=>Control) & (typeof Control)
+    [id:string]: (new(context:ControlContext)=>Control) & (typeof Control)
 }
 
 export interface WamGUITarget{
@@ -103,7 +103,7 @@ export class WamGUIGenerator{
     }
 
     addControl(added: {control:ControlLibrary[0], values:Record<string,string>, x:number, y:number, width:number, height:number}){
-        const control = new added.control(this.instance??null)
+        const control = new added.control({add_on_drag(){}, on_field_change(){}, wam:this.instance??null})
         this.controls.splice(this.controls.length, 0, {control, x:added.x, y:added.y, height:added.height, width:added.width, values:added.values})
     }
 
@@ -113,7 +113,7 @@ export class WamGUIGenerator{
         this.bottom_color.value = code.bottom_color
         this.controls.splice(0,this.controls.length)
         for(let {control,values,x,y,width,height} of code.controls){
-            const instance = new library[control](this.instance??null)
+            const instance = new library[control]({add_on_drag(){}, on_field_change(){}, wam:this.instance??null})
             this.controls.splice(this.controls.length, 0, {control:instance, values, x, y, width, height})
         }
     }

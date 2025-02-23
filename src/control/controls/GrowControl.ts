@@ -1,8 +1,8 @@
 
 import { AbstractMesh, Color3, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
+import { ControlContext } from "../Control.js";
 import { ControlSettings } from "../settings.js";
 import { ParameterControl } from "./ParameterControl.js";
-import { WebAudioModule } from "@webaudiomodules/api";
 
 /**
  * A control that grow and shrink
@@ -11,8 +11,8 @@ export class GrowControl extends ParameterControl{
 
     static name = "Size Changing Control"
 
-    constructor(wam: WebAudioModule|null){
-        super(wam)
+    constructor(context: ControlContext){
+        super(context)
     }
 
     static override getSettings(): ControlSettings{
@@ -26,7 +26,7 @@ export class GrowControl extends ParameterControl{
     ;["Color"]: Color3 = Color3.White()
     ;["Base Color"]: Color3 = Color3.White()
 
-    override setValue(label: string, value: string){
+    override updateValue(label: string, value: string){
         switch(label){
             case "Color":
             case "Base Color":
@@ -34,17 +34,7 @@ export class GrowControl extends ParameterControl{
                 this.updateColor()
                 break
             default:
-                super.setValue(label,value)
-        }
-    }
-
-    override getValue(label: string){
-        switch(label){
-            case "Color":
-            case "Base Color":
-                return this[label]?.toHexString()
-            default:
-                return super.getValue(label)
+                super.updateValue(label,value)
         }
     }
 
@@ -95,6 +85,7 @@ export class GrowControl extends ParameterControl{
 
         this.mesh = MeshBuilder.CreateBox("grow_control", {height:1,depth:0.8,width:0.8}, scene)
         this.material = new StandardMaterial("grow_control", scene)
+        this.material.specularColor.set(0,0,0)
         this.mesh.material = this.material
         this.mesh.setParent(this.transform)
 

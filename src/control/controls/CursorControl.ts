@@ -1,7 +1,7 @@
-import { WebAudioModule } from "@webaudiomodules/api";
-import { ParameterControl } from "./ParameterControl.js";
 import { AbstractMesh, Color3, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
+import { ControlContext } from "../Control.js";
 import { ControlSettings } from "../settings.js";
+import { ParameterControl } from "./ParameterControl.js";
 
 /**
  * A rotating control.
@@ -10,8 +10,8 @@ export class CursorControl extends ParameterControl{
 
     static name = "Rotating Cursor Control"
 
-    constructor(wam: WebAudioModule|null){
-        super(wam)
+    constructor(context: ControlContext){
+        super(context)
     }
 
     static override getSettings(): ControlSettings{
@@ -32,7 +32,7 @@ export class CursorControl extends ParameterControl{
     ;["Base Color"]: Color3 = Color3.White()
     ;["Cursor Color"]: Color3 = Color3.White()
 
-    override setValue(label: string, value: string){
+    override updateValue(label: string, value: string){
         switch(label){
             case "Base Color":
             case "Cursor Color":
@@ -40,20 +40,10 @@ export class CursorControl extends ParameterControl{
                 this.updateColor()
                 break
             default:
-                super.setValue(label,value)
+                super.updateValue(label,value)
         }
     }
-
-    override getValue(label: string){
-        switch(label){
-            case "Base Color":
-            case "Cursor Color":
-                return this[label]?.toHexString()
-            default:
-                return super.getValue(label)
-        }
-    }
-
+    
     updateColor(){
         if(this.element && this.cursor){
             this.element.style.backgroundColor = this["Base Color"]?.toHexString() ?? "#000000"
@@ -105,11 +95,13 @@ export class CursorControl extends ParameterControl{
         this.transform = new TransformNode("cusor_control_transform",scene)
         const cylinder = this.cylinder = MeshBuilder.CreateCylinder("cursor_control", {diameter:1,height:0.8}, scene)
         this.cylinder_material = cylinder.material = new StandardMaterial("cursor_control", scene)
+        this.cylinder_material.specularColor.set(0,0,0)
         cylinder.setParent(this.transform)
 
         const cursor = this.cursor_mesh = MeshBuilder.CreateBox("cursor_control2", {width:0.1,height:1,depth:0.6}, scene)
         cursor.position.z=0.3
         this.cursor_material = cursor.material = new StandardMaterial("cursor_control2",scene)
+        this.cursor_material.specularColor.set(0,0,0)
         cursor.setParent(cylinder)
 
         const pointerDragBehavior = new PointerDragBehavior({ dragAxis: new Vector3(0, 1, 0) })

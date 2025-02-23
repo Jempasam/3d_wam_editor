@@ -59,7 +59,7 @@ export class ControlMap{
             }
 
             control.setDefaultValues()
-            for(let [label,value] of Object.entries(values)) control.setValue(label,value)
+            for(let [label,value] of Object.entries(values)) control.updateValue(label,value)
 
             const item = {x,y,width,height,values,control,container,node}
             added_controls.push(item)
@@ -119,7 +119,7 @@ export class ControlMap{
     setValue(index: number, label: string, value: string){
         let control_info = this.#controls[index]
         control_info.values[label] = value
-        control_info.control.setValue(label,value)
+        control_info.control.updateValue(label,value)
     }
 
     values = new FriendlyIterable<Readonly<Item>>(this.#controls)
