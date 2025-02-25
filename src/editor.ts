@@ -8,7 +8,7 @@ import { ControlSettings, ControlSettingsGUI } from "./control/settings.ts";
 import { Selector } from "./gui/Selector.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
 import { html } from "./utils/doc.ts";
-import { ControlLibrary, WamGUIGenerator } from "./WamGUIGenerator.ts";
+import { ControlLibrary, WamGUIGenerator, WAMGuiInitCode } from "./WamGUIGenerator.ts";
 
 
 /* 3D */
@@ -228,7 +228,9 @@ iAspectRatio.oninput = ()=> wam_gui_generator.aspect_ratio.value = parseFloat(iA
 //// SAVE ////
 const save_text_area = (document.querySelector("#save_data") as HTMLTextAreaElement)
 save_text_area.onfocus = ()=>{
-    save_text_area.value = JSON.stringify(wam_gui_generator.save(controls)??{})
+    const object = (wam_gui_generator.save(controls)??{}) as WAMGuiInitCode
+    if(iWamUrl.value.length>0) object.wam_url = iWamUrl.value
+    save_text_area.value = JSON.stringify(object)
 }
 save_text_area.onchange = ()=>{
     const wam_code = JSON.parse(save_text_area.value)

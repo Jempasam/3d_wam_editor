@@ -87,6 +87,14 @@ export class WamGUIGenerator{
 
     }
 
+    static async create_and_init(gui_target: WamGUITarget, init_code: WAMGuiInitCode, library: ControlLibrary, audioContext: BaseAudioContext, groupId: string): Promise<WamGUIGenerator>{
+        const wam_type = (await import(init_code.wam_url))?.default as typeof WebAudioModule
+        const wam_instance = await wam_type.createInstance(groupId, audioContext)
+        const generator = new WamGUIGenerator(wam_instance, gui_target)
+        generator.load(init_code, library)
+        return generator
+    }
+
     static async create(gui_target: WamGUITarget, wam?: WebAudioModule): Promise<WamGUIGenerator>{
         if(wam){
             return new WamGUIGenerator(wam, gui_target)
