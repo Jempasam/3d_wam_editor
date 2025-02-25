@@ -1,6 +1,6 @@
 import { WebAudioModule } from "@webaudiomodules/api"
 import { ControlSettings } from "./settings.js"
-import { AbstractMesh, Scene, TransformNode } from "@babylonjs/core"
+import { AbstractMesh, Scene, TransformNode, Vector3 } from "@babylonjs/core"
 import { ControlLibrary } from "../WamGUIGenerator.js"
 
 /**
@@ -21,12 +21,14 @@ export interface ControlContext{
      */
     on_field_change: (label: string, value: string) => void
 
-    /**
-     * A callback called when a control when to register
-     * a function to be called when the user drag the control.
-     *  
-     */
-    add_on_drag: (mesh:AbstractMesh, on_drag:(offset: number)=>void) => void
+    /** A callback called on each output of the control. */
+    init_output(mesh:AbstractMesh, setter:(isConnected:boolean)=>void): void
+
+    /** A callback called on each input of the control. */
+    init_input(mesh:AbstractMesh, setter:(isConnected:boolean) => void): void
+
+    /** A callback called on each field of the control. */
+    init_field(mesh:AbstractMesh, step: number, setter: (value:number)=>string): void
 
 }
 
