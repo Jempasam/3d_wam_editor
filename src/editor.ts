@@ -124,7 +124,7 @@ async function main(){
     function showSelectedControlSettings(){
         if(selected_control){
             control_values = selected_control.control.getDefaultValues()
-            iControlName.textContent = selected_control.control.name
+            iControlName.textContent = selected_control.control.label
             setControlSettings(
                 selected_control.control.getSettings(),
                 (label) => control_values[label],

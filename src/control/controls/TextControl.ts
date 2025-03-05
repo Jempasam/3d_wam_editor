@@ -13,7 +13,7 @@ window.earcut = earcut
  */
 export class TextControl extends Control{
 
-    static name = "Text"
+    static label = "Text"
 
     constructor(context: ControlContext){
             super(context)

@@ -8,7 +8,7 @@ import { ParameterControl } from "./ParameterControl.js";
  */
 export class CursorControl extends ParameterControl{
 
-    static name = "Rotating Cursor Control"
+    static label = "Rotating Cursor Control"
 
     constructor(context: ControlContext){
         super(context)

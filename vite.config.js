@@ -7,5 +7,10 @@ export default defineConfig({
     supported: {
       'top-level-await': true
     },
+  },
+  build: {
+    rollupOptions: {
+      input: ["index.html", "generate_2d.html", "generate_3d.html", "src/index.ts"],
+    }
   }
 });

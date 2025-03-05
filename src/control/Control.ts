@@ -40,6 +40,8 @@ export interface ControlContext{
  */
 export abstract class Control{
 
+    static label: string = "Unnamed Control"
+
     wam: WebAudioModule|null
 
     /**

@@ -9,7 +9,7 @@ import { ParameterControl } from "./ParameterControl.js";
  */
 export class GrowControl extends ParameterControl{
 
-    static name = "Size Changing Control"
+    static label = "Size Changing Control"
 
     constructor(context: ControlContext){
         super(context)
