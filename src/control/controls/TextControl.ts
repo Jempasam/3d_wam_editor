@@ -1,9 +1,12 @@
 import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
 import { Control, ControlContext } from "../Control.ts";
 import { ControlSettings, FONTS } from "../settings.ts";
-
 //@ts-ignore
-window.earcut = (await import("earcut")).default
+import earcut from "earcut"
+//@ts-ignore
+window.earcut = earcut
+
+//window.earcut = (await import("earcut")).default
 
 /**
  * A text display control
