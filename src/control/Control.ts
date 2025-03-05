@@ -1,6 +1,6 @@
-import { WebAudioModule } from "@webaudiomodules/api"
+import { WamNode, WebAudioModule } from "@webaudiomodules/api"
 import { ControlSettings } from "./settings.js"
-import { AbstractMesh, Scene, TransformNode, Vector3 } from "@babylonjs/core"
+import { AbstractMesh, Scene, TransformNode } from "@babylonjs/core"
 import { ControlLibrary } from "../WamGUIGenerator.js"
 
 /**
@@ -12,7 +12,7 @@ export interface ControlContext{
      * The web audio module associated to the control.
      * If null the control is just a display and not a functionnal parameter.
      */
-    wam: WebAudioModule|null
+    wam?: WebAudioModule
 
     /**
      * A callback called when a field of the control is changed.
@@ -22,15 +22,28 @@ export interface ControlContext{
     on_field_change: (label: string, value: string) => void
 
     /** A callback called on each output of the control. */
-    init_output(mesh:AbstractMesh, setter:(isConnected:boolean)=>void): void
+    init_output(settings:{
+        target: AbstractMesh,
+        onConnect: (node:WamNode)=>void, 
+        onDisconnect: (node:WamNode)=>void,
+    }): void
 
     /** A callback called on each input of the control. */
-    init_input(mesh:AbstractMesh, setter:(isConnected:boolean) => void): void
+    init_input(settings:{
+        target: AbstractMesh,
+        onConnect: (node:WamNode)=>void,
+        onDisconnect: (node:WamNode)=>void,
+    }): void
 
     /** A callback called on each field of the control. */
-    init_field(mesh:AbstractMesh, step: number, setter: (value:number)=>string): void
+    init_field(settings:{
+        target: AbstractMesh,
+        step: number,
+        setter: (value:number)=>void,
+    }): void
 
 }
+
 
 /**
  * @typedef {import("./settings.js").ControlSettings} ControlSettings
@@ -42,7 +55,7 @@ export abstract class Control{
 
     static label: string = "Unnamed Control"
 
-    wam: WebAudioModule|null
+    wam?: WebAudioModule
 
     /**
      * A factory for creating custom elements controls.

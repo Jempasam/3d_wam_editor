@@ -24,7 +24,7 @@ export class WamGUIGenerator{
     readonly pad_mesh?: Mesh
     
     private constructor(
-        readonly instance?: WebAudioModule,
+        readonly context: ControlContext,
         readonly gui_target: WamGUITarget = {},
     ){
         
@@ -87,21 +87,17 @@ export class WamGUIGenerator{
 
     }
 
-    static async create_and_init(gui_target: WamGUITarget, init_code: WAMGuiInitCode, library: ControlLibrary, audioContext: BaseAudioContext, groupId: string): Promise<WamGUIGenerator>{
+    static async create_and_init(context: ControlContext, gui_target: WamGUITarget, init_code: WAMGuiInitCode, library: ControlLibrary, audioContext: BaseAudioContext, groupId: string): Promise<WamGUIGenerator>{
         const wam_type = (await import(init_code.wam_url))?.default as typeof WebAudioModule
         const wam_instance = await wam_type.createInstance(groupId, audioContext)
-        const generator = new WamGUIGenerator(wam_instance, gui_target)
+        context={...context, wam:wam_instance}
+        const generator = new WamGUIGenerator(context, gui_target)
         generator.load(init_code, library)
         return generator
     }
 
-    static async create(gui_target: WamGUITarget, wam?: WebAudioModule): Promise<WamGUIGenerator>{
-        if(wam){
-            return new WamGUIGenerator(wam, gui_target)
-        }
-        else{
-            return new WamGUIGenerator(undefined, gui_target)
-        }
+    static async create(gui_target: WamGUITarget, context: ControlContext): Promise<WamGUIGenerator>{
+        return new WamGUIGenerator(context, gui_target)
     }
 
     dispose(){
@@ -111,7 +107,7 @@ export class WamGUIGenerator{
     }
 
     addControl(added: {control:ControlLibrary[0], values:Record<string,string>, x:number, y:number, width:number, height:number}){
-        const control = new added.control({add_on_drag(){}, on_field_change(){}, wam:this.instance??null})
+        const control = new added.control(this.context)
         this.controls.splice(this.controls.length, 0, {control, x:added.x, y:added.y, height:added.height, width:added.width, values:added.values})
     }
 
@@ -121,7 +117,7 @@ export class WamGUIGenerator{
         this.bottom_color.value = code.bottom_color
         this.controls.splice(0,this.controls.length)
         for(let {control,values,x,y,width,height} of code.controls){
-            const instance = new library[control]({add_on_drag(){}, on_field_change(){}, wam:this.instance??null})
+            const instance = new library[control](this.context)
             this.controls.splice(this.controls.length, 0, {control:instance, values, x, y, width, height})
         }
     }

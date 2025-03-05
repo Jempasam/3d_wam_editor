@@ -169,7 +169,12 @@ async function main(){
 
 
     //// WAM BASE ////
-    let wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container})
+    let wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container},{
+        init_field(settings) {},
+        init_input(settings) {},
+        init_output(settings) {},
+        on_field_change(label, value) {},
+    })
     let parameters_infos: WamParameterInfoMap = {}
     const wam = new MOValue(null as WebAudioModule|null)
 
@@ -189,7 +194,13 @@ async function main(){
                 original_ui.replaceChildren(await to.createGui())
             }
 
-            wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container}, to??undefined)
+            wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container}, {
+                init_field(settings) {},
+                init_input(settings) {},
+                init_output(settings) {},
+                on_field_change(label, value) {},
+                wam: to
+            })
             
             wam_gui_generator.aspect_ratio.link(({to}) => iAspectRatio.value=to.toString())
             
