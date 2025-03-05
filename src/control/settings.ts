@@ -99,18 +99,16 @@ export class ControlSettingsGUI{
 
 
 export const FONTS: Record<string,{css:string, babylon:IFontData}> = {}
-;(async()=>{
-    for(const [file, url] of Object.entries(import.meta.glob("../../media/fonts/*"))){
-        const file_full_name = file.split("/").pop() ?? ""
-        const [name,extension] = file_full_name.split(".")
-        FONTS[name] ??= {css:"", babylon:{} as IFontData}
-        if(extension=="ttf" || extension=="otf"){
-            const font_url = ((await url()) as any).default as string
-            document.fonts.add(await new FontFace(name, `url(${font_url})`).load())
-            FONTS[name].css = name
-        }
-        else{
-            FONTS[name].babylon = (await url()) as IFontData
-        }
+for(const [file, url] of Object.entries(import.meta.glob("../../media/fonts/*"))){
+    const file_full_name = file.split("/").pop() ?? ""
+    const [name,extension] = file_full_name.split(".")
+    FONTS[name] ??= {css:"", babylon:{} as IFontData}
+    if(extension=="ttf" || extension=="otf"){
+        const font_url = ((await url()) as any).default as string
+        document.fonts.add(await new FontFace(name, `url(${font_url})`).load())
+        FONTS[name].css = name
     }
-})()
+    else{
+        FONTS[name].babylon = (await url()) as IFontData
+    }
+}

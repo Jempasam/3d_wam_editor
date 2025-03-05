@@ -5,7 +5,7 @@ import path from 'path';
 export default defineConfig({
   esbuild: {
     supported: {
-      'top-level-await': false
+      'top-level-await': true
     },
   }
 });
