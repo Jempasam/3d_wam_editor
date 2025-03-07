@@ -12,8 +12,9 @@ export default defineConfig({
   build: {
     lib:{
       entry: "src/index.ts",
-      name: "index",
+      name: "wam3dgenerator",
       formats: ["es"],
+      fileName: "index"
     }
   },
   plugins: [ dts()]
