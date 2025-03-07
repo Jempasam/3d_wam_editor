@@ -12,7 +12,7 @@ export default defineConfig({
   build: {
     lib:{
       entry: "src/index.ts",
-      name: "wam3dgenerator",
+      name: "index",
       formats: ["es"],
     }
   },

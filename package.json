@@ -23,7 +23,7 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/wam3dgenerator.js"
+      "import": "./dist/index.js"
     }
   }
 }
