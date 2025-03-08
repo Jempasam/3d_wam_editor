@@ -11,11 +11,11 @@
     "postinstall": "npm run lib"
   },
   "devDependencies": {
-    "@webaudiomodules/api": "^2.0.0-alpha.6",
     "typescript": "~5.7.2"
   },
   "dependencies": {
-    "@babylonjs/core": "^7.48.3",
+    "@babylonjs/core": "^6.48.0",
+    "@webaudiomodules/api": "^2.0.0-alpha.6",
     "@webaudiomodules/sdk": "^0.0.12",
     "earcut": "^3.0.1",
     "vite": "^6.1.0",
