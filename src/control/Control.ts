@@ -3,6 +3,7 @@ import { ControlSettings } from "./settings.js"
 import { AbstractMesh, Scene, TransformNode } from "@babylonjs/core"
 import { ControlLibrary } from "../WamGUIGenerator.js"
 
+
 /**
  * The context of creation of the control.
  */
@@ -19,27 +20,29 @@ export interface ControlContext{
      * @param label The label of the field.
      * @param value The new value of the field. 
      */
-    on_field_change: (label: string, value: string) => void
+    onFieldChange: (label: string, value: string) => void
 
     /** A callback called on each output of the control. */
-    init_output(settings:{
+    defineAnOutput(settings:{
         target: AbstractMesh,
-        onConnect: (node:WamNode)=>void, 
-        onDisconnect: (node:WamNode)=>void,
+        node: AudioNode|WamNode,
+        setConnected(connected:boolean): void,
     }): void
 
     /** A callback called on each input of the control. */
-    init_input(settings:{
+    defineAnInput(settings:{
         target: AbstractMesh,
-        onConnect: (node:WamNode)=>void,
-        onDisconnect: (node:WamNode)=>void,
+        node: AudioNode|WamNode,
+        setConnected(connected:boolean): void,
     }): void
 
     /** A callback called on each field of the control. */
-    init_field(settings:{
-        target: AbstractMesh,
-        step: number,
-        setter: (value:number)=>void,
+    defineField(settings:{
+        target: TransformNode,
+        step_count: number,
+        setValue(value:number): void,
+        getValue(): number,
+        stringify(value:number): string,
     }): void
 
 }

@@ -8,7 +8,7 @@ import { ControlSettings, ControlSettingsGUI } from "./control/settings.ts";
 import { Selector } from "./gui/Selector.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
 import { html } from "./utils/doc.ts";
-import { ControlLibrary, WamGUIGenerator, WAMGuiInitCode } from "./WamGUIGenerator.ts";
+import { ControlLibrary, WamGUICode, WamGUIGenerator, WAMGuiInitCode } from "./WamGUIGenerator.ts";
 
 async function main(){
     
@@ -138,7 +138,12 @@ async function main(){
     }
 
     for(let [key,control] of Object.entries(controls)){
-        let example = new control({})
+        let example = new control({
+            defineAnInput(settings) {},
+            defineAnOutput(settings) {},
+            defineField(settings) {},
+            onFieldChange(label, value) {},
+        })
         let element = example.createElement()
         let option = iControlList.appendChild(html.a`<option value="${key}">${element}</option>`)
         example.setDefaultValues()
@@ -169,19 +174,19 @@ async function main(){
 
 
     //// WAM BASE ////
-    let wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container},{
-        init_field(settings) {},
-        init_input(settings) {},
-        init_output(settings) {},
-        on_field_change(label, value) {},
-    })
+    let wam_gui_generator = new MOValue(await WamGUIGenerator.create({html:gui_container, babylonjs:node_container},{
+        defineField(settings) {},
+        defineAnInput(settings) {},
+        defineAnOutput(settings) {},
+        onFieldChange(label, value) {},
+    }))
     let parameters_infos: WamParameterInfoMap = {}
     const wam = new MOValue(null as WebAudioModule|null)
 
     wam.link(async({from,to})=>{
         try{
             setIndicator("wait","Destroying previous WAM")
-            wam_gui_generator.dispose()
+            wam_gui_generator.value.dispose()
             if(from!=null){
                 from.audioNode.destroy()
                 from.destroyGui(original_ui.children[0])
@@ -194,22 +199,22 @@ async function main(){
                 original_ui.replaceChildren(await to.createGui())
             }
 
-            wam_gui_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container}, {
-                init_field(settings) {},
-                init_input(settings) {},
-                init_output(settings) {},
-                on_field_change(label, value) {},
-                wam: to
+            const new_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container}, {
+                defineField(settings) {},
+                defineAnInput(settings) {},
+                defineAnOutput(settings) {},
+                onFieldChange(label, value) {},
+                wam: to ?? undefined
             })
             
-            wam_gui_generator.aspect_ratio.link(({to}) => iAspectRatio.value=to.toString())
+            new_generator.aspect_ratio.link(({to}) => iAspectRatio.value=to.toString())
             
-            wam_gui_generator.top_color.link(({to}) => iTopColor.value=to)
+            new_generator.top_color.link(({to}) => iTopColor.value=to)
             
-            wam_gui_generator.bottom_color.link(({to}) => iBottomColor.value=to)
+            new_generator.bottom_color.link(({to}) => iBottomColor.value=to)
             
             console.log("register")
-            wam_gui_generator.controls.on_add.register((item)=>{
+            new_generator.controls.on_add.register((item)=>{
                 const {container} = item
                 console.log(container)
                 if(container)container.onmousedown = (e: MouseEvent)=>{
@@ -221,11 +226,13 @@ async function main(){
                 }
             })
 
-            wam_gui_generator.controls.on_remove.add((item)=>{
+            new_generator.controls.on_remove.add((item)=>{
                 for(const s of selector.selecteds) if(s.infos==item) selector.unselect(s)
             })
 
-            wam_gui_generator.pad_element?.addEventListener("mousedown",unselectall)
+            new_generator.pad_element?.addEventListener("mousedown",unselectall)
+
+            wam_gui_generator.value = new_generator
 
             setIndicator("valid","WAM Loaded")
         }catch(e){
@@ -233,20 +240,33 @@ async function main(){
         }
     })
 
-    iTopColor.oninput = ()=> wam_gui_generator.top_color.value = iTopColor.value
-    iBottomColor.oninput = ()=> wam_gui_generator.bottom_color.value = iBottomColor.value
-    iAspectRatio.oninput = ()=> wam_gui_generator.aspect_ratio.value = parseFloat(iAspectRatio.value)
+    iTopColor.oninput = ()=> wam_gui_generator.value.top_color.value = iTopColor.value
+    iBottomColor.oninput = ()=> wam_gui_generator.value.bottom_color.value = iBottomColor.value
+    iAspectRatio.oninput = ()=> wam_gui_generator.value.aspect_ratio.value = parseFloat(iAspectRatio.value)
 
     //// SAVE ////
     const save_text_area = (document.querySelector("#save_data") as HTMLTextAreaElement)
     save_text_area.onfocus = ()=>{
-        const object = (wam_gui_generator.save(controls)??{}) as WAMGuiInitCode
+        const object = (wam_gui_generator.value.save(controls)??{}) as WAMGuiInitCode
         if(iWamUrl.value.length>0) object.wam_url = iWamUrl.value
         save_text_area.value = JSON.stringify(object)
     }
     save_text_area.onchange = ()=>{
-        const wam_code = JSON.parse(save_text_area.value)
-        if(Object.entries(wam_code).length>0) wam_gui_generator.load(wam_code, controls)
+        const wam_code = JSON.parse(save_text_area.value) as WAMGuiInitCode|WamGUICode
+        if(Object.entries(wam_code).length>0){
+            if("wam_url" in wam_code){
+                function load(){
+                    wam_gui_generator.value.load(wam_code, controls)
+                    wam_gui_generator.observable.unregister(load)
+                }
+                wam_gui_generator.observable.add(load)
+                current_wam_url.value = wam_code.wam_url
+            }
+            else{
+                wam_gui_generator.value.load(wam_code, controls)
+            }
+            
+        }
     }
 
 
@@ -259,14 +279,14 @@ async function main(){
     gui_container.addEventListener("mousedown",unselectall)
 
     selector.on_move = (moved, x,y, width,height)=>{
-        const controls = wam_gui_generator.controls; if(!controls)return
+        const controls = wam_gui_generator.value.controls; if(!controls)return
         const index = controls.values.indexOf(moved.infos)
         controls.move(index,x,y)
         controls.resize(index,width,height)
     }
 
     selector.on_select = selection=>{
-        const controls = wam_gui_generator.controls; if(!controls)return
+        const controls = wam_gui_generator.value.controls; if(!controls)return
         const settings = selection.infos.control.factory.getSettings()
         setControlSettings(
             settings,
@@ -288,10 +308,10 @@ async function main(){
 
 
     iAddControl.onclick=()=>{
-        const controls = wam_gui_generator.controls
+        const controls = wam_gui_generator.value.controls
         if(selected_control && controls){
             // @ts-ignore
-            wam_gui_generator.addControl({control: selected_control.control, values:control_values, x:0, y:0, width:0.1, height:0.1})
+            wam_gui_generator.value.addControl({control: selected_control.control, values:control_values, x:0, y:0, width:0.1, height:0.1})
         }
     }
 
@@ -300,7 +320,7 @@ async function main(){
     let copied: {x:number, y:number, width:number, height:number, control:ControlLibrary[0], values:Record<string,string>}[] = []
     document.addEventListener("keydown",e=>{
         if(document.activeElement!=document.body) return
-        const controls = wam_gui_generator.controls
+        const controls = wam_gui_generator.value.controls
 
         switch(e.key){
             case "Delete":
@@ -323,7 +343,7 @@ async function main(){
                     let first = controls.length
                     let count = copied.length
                     for(const {x,y,width,height,values,control} of copied){
-                        wam_gui_generator.addControl({control, values, x, y, width, height})
+                        wam_gui_generator.value.addControl({control, values, x, y, width, height})
                     }
                     selector.selecteds = [...controls.values].slice(first,first+count).map(infos=>({element:infos.container!!, infos}))
                 }

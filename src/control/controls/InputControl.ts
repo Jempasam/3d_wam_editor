@@ -66,21 +66,13 @@ export class InputControl extends Control{
         
 
         const wam = this.wam
-        this.context.init_input({
+        if(wam)this.context.defineAnInput({
             target: mesh,
-            onConnect(node) {
-                if(wam){
-                    node.connect(wam.audioNode)
-                    node.connectEvents(wam.audioNode.instanceId)
-                }
+            node: wam.audioNode,
+            setConnected(connected) {
+                if(connected) mesh.scaling.setAll(0.5)
+                else mesh.scaling.setAll(1)
             },
-            onDisconnect(node) {
-                if(wam){
-                    node.disconnect(wam.audioNode)
-                    node.disconnectEvents(wam.audioNode.instanceId)
-                }
-            },
-
         })
         return transform
     }

@@ -64,21 +64,13 @@ export class OutputControl extends Control{
         
 
         const wam = this.wam
-        this.context.init_input({
+        if(this.wam)this.context.defineAnOutput({
             target: mesh,
-            onConnect(node) {
-                if(wam){
-                    wam.audioNode.connect(node)
-                    wam.audioNode.connectEvents(node.instanceId)
-                }
+            node: this.wam.audioNode,
+            setConnected(connected) {
+                if(connected) mesh.scaling.setAll(0.5)
+                else mesh.scaling.setAll(1)
             },
-            onDisconnect(node) {
-                if(wam){
-                    wam.audioNode.disconnect(node)
-                    wam.audioNode.disconnectEvents(node.instanceId)
-                }
-            },
-
         })
         return transform
     }
