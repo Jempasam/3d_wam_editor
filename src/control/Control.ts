@@ -38,7 +38,7 @@ export interface ControlContext{
 
     /** A callback called on each field of the control. */
     defineField(settings:{
-        target: TransformNode,
+        target: AbstractMesh,
         step_count: number,
         setValue(value:number): void,
         getValue(): number,
