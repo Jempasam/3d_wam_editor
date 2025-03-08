@@ -15,7 +15,10 @@ export default defineConfig({
       name: "wam3dgenerator",
       formats: ["es"],
       fileName: "index"
-    }
+    },
+    rollupOptions: {
+      external: ['@babylonjs/core','@webaudiomodules/api']
+    },
   },
   plugins: [ dts()]
 });
