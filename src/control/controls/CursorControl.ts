@@ -103,26 +103,15 @@ export class CursorControl extends ParameterControl{
         this.cursor_material = cursor.material = new StandardMaterial("cursor_control2",scene)
         this.cursor_material.specularColor.set(0,0,0)
         cursor.setParent(cylinder)
-
-        const pointerDragBehavior = new PointerDragBehavior({ dragAxis: new Vector3(0, 1, 0) })
-        pointerDragBehavior.moveAttached = false
-        pointerDragBehavior.onDragObservable.add((eventData) => {
-            const {dragDistance} = eventData
-            this.value += dragDistance
-            this.value = Math.max(0, Math.min(1, this.value))
-            this.updateColor()
-            this.updateParamValue()
-        })
-        this.transform.addBehavior(pointerDragBehavior)
-
+        
+        this.declareField(cylinder)
 
         return this.transform
     }
 
-    updateParamValue(){
+    onParamChange(): void {
         if(this.cylinder) this.cylinder.rotation.y = (this.value-0.5)*Math.PI
         if(this.element) this.element.style.rotate = `${Math.round((this.value-0.5)*180)}deg`
-        super.updateParamValue()
     }
 
     override destroyNode(){
@@ -133,7 +122,4 @@ export class CursorControl extends ParameterControl{
         this.cursor_material?.dispose()
     }
 
-    /** @type {Control['destroy']} */
-    destroy(){
-    }
 }

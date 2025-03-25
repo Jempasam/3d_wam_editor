@@ -343,7 +343,7 @@ async function main(){
                     let first = controls.length
                     let count = copied.length
                     for(const {x,y,width,height,values,control} of copied){
-                        wam_gui_generator.value.addControl({control, values, x, y, width, height})
+                        wam_gui_generator.value.addControl({control, values:structuredClone(values), x, y, width, height})
                     }
                     selector.selecteds = [...controls.values].slice(first,first+count).map(infos=>({element:infos.container!!, infos}))
                 }

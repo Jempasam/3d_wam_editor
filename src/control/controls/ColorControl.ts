@@ -44,6 +44,10 @@ export class ColorControl extends ParameterControl{
         if(this.material) this.material.diffuseColor = color
     }
 
+    onParamChange(): void {
+        this.updateColor()
+    }
+
     private element?: HTMLElement
     private  material?: StandardMaterial
     
@@ -70,19 +74,7 @@ export class ColorControl extends ParameterControl{
         this.material = new StandardMaterial("color_control", scene)
         this.mesh = ret
         ret.material = this.material
-
-        const pointerDragBehavior = new PointerDragBehavior({ dragAxis: new Vector3(0, 1, 0) })
-        pointerDragBehavior.moveAttached = false
-        pointerDragBehavior.onDragObservable.add((eventData) => {
-            const {dragDistance} = eventData
-            this.value += dragDistance
-            this.value = Math.max(0, Math.min(1, this.value))
-            this.updateColor()
-            this.updateParamValue()
-        })
-        ret.addBehavior(pointerDragBehavior)
-
-
+        this.declareField(ret)
         return ret
     }
 
@@ -90,10 +82,6 @@ export class ColorControl extends ParameterControl{
     destroyNode(){
         this.mesh?.dispose()
         this.material?.dispose()
-    }
-
-    /** @type {Control['destroy']} */
-    destroy(){
     }
 }
 
