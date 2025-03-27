@@ -65,7 +65,7 @@ export abstract class ParameterControl extends Control{
                 if(control.parameter){
                     if(control.parameter.valueString) return control.parameter.valueString(value)
                     else{
-                        if(control.parameter.choices) return control.parameter.choices[Math.round(value)]
+                        if(control.parameter.choices) return control.parameter.choices[Math.round(value*(control.parameter.choices.length-0.0001))]
                         else{
                             const {minValue,maxValue,units} = control.parameter
                             return (value*(maxValue-minValue)+minValue)+units
