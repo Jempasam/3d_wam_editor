@@ -63,7 +63,14 @@ export abstract class ParameterControl extends Control{
             },
             stringify(value) {
                 if(control.parameter){
-                    return control.parameter.valueString(value)
+                    if(control.parameter.valueString) return control.parameter.valueString(value)
+                    else{
+                        if(control.parameter.choices) return control.parameter.choices[Math.round(value)]
+                        else{
+                            const {minValue,maxValue,units} = control.parameter
+                            return (value*(maxValue-minValue)+minValue)+units
+                        }
+                    }
                 }
                 return "none"
             },
