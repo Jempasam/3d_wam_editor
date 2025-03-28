@@ -72,13 +72,16 @@ export abstract class ParameterControl extends Control{
                 return discreteStep/(maxValue-minValue)
             },
             stringify(value) {
+                if(!control.parameter) return "none"
+                const {minValue, maxValue} = control.parameter
+                const unnormalized = value*(maxValue-minValue)+minValue
                 if(control.parameter){
-                    if(control.parameter.valueString) return control.parameter.valueString(value)
+                    if(control.parameter.valueString) return control.parameter.valueString(unnormalized)
                     else{
-                        if(control.parameter.choices.length) return control.parameter.choices[Math.round(value)]
+                        if(control.parameter.choices.length) return control.parameter.choices[Math.round(unnormalized)]
                         else{
                             const {units} = control.parameter
-                            return value.toPrecision(3)+units
+                            return unnormalized.toPrecision(3)+units
                         }
                     }
                 }
