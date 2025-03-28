@@ -9,22 +9,28 @@ import { AbstractMesh } from "@babylonjs/core"
 export abstract class ParameterControl extends Control{
 
 
-    interval?: any
+    timeout?: any
     value: number
+    normalized: number
 
     constructor(context: ControlContext){
         super(context)
         this.value = 0
+        this.normalized = 0
         if(this.wam){
-            this.interval = setInterval(async()=>{
-                if(this.parameter){
-                    let newvalue = (await this.wam!!.audioNode.getParameterValues(true, this.parameter.id))[this.parameter.id]?.value ?? 0
-                    if(newvalue!=this.value){
-                        this.value=newvalue
-                        this.onParamChange()
+            const control = this
+            this.timeout = setTimeout(async function timeout(){
+                if(control.parameter){
+                    console.log(control.value, control.parameter)
+                    let newvalue = (await control.wam!!.audioNode.getParameterValues(false, control.parameter.id))[control.parameter.id]?.value ?? 0
+                    if(newvalue!=control.value){
+                        const {minValue, maxValue} = control.parameter
+                        control.value=newvalue
+                        control.normalized = (control.value-minValue)/(maxValue-minValue)
+                        control.onParamChange()
                     }
-
                 }
+                if(control.timeout!=undefined)control.timeout = setTimeout(timeout,100)
             },100)
         }
     }
@@ -53,22 +59,28 @@ export abstract class ParameterControl extends Control{
         const control = this
         this.context.defineField({
             target: mesh,
-            getValue() { return control.value },
-            setValue(value) { control.setParamValue(value) },
+            getValue() {
+                const {minValue, maxValue} = control.parameter!!
+                return (control.value-minValue)/(maxValue-minValue)
+            },
+            setValue(value) {
+                const {minValue, maxValue} = control.parameter!!
+                control.setParamValue(value*(maxValue-minValue)+minValue)
+            },
             getStepCount() {
-                if(control.parameter){
-                    if(control.parameter.discreteStep!=0)return (control.parameter.maxValue-control.parameter.minValue)/control.parameter.discreteStep
-                }
-                return 0
+                if(control.parameter && control.parameter.discreteStep!=0)
+                    return (control.parameter.maxValue-control.parameter.minValue)/control.parameter.discreteStep
+                else
+                    return 0
             },
             stringify(value) {
                 if(control.parameter){
                     if(control.parameter.valueString) return control.parameter.valueString(value)
                     else{
-                        if(control.parameter.choices) return control.parameter.choices[Math.round(value*(control.parameter.choices.length-0.0001))]
+                        if(control.parameter.choices.length) return control.parameter.choices[Math.round(value)]
                         else{
-                            const {minValue,maxValue,units} = control.parameter
-                            return (value*(maxValue-minValue)+minValue)+units
+                            const {units} = control.parameter
+                            return value.toPrecision(3)+units
                         }
                     }
                 }
@@ -77,15 +89,19 @@ export abstract class ParameterControl extends Control{
         })
     }
 
-    setParamValue(normalized: number){
+    setParamValue(value: number){
         if(this.wam && this.parameter){
-            this.wam.audioNode.setParameterValues({[this.parameter.id]:{value:normalized,normalized:true,id:this.parameter.id}})
-            this.value = normalized
+            this.wam.audioNode.setParameterValues({[this.parameter.id]:{value, normalized:false, id:this.parameter.id}})
+            this.value = value
+            this.normalized = (value-this.parameter.minValue)/(this.parameter.maxValue-this.parameter.minValue)
             this.onParamChange()
         }
     }
 
     destroy(): void {
-        if(this.interval!=undefined)clearInterval(this.interval)
+        if(this.timeout!=undefined){
+            clearInterval(this.timeout)
+            this.timeout=undefined
+        }
     }
 }

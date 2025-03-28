@@ -110,8 +110,8 @@ export class CursorControl extends ParameterControl{
     }
 
     onParamChange(): void {
-        if(this.cylinder) this.cylinder.rotation.y = (this.value-0.5)*Math.PI
-        if(this.element) this.element.style.rotate = `${Math.round((this.value-0.5)*180)}deg`
+        if(this.cylinder) this.cylinder.rotation.y = (this.normalized-0.5)*Math.PI
+        if(this.element) this.element.style.rotate = `${Math.round((this.normalized-0.5)*180)}deg`
     }
 
     override destroyNode(){

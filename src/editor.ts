@@ -1,7 +1,7 @@
 import { ArcRotateCamera, BackgroundMaterial, Color4, Engine, MeshBuilder, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import { WamParameterInfoMap, WebAudioModule } from "@webaudiomodules/api";
 import { initializeWamHost } from "@webaudiomodules/sdk";
-import { Control } from "./control/Control.ts";
+import { Control, ControlContext } from "./control/Control.ts";
 import { ControlMap } from "./control/ControlMap.ts";
 import controls from "./control/controls.ts";
 import { ControlSettings, ControlSettingsGUI } from "./control/settings.ts";
@@ -56,6 +56,7 @@ async function main(){
     const iAddControl = document.querySelector<HTMLButtonElement>("#add_control")!!
     const iWamUrl = document.querySelector<HTMLTextAreaElement>("#wam_url")!!
     const original_ui = document.querySelector<HTMLElement>("#original_ui")!!
+    const iGetFields = document.querySelector<HTMLInputElement>("#fields_get")!!
 
 
     //// INDICATOR ////
@@ -174,6 +175,7 @@ async function main(){
 
 
     //// WAM BASE ////
+    let fields = new MOValue<Parameters<ControlContext['defineField']>[0][]>([])
     let wam_gui_generator = new MOValue(await WamGUIGenerator.create({html:gui_container, babylonjs:node_container},{
         defineField(settings) {},
         defineAnInput(settings) {},
@@ -186,6 +188,7 @@ async function main(){
     wam.link(async({from,to})=>{
         try{
             setIndicator("wait","Destroying previous WAM")
+            fields.set([])
             wam_gui_generator.value.dispose()
             if(from!=null){
                 from.audioNode.destroy()
@@ -199,13 +202,15 @@ async function main(){
                 original_ui.replaceChildren(await to.createGui())
             }
 
+            const new_fields: Parameters<ControlContext['defineField']>[0][] = []
             const new_generator = await WamGUIGenerator.create({html:gui_container, babylonjs:node_container}, {
-                defineField(settings) {},
+                defineField(settings) {new_fields.push(settings)},
                 defineAnInput(settings) {},
                 defineAnOutput(settings) {},
                 onFieldChange(label, value) {},
                 wam: to ?? undefined
             })
+            fields.set(new_fields)
             
             new_generator.aspect_ratio.link(({to}) => iAspectRatio.value=to.toString())
             
@@ -243,6 +248,23 @@ async function main(){
     iTopColor.oninput = ()=> wam_gui_generator.value.top_color.value = iTopColor.value
     iBottomColor.oninput = ()=> wam_gui_generator.value.bottom_color.value = iBottomColor.value
     iAspectRatio.oninput = ()=> wam_gui_generator.value.aspect_ratio.value = parseFloat(iAspectRatio.value)
+
+
+    //// FIELDS DEBUG ////
+    function showField(){
+        const display = document.querySelector("#fields")!!
+        display.replaceChildren()
+
+        fields.value.forEach((settings)=>{
+            display.appendChild(html.a`<div>${settings.getValue()}: ${settings.stringify(settings.getValue())}</div>`)
+        })
+    }
+
+    fields.link(showField)
+
+    iGetFields.onclick = () => showField()
+
+
 
     //// SAVE ////
     const save_text_area = (document.querySelector("#save_data") as HTMLTextAreaElement)
