@@ -61,10 +61,7 @@ export class WamGUIGenerator{
             }
         })
 
-        const updateGradient = ()=>{
-            if(this.pad_element){
-                this.pad_element.style.backgroundImage = `linear-gradient(${this.top_color.value},${this.bottom_color.value})`
-            }
+        const update3dGradient = ()=>{
             if(this.pad_mesh){
                 const bottom = Color4.FromHexString(this.bottom_color.value).asArray()
                 const top = Color4.FromHexString(this.top_color.value).asArray()
@@ -78,8 +75,9 @@ export class WamGUIGenerator{
                 ])
             }
         }
-        this.top_color.observable.add(updateGradient)
-        this.bottom_color.observable.add(updateGradient)
+        this.top_color.observable.add(update3dGradient)
+        this.bottom_color.observable.add(update3dGradient)
+        update3dGradient()
 
 
         //// FRONT FACE ////
@@ -104,10 +102,24 @@ export class WamGUIGenerator{
                 }
             }
         })
-    
 
-        updateGradient()
 
+        //// FRONT FACE AND GRADIENT ////
+        const updateElementBackground = ()=>{
+            if(this.pad_element){
+                this.pad_element!!.style.backgroundSize = "100% 100%"
+                if(this.front_face.value){
+                    this.pad_element!!.style.backgroundImage = `url(${this.front_face.value})`
+                }
+                else{
+                    this.pad_element.style.backgroundImage = `linear-gradient(${this.top_color.value},${this.bottom_color.value})`
+                }
+            }
+        }
+        this.front_face.observable.add(updateElementBackground)
+        this.top_color.observable.add(updateElementBackground)
+        this.bottom_color.observable.add(updateElementBackground)
+        updateElementBackground()
 
         //// CONTROLS ////
         this.controls = new ControlMap(gui_target.html, gui_target.babylonjs)
