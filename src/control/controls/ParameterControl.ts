@@ -21,7 +21,6 @@ export abstract class ParameterControl extends Control{
             const control = this
             this.timeout = setTimeout(async function timeout(){
                 if(control.parameter){
-                    console.log(control.value, control.parameter)
                     let newvalue = (await control.wam!!.audioNode.getParameterValues(false, control.parameter.id))[control.parameter.id]?.value ?? 0
                     if(newvalue!=control.value){
                         const {minValue, maxValue} = control.parameter
