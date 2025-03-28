@@ -59,18 +59,17 @@ export abstract class ParameterControl extends Control{
         this.context.defineField({
             target: mesh,
             getValue() {
-                const {minValue, maxValue} = control.parameter!!
-                return (control.value-minValue)/(maxValue-minValue)
+                return control.normalized
             },
             setValue(value) {
-                const {minValue, maxValue} = control.parameter!!
+                if(!control.parameter) return
+                const {minValue, maxValue} = control.parameter
                 control.setParamValue(value*(maxValue-minValue)+minValue)
             },
-            getStepCount() {
-                if(control.parameter && control.parameter.discreteStep!=0)
-                    return (control.parameter.maxValue-control.parameter.minValue)/control.parameter.discreteStep
-                else
-                    return 0
+            getStepSize() {
+                if(!control.parameter) return 0
+                const {minValue, maxValue, discreteStep} = control.parameter
+                return discreteStep/(maxValue-minValue)
             },
             stringify(value) {
                 if(control.parameter){

@@ -28,7 +28,6 @@ async function main(){
     const node_container = new TransformNode("node_container", scene)
 
     document.addEventListener("keypress",(event)=>{
-        console.log("lala",event.key)
         switch(event.key){
             case "z": node_container.position.x+=0.1; break
             case "s": node_container.position.x-=0.1; break
@@ -222,16 +221,13 @@ async function main(){
 
             new_generator.front_face.link(({to}) => iFrontFace.value=to??"")
             
-            console.log("register")
             new_generator.controls.on_add.register((item)=>{
                 const {container} = item
-                console.log(container)
                 if(container)container.onmousedown = (e: MouseEvent)=>{
                     e.stopPropagation()
                     if(e.shiftKey) selector.select({element:container, infos:item})
                     else selector.selecteds = [{element:container, infos:item}]
                     selector.transformer?.startMoving(e.pageX,e.pageY)
-                    console.log("start moving")
                 }
             })
 

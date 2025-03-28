@@ -39,7 +39,7 @@ export interface ControlContext{
     /** A callback called on each field of the control. */
     defineField(settings:{
         target: AbstractMesh,
-        getStepCount(): number,
+        getStepSize(): number,
         setValue(value:number): void,
         getValue(): number,
         stringify(value:number): string,

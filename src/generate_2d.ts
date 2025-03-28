@@ -3,7 +3,6 @@ import controls from "./control/controls.ts"
 import { WamGUIGenerator, WAMGuiInitCode } from "./WamGUIGenerator.ts"
 
 const json = decodeURIComponent(location.search.slice(1))
-console.log(json)
 const description = JSON.parse(json) as WAMGuiInitCode
 
 const audioContext = new AudioContext()
