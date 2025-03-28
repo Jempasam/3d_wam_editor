@@ -50,6 +50,8 @@ async function main(){
     const iAspectRatio = document.querySelector<HTMLInputElement>("#aspect_ratio")!!
     const iTopColor = document.querySelector<HTMLInputElement>("#top_color")!!
     const iBottomColor = document.querySelector<HTMLInputElement>("#bottom_color")!!
+    const iFrontFace = document.querySelector<HTMLInputElement>("#front_face")!!
+    const iAutoFrontFace = document.querySelector<HTMLInputElement>("#auto_front_face")!!
     const iControlList = document.querySelector<HTMLElement>("#controls_list")!!
     const iControlName = document.querySelector<HTMLInputElement>("#control_name")!!
     const gui_container = document.querySelector<HTMLElement>("#gui_container")!!
@@ -217,6 +219,8 @@ async function main(){
             new_generator.top_color.link(({to}) => iTopColor.value=to)
             
             new_generator.bottom_color.link(({to}) => iBottomColor.value=to)
+
+            new_generator.front_face.link(({to}) => iFrontFace.value=to??"")
             
             console.log("register")
             new_generator.controls.on_add.register((item)=>{
@@ -247,6 +251,14 @@ async function main(){
 
     iTopColor.oninput = ()=> wam_gui_generator.value.top_color.value = iTopColor.value
     iBottomColor.oninput = ()=> wam_gui_generator.value.bottom_color.value = iBottomColor.value
+    iFrontFace.oninput = ()=> wam_gui_generator.value.front_face.value = iFrontFace.value=="" ? null : iFrontFace.value
+    iAutoFrontFace.onclick = async()=>{
+        // Get thumbnail url
+        const wam_url = current_wam_url.value; if(wam_url.length==0) return
+        const thumbnail = wam.value?.descriptor?.thumbnail; if(thumbnail==undefined) return
+        const url = new URL(thumbnail,wam_url).href
+        wam_gui_generator.value.front_face.value = url
+    }
     iAspectRatio.oninput = ()=> wam_gui_generator.value.aspect_ratio.value = parseFloat(iAspectRatio.value)
 
 

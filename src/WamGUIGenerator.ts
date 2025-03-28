@@ -1,4 +1,4 @@
-import { Color3, Color4, Mesh, MeshBuilder, StandardMaterial, TransformNode, VertexBuffer } from "@babylonjs/core";
+import { Color3, Color4, Mesh, MeshBuilder, StandardMaterial, Texture, TransformNode, VertexBuffer } from "@babylonjs/core";
 import { WebAudioModule } from "@webaudiomodules/api";
 import { ControlMap } from "./control/ControlMap.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
@@ -19,6 +19,7 @@ export class WamGUIGenerator{
     readonly aspect_ratio = new MOValue(1)
     readonly top_color = new MOValue("#aa4444")
     readonly bottom_color = new MOValue("#cc8888")
+    readonly front_face = new MOValue<string|null>(null)
 
     readonly pad_element?: HTMLElement
     readonly pad_mesh?: Mesh
@@ -38,7 +39,7 @@ export class WamGUIGenerator{
         }
 
         if(gui_target.babylonjs){
-            const pad_transform = this.pad_mesh = MeshBuilder.CreateBox("box", {size: 1., height:.1}, gui_target.babylonjs.getScene())
+            const pad_transform = this.pad_mesh = MeshBuilder.CreateBox("wampad", {size: 1., height:.1}, gui_target.babylonjs.getScene())
             const wampad3dMaterial = pad_transform.material = new StandardMaterial("mat", gui_target.babylonjs.getScene())
             wampad3dMaterial.diffuseColor = new Color3(1, 1, 1)
             wampad3dMaterial.specularColor = new Color3(0, 0, 0)
@@ -79,6 +80,32 @@ export class WamGUIGenerator{
         }
         this.top_color.observable.add(updateGradient)
         this.bottom_color.observable.add(updateGradient)
+
+
+        //// FRONT FACE ////
+        let face = null as Mesh|null
+        this.front_face.link(({from,to})=>{
+            if(gui_target.babylonjs){
+                if(face!=null){
+                    const mat = face.material as StandardMaterial
+                    mat.diffuseTexture?.dispose()
+                    mat.dispose()
+                    face.dispose()
+                }
+                if(this.front_face.value!=null){
+                    face = MeshBuilder.CreatePlane("wampad face", {size:1}, gui_target.babylonjs.getScene())
+                    face.parent = this.pad_mesh!!
+                    face.position.y = .051
+                    face.rotation.x = Math.PI/2
+                    const faceMaterial = face.material = new StandardMaterial("wampad face mat", gui_target.babylonjs.getScene())
+                    const texture = new Texture(to)
+                    faceMaterial.diffuseTexture = texture
+                    faceMaterial.specularColor = new Color3(0, 0, 0)
+                }
+            }
+        })
+    
+
         updateGradient()
 
 
@@ -115,6 +142,7 @@ export class WamGUIGenerator{
         this.aspect_ratio.value = code.aspect_ratio
         this.top_color.value = code.top_color
         this.bottom_color.value = code.bottom_color
+        this.front_face.value = code.face??null
         this.controls.splice(0,this.controls.length)
         for(let {control,values,x,y,width,height} of code.controls){
             const instance = new library[control](this.context)
@@ -127,6 +155,7 @@ export class WamGUIGenerator{
             aspect_ratio: this.aspect_ratio.value,
             bottom_color: this.bottom_color.value,
             top_color: this.top_color.value,
+            face: this.front_face.value??undefined,
             controls: this.controls.values.map(({control,values,x,y,width,height})=>{
                 const factory_id = Object.entries(library).find(([_,c])=>c===control.constructor)?.[0]
                 if(factory_id) return {x, y, width, height, values, control:factory_id}
@@ -140,6 +169,7 @@ export interface WamGUICode{
     top_color: string,
     bottom_color: string,
     aspect_ratio: number,
+    face?: string,
     controls: {
         control: string,
         values: Record<string,string>,
