@@ -1,5 +1,5 @@
 import { Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core"
-import { Control, ControlContext } from "../Control.ts"
+import { Control, ControlContext, ControlState } from "../Control.ts"
 import { ControlSettings } from "../settings.ts"
 
 
@@ -74,7 +74,7 @@ export class OutputControl extends Control{
         })
         return transform
     }
-
+    
     /** @type {Control['destroyNode']}  */
     destroyNode(){
         this.transform?.dispose()

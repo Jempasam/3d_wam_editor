@@ -1,5 +1,5 @@
 import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
-import { Control, ControlContext } from "../Control.ts";
+import { Control, ControlContext, ControlState } from "../Control.ts";
 import { ControlSettings, FONTS } from "../settings.ts";
 //@ts-ignore
 import earcut from "earcut"

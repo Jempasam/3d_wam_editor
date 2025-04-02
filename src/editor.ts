@@ -47,6 +47,7 @@ async function main(){
 
     //// INPUTS ////
     const iAspectRatio = document.querySelector<HTMLInputElement>("#aspect_ratio")!!
+    const iSize = document.querySelector<HTMLInputElement>("#size")!!
     const iTopColor = document.querySelector<HTMLInputElement>("#top_color")!!
     const iBottomColor = document.querySelector<HTMLInputElement>("#bottom_color")!!
     const iFrontFace = document.querySelector<HTMLInputElement>("#front_face")!!
@@ -207,13 +208,11 @@ async function main(){
             fields.set(new_fields)
             
             new_generator.aspect_ratio.link(({to}) => iAspectRatio.value=to.toString())
-            
+            new_generator.size.link(({to}) => iSize.value=to.toString())
             new_generator.top_color.link(({to}) => iTopColor.value=to)
-            
             new_generator.bottom_color.link(({to}) => iBottomColor.value=to)
-
             new_generator.front_face.link(({to}) => iFrontFace.value=to??"")
-            
+
             new_generator.controls.on_add.register((item)=>{
                 const {container} = item
                 if(container)container.onmousedown = (e: MouseEvent)=>{
@@ -237,6 +236,10 @@ async function main(){
             setIndicator("invalid","WAM Loading Failed")
         }
     })
+    wam_gui_generator.link(({from,to})=>{
+        //@ts-ignore
+        globalThis.wam_gui_generator = to
+    })
 
     iTopColor.oninput = ()=> wam_gui_generator.value.top_color.value = iTopColor.value
     iBottomColor.oninput = ()=> wam_gui_generator.value.bottom_color.value = iBottomColor.value
@@ -249,6 +252,7 @@ async function main(){
         wam_gui_generator.value.front_face.value = url
     }
     iAspectRatio.oninput = ()=> wam_gui_generator.value.aspect_ratio.value = parseFloat(iAspectRatio.value)
+    iSize.oninput = ()=> wam_gui_generator.value.size.value = parseFloat(iSize.value)
 
 
     //// FIELDS DEBUG ////

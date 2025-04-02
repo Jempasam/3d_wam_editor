@@ -3,7 +3,7 @@ import { ControlSettings } from "./settings.js"
 import { AbstractMesh, Scene, TransformNode } from "@babylonjs/core"
 import { ControlLibrary } from "../WamGUIGenerator.js"
 
-type ControlState =
+export type ControlState =
   | string
   | number
   | boolean
@@ -98,15 +98,12 @@ export abstract class Control{
     abstract destroyNode(): void
 
     /** Get the state of the control */
-    async getState(): Promise<ControlState>{
-        return await (this.wam?.audioNode.getState() ?? null)
+    async getState(): Promise<ControlState> {
+        return null
     }
 
     /** Set the state of the control */
-    setState(state: ControlState): Promise<void>{
-        if(this.wam) return this.wam.audioNode.setState(state)
-        else return Promise.resolve()
-    }
+    async setState(state: ControlState){ }
 
     /** Get the list of parameters names. */
     static getSettingsNames(){

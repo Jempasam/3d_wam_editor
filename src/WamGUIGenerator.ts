@@ -2,7 +2,9 @@ import { Color3, Color4, Mesh, MeshBuilder, StandardMaterial, Texture, Transform
 import { WebAudioModule } from "@webaudiomodules/api";
 import { ControlMap } from "./control/ControlMap.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
-import { Control, ControlContext } from "./control/Control.ts";
+import { Control, ControlContext, ControlState } from "./control/Control.ts";
+import { stat } from "fs";
+import { parallel, parallelFor } from "./utils/async.ts";
 
 export interface ControlLibrary{
     [id:string]: (new(context:ControlContext)=>Control) & (typeof Control)
@@ -17,6 +19,7 @@ export class WamGUIGenerator{
     
     readonly controls: ControlMap
     readonly aspect_ratio = new MOValue(1)
+    readonly size = new MOValue(.8)
     readonly top_color = new MOValue("#aa4444")
     readonly bottom_color = new MOValue("#cc8888")
     readonly front_face = new MOValue<string|null>(null)
@@ -56,18 +59,23 @@ export class WamGUIGenerator{
 
 
         //// WAM PAD ////
-        this.aspect_ratio.link(({to})=>{
-            let [width,height] = to>1 ? [1,1/to] : [to,1]
+        const updateSize = ()=>{
+            const aspect_ratio = this.aspect_ratio.value
+            const size = this.size.value
+            let [width,height] = aspect_ratio>1 ? [1,1/aspect_ratio] : [aspect_ratio,1]
             if(this.pad_element){
-                this.pad_element.style.width = `${Math.floor(100*width)}%`
-                this.pad_element.style.height = `${Math.floor(100*height)}%`
-                this.pad_element.style.marginLeft = `${Math.floor(50*(1-width))}%`
-                this.pad_element.style.marginTop = `${Math.floor(50*(1-height))}%`
+                this.pad_element.style.width = `${Math.floor(100*width*size)}%`
+                this.pad_element.style.height = `${Math.floor(100*height*size)}%`
+                this.pad_element.style.marginLeft = `${Math.floor(50*(1-size)+50*size*(1-width))}%`
+                this.pad_element.style.marginTop = `${Math.floor(50*(1-size)+50*size*(1-height))}%`
             }
             if(this.pad_mesh){
-                this.pad_mesh.scaling.set(width,1,height)
+                this.pad_mesh.scaling.set(width*size,1,height*size)
             }
-        })
+        }
+        this.aspect_ratio.observable.add(updateSize)
+        this.size.observable.add(updateSize)
+        updateSize()
 
         const update3dGradient = ()=>{
             if(this.pad_mesh){
@@ -158,6 +166,11 @@ export class WamGUIGenerator{
         this.controls.splice(this.controls.length, 0, {control, x:added.x, y:added.y, height:added.height, width:added.width, values:added.values})
     }
 
+    /**
+     * Load the 3DWam GUI descriptor.
+     * @param code the 3DWam GUI descriptor
+     * @param library The control library to use for loading the controls
+     */
     load(code: WamGUICode, library: ControlLibrary){
         this.aspect_ratio.value = code.aspect_ratio
         this.top_color.value = code.top_color
@@ -170,6 +183,11 @@ export class WamGUIGenerator{
         }
     }
 
+    /**
+     * Save the 3DWam GUI descriptor.
+     * @param library The control library to use for saving the controls
+     * @returns the 3DWam GUI descriptor
+     */
     save(library: ControlLibrary): WamGUICode{
         return {
             aspect_ratio: this.aspect_ratio.value,
@@ -182,6 +200,66 @@ export class WamGUIGenerator{
                 else return null
             }).filter(it=>it!=null)
         }
+    }
+
+    /**
+     * Get the state of the Wam GUI.
+     * @param includeWAM if true, the WAM state will be included in the result.
+     */
+    async getState(includeWAM: boolean = true): Promise<any> {
+        const state = {} as any
+        await parallel(
+            async()=>{
+                if(includeWAM && this.context.wam){
+                    state.wam = await this.context.wam.audioNode?.getState()
+                }
+                
+            },
+            async()=>{
+                state.controls = await Promise.all(this.controls.values.map(it=>it.control.getState()))
+            }
+        )
+        return state
+    }
+
+    /**
+     * Set the state of the Wam GUI.
+     * @param state the state to set
+     */
+    async setState(state: any): Promise<void> {
+        if(state==null)return
+        await parallel(
+            async()=>{
+                if("wam" in state){
+                    await this.context.wam?.audioNode?.setState(state.wam)
+                }
+            },
+            async()=>{
+                await parallelFor(0, this.controls.length, async i => {
+                    if(state.controls[i])this.controls.get(i)?.control.setState(state.controls[i])
+                })
+            }
+        )
+    }
+
+    /**
+     * Get the average maximum of height and width of the second and third quartiles of the controls sizes.
+     * Can be used to determine how the wam has to be scaled.
+     */
+    calculateAverageControlSize(): number{
+        const controls = Array.from({length: this.controls.length}, (_,i)=>this.controls.get(i))
+            .map(it=>Math.max(it.width, it.height))
+            .sort((a,b)=>a-b)
+
+        const from = Math.floor(controls.length/4)
+        const to = Math.ceil(controls.length*3/4)
+        let accumulator = 0
+        let count = 0
+        for(let i=from; i<to; i++){
+            accumulator += controls[i]
+            count++
+        }
+        return accumulator/count
     }
 }
 
