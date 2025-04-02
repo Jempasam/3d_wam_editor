@@ -173,6 +173,7 @@ export class WamGUIGenerator{
      */
     load(code: WamGUICode, library: ControlLibrary){
         this.aspect_ratio.value = code.aspect_ratio
+        this.size.value = code.size
         this.top_color.value = code.top_color
         this.bottom_color.value = code.bottom_color
         this.front_face.value = code.face??null
@@ -191,6 +192,7 @@ export class WamGUIGenerator{
     save(library: ControlLibrary): WamGUICode{
         return {
             aspect_ratio: this.aspect_ratio.value,
+            size: this.size.value,
             bottom_color: this.bottom_color.value,
             top_color: this.top_color.value,
             face: this.front_face.value??undefined,
@@ -267,6 +269,7 @@ export interface WamGUICode{
     top_color: string,
     bottom_color: string,
     aspect_ratio: number,
+    size: number,
     face?: string,
     controls: {
         control: string,
