@@ -13,6 +13,7 @@ container.className="wam_container"
 document.body.appendChild(container)
 
 const generator = WamGUIGenerator.create_and_init(
+    {},
     {html:container},
     description,
     controls,

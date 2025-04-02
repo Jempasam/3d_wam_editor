@@ -9,7 +9,7 @@ import { ParameterControl } from "./ParameterControl.ts"
  */
 export class ColorControl extends ParameterControl{
 
-    static label = "Color Changing Control"
+    static label = "Color Changing"
 
     constructor(context: ControlContext){
         super(context)

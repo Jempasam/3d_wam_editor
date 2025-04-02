@@ -8,7 +8,7 @@ import { ParameterControl } from "./ParameterControl.js";
  */
 export class CursorControl extends ParameterControl{
 
-    static label = "Rotating Cursor Control"
+    static label = "Rotating Cursor"
 
     constructor(context: ControlContext){
         super(context)
@@ -93,10 +93,11 @@ export class CursorControl extends ParameterControl{
 
     override createNode(scene: Scene){
         this.transform = new TransformNode("cusor_control_transform",scene)
-        const cylinder = this.cylinder = MeshBuilder.CreateCylinder("cursor_control", {diameter:1,height:0.8}, scene)
+        const cylinder = this.cylinder = MeshBuilder.CreateCylinder("cursor_control", {diameter:1,height:0.9}, scene)
         this.cylinder_material = cylinder.material = new StandardMaterial("cursor_control", scene)
         this.cylinder_material.specularColor.set(0,0,0)
         cylinder.setParent(this.transform)
+        cylinder.position.y=-0.05
 
         const cursor = this.cursor_mesh = MeshBuilder.CreateBox("cursor_control2", {width:0.1,height:1,depth:0.6}, scene)
         cursor.position.z=0.3

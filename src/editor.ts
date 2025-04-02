@@ -144,10 +144,9 @@ async function main(){
             defineAnInput(settings) {},
             defineAnOutput(settings) {},
             defineField(settings) {},
-            onFieldChange(label, value) {},
         })
         let element = example.createElement()
-        let option = iControlList.appendChild(html.a`<option value="${key}">${element}</option>`)
+        let option = iControlList.appendChild(html.a`<option value="${key}">${element}${control.label}</option>`)
         example.setDefaultValues()
         option.onclick=()=>setControl(key)
     }
@@ -177,12 +176,7 @@ async function main(){
 
     //// WAM BASE ////
     let fields = new MOValue<Parameters<ControlContext['defineField']>[0][]>([])
-    let wam_gui_generator = new MOValue(await WamGUIGenerator.create({html:gui_container, babylonjs:node_container},{
-        defineField(settings) {},
-        defineAnInput(settings) {},
-        defineAnOutput(settings) {},
-        onFieldChange(label, value) {},
-    }))
+    let wam_gui_generator = new MOValue(await WamGUIGenerator.create({html:gui_container, babylonjs:node_container},{}))
     let parameters_infos: WamParameterInfoMap = {}
     const wam = new MOValue(null as WebAudioModule|null)
 
@@ -208,7 +202,6 @@ async function main(){
                 defineField(settings) {new_fields.push(settings)},
                 defineAnInput(settings) {},
                 defineAnOutput(settings) {},
-                onFieldChange(label, value) {},
                 wam: to ?? undefined
             })
             fields.set(new_fields)

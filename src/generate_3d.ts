@@ -22,6 +22,7 @@ scene.createDefaultLight()
 const camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, 2, new Vector3(0, -.7, 0), scene)
 
 const generator = WamGUIGenerator.create_and_init(
+    {},
     {babylonjs:transform},
     description,
     controls,

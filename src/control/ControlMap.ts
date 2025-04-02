@@ -55,7 +55,7 @@ export class ControlMap{
                 node.parent=this.node_container
                 node.setPivotPoint(new Vector3(-.5,-.5,.5))
                 node.scaling.set(width,Math.min(width,height),height)
-                node.position.set(x,.53,-y)
+                node.position.set(x,.545,-y)
             }
 
             control.setDefaultValues()
@@ -97,7 +97,7 @@ export class ControlMap{
             control_info.container.style.top = `${y*100}%`
         }
         if(control_info.node){
-            control_info.node.position.set(x,.53,-y)
+            control_info.node.position.set(x,.545,-y)
         }
     }
 

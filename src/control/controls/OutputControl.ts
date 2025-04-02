@@ -8,7 +8,7 @@ import { ControlSettings } from "../settings.ts"
  */
 export class OutputControl extends Control{
 
-    static label = "Output Control"
+    static label = "Output"
 
     constructor(context: ControlContext){
         super(context)

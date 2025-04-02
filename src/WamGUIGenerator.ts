@@ -23,11 +23,19 @@ export class WamGUIGenerator{
 
     readonly pad_element?: HTMLElement
     readonly pad_mesh?: Mesh
+
+    readonly context: ControlContext
     
     private constructor(
-        readonly context: ControlContext,
+        context: Partial<ControlContext>,
         readonly gui_target: WamGUITarget = {},
     ){
+        this.context = {
+            defineAnInput: ()=>{},
+            defineAnOutput: ()=>{},
+            defineField: ()=>{},
+            ...context,
+        }
         
         //// TARGETS / CONTAINERS ////
         if(gui_target.html){
@@ -126,7 +134,7 @@ export class WamGUIGenerator{
 
     }
 
-    static async create_and_init(context: ControlContext, gui_target: WamGUITarget, init_code: WAMGuiInitCode, library: ControlLibrary, audioContext: BaseAudioContext, groupId: string): Promise<WamGUIGenerator>{
+    static async create_and_init(context: Partial<ControlContext>, gui_target: WamGUITarget, init_code: WAMGuiInitCode, library: ControlLibrary, audioContext: BaseAudioContext, groupId: string): Promise<WamGUIGenerator>{
         const wam_type = (await import(init_code.wam_url))?.default as typeof WebAudioModule
         const wam_instance = await wam_type.createInstance(groupId, audioContext)
         context={...context, wam:wam_instance}
@@ -135,7 +143,7 @@ export class WamGUIGenerator{
         return generator
     }
 
-    static async create(gui_target: WamGUITarget, context: ControlContext): Promise<WamGUIGenerator>{
+    static async create(gui_target: WamGUITarget, context: Partial<ControlContext>): Promise<WamGUIGenerator>{
         return new WamGUIGenerator(context, gui_target)
     }
 

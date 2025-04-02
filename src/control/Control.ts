@@ -3,6 +3,13 @@ import { ControlSettings } from "./settings.js"
 import { AbstractMesh, Scene, TransformNode } from "@babylonjs/core"
 import { ControlLibrary } from "../WamGUIGenerator.js"
 
+type ControlState =
+  | string
+  | number
+  | boolean
+  | null
+  | { [property: string]: ControlState }
+  | ControlState[];
 
 /**
  * The context of creation of the control.
@@ -14,13 +21,6 @@ export interface ControlContext{
      * If null the control is just a display and not a functionnal parameter.
      */
     wam?: WebAudioModule
-
-    /**
-     * A callback called when a field of the control is changed.
-     * @param label The label of the field.
-     * @param value The new value of the field. 
-     */
-    onFieldChange: (label: string, value: string) => void
 
     /** A callback called on each output of the control. */
     defineAnOutput(settings:{
@@ -44,7 +44,6 @@ export interface ControlContext{
         getValue(): number,
         stringify(value:number): string,
     }): void
-
 }
 
 
@@ -98,6 +97,16 @@ export abstract class Control{
     /** Destroy the babylonjs node. */
     abstract destroyNode(): void
 
+    /** Get the state of the control */
+    async getState(): Promise<ControlState>{
+        return await (this.wam?.audioNode.getState() ?? null)
+    }
+
+    /** Set the state of the control */
+    setState(state: ControlState): Promise<void>{
+        if(this.wam) return this.wam.audioNode.setState(state)
+        else return Promise.resolve()
+    }
 
     /** Get the list of parameters names. */
     static getSettingsNames(){

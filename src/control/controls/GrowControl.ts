@@ -9,7 +9,7 @@ import { ParameterControl } from "./ParameterControl.js";
  */
 export class GrowControl extends ParameterControl{
 
-    static label = "Size Changing Control"
+    static label = "Size Changing"
 
     constructor(context: ControlContext){
         super(context)
@@ -81,7 +81,7 @@ export class GrowControl extends ParameterControl{
         this.base_material = new StandardMaterial("grow_control_base", scene)
         this.base.material = this.base_material
         this.base.setParent(this.transform)
-        this.base.position.y=-0.35
+        this.base.position.y=-0.425
 
         this.mesh = MeshBuilder.CreateBox("grow_control", {height:1,depth:0.8,width:0.8}, scene)
         this.material = new StandardMaterial("grow_control", scene)
