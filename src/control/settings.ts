@@ -11,8 +11,7 @@ export type ControlSettings = {
         | [number,number]
         | {min:number,max:number,step:number}
         | {"choice":string[]}
-        | "value_parameter"
-        | "choice_parameter"
+        | "parameter"
 }
 
 
@@ -71,11 +70,9 @@ export class ControlSettingsGUI{
                 }
             }
             // WAM Parameter input : String value
-            else if(type=="choice_parameter" || type=="value_parameter"){
+            else if(type=="parameter"){
                 element = html.a`<select><option selected="true" value="">None</option></select>`
                 for(let [id,info] of Object.entries(wam_parameters_infos)){
-                    if(type=="choice_parameter" && info.type!="choice") continue
-                    if(type=="value_parameter" && info.type!="float") continue
                     let option = html.a`<option>${info.label??info.id}</option>`
                     option.onclick = ()=> this.on_value_change(label,id)
                     element.appendChild(option)

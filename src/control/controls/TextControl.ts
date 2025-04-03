@@ -23,7 +23,7 @@ export class TextControl extends Control{
         return {
             Text: "text", 
             Color: "color", 
-            Font: "font", 
+            Font: "font"
         }
     }
 

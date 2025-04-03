@@ -35,7 +35,7 @@ export abstract class ParameterControl extends Control{
     }
 
     static override getSettings(): ControlSettings{
-        return {"Target": "value_parameter"}
+        return {"Target": "parameter"}
     }
 
     parameter: WamParameterInfo|null = null
@@ -58,6 +58,10 @@ export abstract class ParameterControl extends Control{
         const control = this
         this.context.defineField({
             target: mesh,
+            getName() {
+                if(!control.parameter) return "none"
+                return control.parameter.label
+            },
             getValue() {
                 return control.normalized
             },
