@@ -1,6 +1,6 @@
 import { WamParameterInfo } from "@webaudiomodules/api"
-import { Control, ControlContext, ControlState } from "../Control.ts"
-import { ControlSettings } from "../settings.ts"
+import { Control, ControlContext, ControlState } from "../../Control.ts"
+import { ControlSettings } from "../../settings.ts"
 import { AbstractMesh } from "@babylonjs/core"
 
 /**

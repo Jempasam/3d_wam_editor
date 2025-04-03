@@ -1,14 +1,12 @@
 import { Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core"
-import { Control, ControlContext, ControlState } from "../Control.ts"
-import { ControlSettings } from "../settings.ts"
+import { Control, ControlContext, ControlState } from "../../Control.ts"
+import { ControlSettings } from "../../settings.ts"
 
 
 /**
  * An event and audio input control that changes a numeric value.
  */
-export class InputControl extends Control{
-
-    static label = "Input"
+export abstract class ConnectionControl extends Control{
 
     constructor(context: ControlContext){
         super(context)
@@ -19,7 +17,7 @@ export class InputControl extends Control{
     }
 
     static getDefaultValues(){
-        return {"Color":"#00FF00"}
+        return {"Color":this.defaultColor}
     }
 
     override updateValue(label: string, value: string){
@@ -63,10 +61,8 @@ export class InputControl extends Control{
         mesh.material = this.material
         mesh.position.y = -0.5
         
-        
-
         const wam = this.wam
-        if(wam)this.context.defineAnInput({
+        if(wam)(this.context[this.getCallbackName()] as ControlContext['defineAnInput'])({
             target: mesh,
             node: wam.audioNode,
             setConnected(connected) {
@@ -86,5 +82,32 @@ export class InputControl extends Control{
     /** @type {Control['destroy']} */
     destroy(){
     }
-}
+    
+    protected static defaultColor = "#00FF00"
 
+    protected getCallbackName(): keyof ControlContext { return "defineAnInput" }
+
+    static Input = class extends ConnectionControl{
+        static label = "Input"
+        protected static defaultColor = "#00FF00"
+        protected override getCallbackName(): keyof ControlContext { return "defineAnInput" }
+    }
+
+    static Output = class extends ConnectionControl{
+        static label = "Output"
+        protected static defaultColor = "#FF0000"
+        protected override getCallbackName(): keyof ControlContext { return "defineAnOutput" }
+    }
+
+    static MidiInput = class extends ConnectionControl{
+        static label = "MIDI Input"
+        protected static defaultColor = "#33BB88"
+        protected override getCallbackName(): keyof ControlContext { return "defineAnEventInput" }
+    }
+
+    static MidiOutput = class extends ConnectionControl{
+        static label = "MIDI Output"
+        protected static defaultColor = "#BB3388"
+        protected override getCallbackName(): keyof ControlContext { return "defineAnEventOutput" }
+    }
+}

@@ -1,6 +1,6 @@
 import { AbstractMesh, Color3, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
-import { ControlContext } from "../Control.ts"
-import { ControlSettings } from "../settings.ts"
+import { ControlContext } from "../../Control.ts"
+import { ControlSettings } from "../../settings.ts"
 import { ParameterControl } from "./ParameterControl.ts"
 
 

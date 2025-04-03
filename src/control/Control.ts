@@ -25,14 +25,28 @@ export interface ControlContext{
     /** A callback called on each output of the control. */
     defineAnOutput(settings:{
         target: AbstractMesh,
-        node: AudioNode|WamNode,
+        node: AudioNode,
         setConnected(connected:boolean): void,
     }): void
 
     /** A callback called on each input of the control. */
     defineAnInput(settings:{
         target: AbstractMesh,
-        node: AudioNode|WamNode,
+        node: AudioNode,
+        setConnected(connected:boolean): void,
+    }): void
+
+    /** A callback called on each midi/event output of the control. */
+    defineAnEventInput(settings:{
+        target: AbstractMesh,
+        node: WamNode,
+        setConnected(connected:boolean): void,
+    }): void
+
+    /** A callback called on each midi/event input of the control. */
+    defineAnEventOutput(settings:{
+        target: AbstractMesh,
+        node: WamNode,
         setConnected(connected:boolean): void,
     }): void
 

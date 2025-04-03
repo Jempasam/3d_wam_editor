@@ -37,6 +37,8 @@ export class WamGUIGenerator{
             defineAnInput: ()=>{},
             defineAnOutput: ()=>{},
             defineField: ()=>{},
+            defineAnEventInput: ()=>{},
+            defineAnEventOutput: ()=>{},
             ...context,
         }
         
