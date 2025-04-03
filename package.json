@@ -14,7 +14,7 @@
     "typescript": "~5.7.2"
   },
   "dependencies": {
-    "@babylonjs/core": "^6.48.0",
+    "@babylonjs/core": "^7.54.0",
     "@webaudiomodules/api": "^2.0.0-alpha.6",
     "@webaudiomodules/sdk": "^0.0.12",
     "earcut": "^3.0.1",
