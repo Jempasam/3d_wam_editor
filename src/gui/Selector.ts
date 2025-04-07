@@ -16,7 +16,8 @@ export class Selector<T>{
 
     constructor(
         private get_position: (value:T)=>{x:number,y:number,width:number,height:number},
-        private container: HTMLElement
+        private container: HTMLElement,
+        private lines: (selected:T[])=>{horizontal:number[],vertical:number[]} = ()=>({horizontal:[],vertical:[]}),
     ) { }
 
     /** The selected elements. */
@@ -84,7 +85,7 @@ export class Selector<T>{
             }
             if(!this.transformer){
                 this.transformer = new Transformer()
-                this.transformer.registerEvents()
+                this.transformer.registerEvents(()=>this.lines([...this.selecteds.values()]))
                 this.container.appendChild(this.transformer.element)
             }
             else{

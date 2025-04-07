@@ -10,7 +10,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      input: ["index.html", "generate_2d.html", "generate_3d.html", "src/index.ts"],
+      input: ["index.html", "editor2.html", "generate_2d.html", "generate_3d.html", "src/index.ts"],
     }
   }
 });

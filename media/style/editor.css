@@ -283,7 +283,7 @@ select{
 
     pointer-events: none;
 
-    >div{
+    >div.corner{
         position: absolute;
         width: .7rem;
         height: .7rem;
@@ -292,11 +292,29 @@ select{
         pointer-events: all;
         &:hover{ background-color: var(--select-hover); }
         &._dragged{ background-color: var(--select-hover); scale:1.5; }
-        &:nth-child(1){ left: -.4rem; top: -.4rem; }
-        &:nth-child(2){ right: -.4rem; top: -.4rem; }
-        &:nth-child(3){ right: -.4rem; bottom: -.4rem; }
-        &:nth-child(4){ left: -.4rem; bottom: -.4rem; }
-        &:nth-child(5){ left: calc(50% - .4rem); bottom: calc(50% - .4rem); }
+        &._1{ left: -.4rem; top: -.4rem; }
+        &._2{ right: -.4rem; top: -.4rem; }
+        &._3{ right: -.4rem; bottom: -.4rem; }
+        &._4{ left: -.4rem; bottom: -.4rem; }
+        &._5{ left: calc(50% - .4rem); bottom: calc(50% - .4rem); }
+    }
+
+    >div.line{
+        position: absolute;
+        background-color: var(--select-hover);
+        &._y{
+            height: .1rem;
+            width: calc( 100% + 4rem );
+            left: -2rem;
+        }
+        &._x{
+            width: .1rem;
+            height: calc( 100% + 4rem );
+            top: -2rem;
+        }
+        &._hidden{
+            display: none;
+        }
     }
 
 }

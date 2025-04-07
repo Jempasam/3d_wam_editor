@@ -13,17 +13,21 @@ export class Transformer {
     private _width: number
     private _height: number
     readonly element: HTMLElement
+    private isPrecise = false
 
     onmove = (x:number,y:number,width:number,height:number)=>{}
 
     constructor(){
         this.element = html.a`
             <div class="transformer">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
+                <div class="corner _1"></div>
+                <div class="corner _2"></div>
+                <div class="corner _3"></div>
+                <div class="corner _4"></div>
+                <div class="corner _5"></div>
+
+                <div class="line _x _hidden"></div>
+                <div class="line _y _hidden"></div>
             </div>
         `
         this._width = 1;
@@ -36,6 +40,20 @@ export class Transformer {
         this.element.style.height = to_css(this.height)
         this.element.style.left = to_css(this.x)
         this.element.style.top = to_css(this.y)
+
+        const onpress = (e: KeyboardEvent)=>{
+            if(this.element.parentElement==null){
+                window.removeEventListener("keydown", onpress)
+                window.removeEventListener("keyup", onrelease)
+                return
+            }
+            if(e.key=="Control") this.isPrecise = true
+        }
+        const onrelease = (e: KeyboardEvent)=>{
+            if(e.key=="Control") this.isPrecise = false
+        }
+        window.addEventListener("keydown", onpress)
+        window.addEventListener("keyup", onrelease)
     }
 
     /** Get the transformer left x coordinate. */
@@ -145,7 +163,7 @@ export class Transformer {
     /**
      * Start resizing the given border of the transformer.
      */
-    startResizing(border: 0|1|2|3, startMousePageX: number, startMousePageY: number){
+    startResizing(border: 0|1|2|3, startMousePageX: number, startMousePageY: number, lines: ()=>{horizontal:number[],vertical:number[]}){
         const [left, right, top, bottom] = (()=>{
             if(border==0) return [true, false, true, false]
             if(border==2) return [false, true, false, true]
@@ -165,21 +183,81 @@ export class Transformer {
                 window.removeEventListener("mousemove", fn)
                 this.element.children[border].classList.remove("_dragged")
                 return
-            } 
+            }
             let offset_x = (e.pageX-startMousePageX)/bounds.width*originalWidth
             let offset_y = (e.pageY-startMousePageY)/bounds.height*originalHeight
-            if(left) this.left = oLeft+offset_x
-            if(right) this.right = oRight+offset_x
-            if(top) this.top = oTop+offset_y
-            if(bottom) this.bottom = oBottom+offset_y
+            
+            const xBar = this.element.children[5] as HTMLElement
+            const yBar = this.element.children[6] as HTMLElement
+            xBar.classList.add("_hidden")
+            yBar.classList.add("_hidden")
+
+            const {horizontal, vertical} = lines()
+
+            if(left){
+                let pos = oLeft+offset_x
+                for(const l of horizontal){
+                    if(!this.isPrecise && Math.abs(pos-l)<0.01){
+                        pos = l
+                        xBar.classList.remove("_hidden")
+                        xBar.style.left = "0%"
+                        break
+                    }
+                }
+                this.left = pos
+            }
+            if(right){
+                let pos = oRight+offset_x
+                for(const l of horizontal){
+                    if(!this.isPrecise && Math.abs(pos-l)<0.01){
+                        pos = l
+                        xBar.classList.remove("_hidden")
+                        xBar.style.left = "100%"
+                        break
+                    }
+                }
+                this.right = pos
+            }
+            if(top){
+                let pos = oTop+offset_y
+                for(const l of vertical){
+                    if(!this.isPrecise && Math.abs(pos-l)<0.01){
+                        pos = l
+                        yBar.classList.remove("_hidden")
+                        yBar.style.top = "0%"
+                        break
+                    }
+                }
+                this.top = pos
+            }
+            if(bottom){
+                let pos = oBottom+offset_y
+                for(const l of vertical){
+                    if(!this.isPrecise && Math.abs(pos-l)<0.01){
+                        pos = l
+                        yBar.classList.remove("_hidden")
+                        yBar.style.top = "100%"
+                        break
+                    }
+                }
+                this.bottom = pos
+            }
         }
+
+        let ondrop = ()=>{
+            this.element.children[5].classList.add("_hidden")
+            this.element.children[6].classList.add("_hidden")
+            window.removeEventListener("mouseup", ondrop)
+        }
+        window.addEventListener("mouseup", ondrop)
+
         window.addEventListener("mousemove", fn)
     }
 
     /**
      * Start moving the transformer.
      */
-    startMoving(startMousePageX: number, startMousePageY: number){
+    startMoving(startMousePageX: number, startMousePageY: number, lines: ()=>{horizontal:number[],vertical:number[]}){
         if(this.dragged) this.dragged.classList.remove("_dragged")
         this.dragged = this.element.children[4]
         this.dragged.classList.add("_dragged")
@@ -191,9 +269,64 @@ export class Transformer {
                 this.element.children[4].classList.remove("_dragged")
                 return
             }
-            this.x = oX + (e.pageX-startMousePageX)/bounds.width*this.width
-            this.y = oY + (e.pageY-startMousePageY)/bounds.height*this.height
+
+            const xBar = this.element.children[5] as HTMLElement
+            const yBar = this.element.children[6] as HTMLElement
+            xBar.classList.add("_hidden")
+            yBar.classList.add("_hidden")
+
+            let posX = oX + (e.pageX-startMousePageX)/bounds.width*this.width
+            let posY = oY + (e.pageY-startMousePageY)/bounds.height*this.height
+
+            const {horizontal, vertical} = lines()
+
+            for(const l of horizontal){
+                if(!this.isPrecise && Math.abs(posX-l)<0.01){
+                    posX = l
+                    xBar.classList.remove("_hidden")
+                    xBar.style.left = "0%"
+                    break
+                }
+            }
+
+            for(const l of horizontal){
+                if(!this.isPrecise && Math.abs(posX+this.width-l)<0.01){
+                    posX = l-this.width
+                    xBar.classList.remove("_hidden")
+                    xBar.style.left = "100%"
+                    break
+                }
+            }
+
+            for(const l of vertical){
+                if(!this.isPrecise && Math.abs(posY-l)<0.01){
+                    posY = l
+                    yBar.classList.remove("_hidden")
+                    yBar.style.top = "100%"
+                    break
+                }
+            }
+
+            for(const l of vertical){
+                if(!this.isPrecise && Math.abs(posY+this.height-l)<0.01){
+                    posY = l-this.height
+                    yBar.classList.remove("_hidden")
+                    yBar.style.top = "100%"
+                    break
+                }
+            }
+
+            this.x = posX
+            this.y = posY
         }
+        window.addEventListener("mousemove", fn)
+
+        let ondrop = ()=>{
+            this.element.children[5].classList.add("_hidden")
+            this.element.children[6].classList.add("_hidden")
+            window.removeEventListener("mouseup", ondrop)
+        }
+        window.addEventListener("mouseup", ondrop)
         window.addEventListener("mousemove", fn)
     }
     
@@ -202,19 +335,22 @@ export class Transformer {
      * Register the events that allow the transformer to
      * be manually moved and resized.
      */
-    registerEvents(){
+    registerEvents(lines: ()=>{horizontal:number[],vertical:number[]} = ()=>({horizontal:[],vertical:[]})){
         let undrag = ()=> this.dragged = null
         window.addEventListener("mouseup", undrag)
         window.addEventListener("blur", undrag)
 
-        const handler = (border: 0|1|2|3) => (e: MouseEvent)=>{ e.preventDefault(); this.startResizing(border, e.pageX, e.pageY) }
+        const handler = (border: 0|1|2|3) => (e: MouseEvent)=>{
+            e.preventDefault()
+            this.startResizing(border, e.pageX, e.pageY, lines)
+        }
         ;(this.element.children[0] as HTMLElement).addEventListener("mousedown", handler(0))
         ;(this.element.children[2] as HTMLElement).addEventListener("mousedown", handler(2))
         ;(this.element.children[1] as HTMLElement).addEventListener("mousedown", handler(1))
         ;(this.element.children[3] as HTMLElement).addEventListener("mousedown", handler(3))
         ;(this.element.children[4] as HTMLElement).addEventListener("mousedown", (e: MouseEvent)=>{
             e.preventDefault()
-            this.startMoving(e.pageX, e.pageY)
+            this.startMoving(e.pageX, e.pageY, lines)
         })
     }
 

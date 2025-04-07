@@ -66,10 +66,12 @@ export class WamGUIGenerator{
             const size = this.size.value
             let [width,height] = aspect_ratio>1 ? [1,1/aspect_ratio] : [aspect_ratio,1]
             if(this.pad_element){
-                this.pad_element.style.width = `${Math.floor(100*width*size)}%`
-                this.pad_element.style.height = `${Math.floor(100*height*size)}%`
-                this.pad_element.style.marginLeft = `${Math.floor(50*(1-size)+50*size*(1-width))}%`
-                this.pad_element.style.marginTop = `${Math.floor(50*(1-size)+50*size*(1-height))}%`
+                width*=size
+                height*=size
+                this.pad_element.style.width = `${Math.round(100*width)}%`
+                this.pad_element.style.height = `${Math.round(100*height)}%`
+                this.pad_element.style.marginLeft = `${Math.round((1-width)*50)}%`
+                this.pad_element.style.marginTop = `${Math.round((1-height)*50)}%`
             }
             if(this.pad_mesh){
                 this.pad_mesh.scaling.set(width*size,1,height*size)

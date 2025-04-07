@@ -144,6 +144,8 @@ async function main(){
         let example = new control({
             defineAnInput(settings) {},
             defineAnOutput(settings) {},
+            defineAnEventInput(settings) {},
+            defineAnEventOutput(settings) {},
             defineField(settings) {},
         })
         let element = example.createElement()
@@ -219,7 +221,7 @@ async function main(){
                     e.stopPropagation()
                     if(e.shiftKey) selector.select({element:container, infos:item})
                     else selector.selecteds = [{element:container, infos:item}]
-                    selector.transformer?.startMoving(e.pageX,e.pageY)
+                    selector.transformer?.startMoving(e.pageX,e.pageY,()=>getTransformerLines([...selector.selecteds.values()]))
                 }
             })
 
@@ -298,7 +300,30 @@ async function main(){
 
 
     //// Selector and Transformer ////
-    let selector = new Selector<{element:HTMLElement,infos:ReturnType<ControlMap['get']>}>(it=>it.infos, gui_container)
+    function getTransformerLines(selecteds: {element: HTMLElement, infos: ReturnType<ControlMap["get"]>}[]){
+        const horizontal: number[] = []
+        const vertical: number[] = []
+        for(const selectable of wam_gui_generator.value.controls.values){
+            if(selecteds.some(e=>e.infos==selectable)) continue
+            horizontal.push(selectable.x)
+            vertical.push(selectable.y)
+            horizontal.push(selectable.x+selectable.width)
+            vertical.push(selectable.y+selectable.height)
+            
+            horizontal.push(1.-selectable.x)
+            vertical.push(1.-selectable.y)
+            horizontal.push(1.-selectable.x-selectable.width)
+            vertical.push(1.-selectable.y-selectable.height)
+        }
+
+        return {horizontal, vertical}
+    }
+    
+    let selector = new Selector<{element:HTMLElement,infos:ReturnType<ControlMap['get']>}>(
+        it=>it.infos,
+        gui_container,
+        getTransformerLines,
+    )
 
     function unselectall(e: MouseEvent){
         if(e.target==e.currentTarget) selector.unselect_all()
