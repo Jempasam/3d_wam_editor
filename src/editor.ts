@@ -56,6 +56,7 @@ async function main(){
     const iControlName = document.querySelector<HTMLInputElement>("#control_name")!!
     const gui_container = document.querySelector<HTMLElement>("#gui_container")!!
     const iAddControl = document.querySelector<HTMLButtonElement>("#add_control")!!
+    const iReplaceControl = document.querySelector<HTMLButtonElement>("#replace_control")!!
     const iWamUrl = document.querySelector<HTMLTextAreaElement>("#wam_url")!!
     const original_ui = document.querySelector<HTMLElement>("#original_ui")!!
     const iGetFields = document.querySelector<HTMLInputElement>("#fields_get")!!
@@ -127,16 +128,15 @@ async function main(){
     function showSelectedControlSettings(){
         if(selected_control){
             control_values = selected_control.control.getDefaultValues()
-            iControlName.textContent = selected_control.control.label
             setControlSettings(
+                selected_control.control.label,
                 selected_control.control.getSettings(),
                 (label) => control_values[label],
                 (label,value) => control_values[label]=value
             )
         }
         else{
-            iControlName.textContent=""
-            setControlSettings(null)
+            setControlSettings("",null)
         }
     }
 
@@ -160,10 +160,12 @@ async function main(){
     let control_values: Record<string,string> = {}
 
     function setControlSettings(
+        name: string,
         settings: ControlSettings|null, 
         getValue = (label:string)=>(undefined as string|undefined),
         setValue = (label:string, value:string)=>{}
     ){
+        iControlName.textContent = name
         if(settings){
             let gui = new ControlSettingsGUI(settings,parameters_infos)
             for(let [label,value] of Object.entries(settings)){
@@ -341,6 +343,7 @@ async function main(){
         const controls = wam_gui_generator.value.controls; if(!controls)return
         const settings = selection.infos.control.factory.getSettings()
         setControlSettings(
+            selection.infos.control.factory.label,
             settings,
             (label: string) => selection.infos.values[label],
             (label,value) => {
@@ -364,6 +367,25 @@ async function main(){
         if(selected_control && controls){
             // @ts-ignore
             wam_gui_generator.value.addControl({control: selected_control.control, values:control_values, x:0, y:0, width:0.1, height:0.1})
+        }
+    }
+
+    iReplaceControl.onclick=()=>{
+        const selecteds = [...selector.selecteds]
+        const control = selected_control?.control; if(control==null)return
+        const gui = wam_gui_generator.value
+
+        for(const s of selecteds){
+            selector.unselect(s)
+            gui.controls.splice(gui.controls.values.indexOf(s.infos),1)
+        }
+        
+        for(const s of selecteds){
+            const {infos:{x,y,width,height,values}} = s
+            // @ts-ignore
+            gui.addControl({x,y,width,height,values,control})
+            const e = gui.controls.get(gui.controls.length-1)
+            selector.select({element:e.container!!, infos:e})
         }
     }
 

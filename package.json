@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 5172",
+    "expose": "vite dev --port 5172 --host",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lib": "vite build -c vite_lib.config.js",
