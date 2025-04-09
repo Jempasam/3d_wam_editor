@@ -2,7 +2,7 @@ import { Control, ControlContext } from "./Control.js"
 import { ColorControl } from "./controls/parameter/ColorControl.js"
 import { CursorControl } from "./controls/parameter/CursorControl.js"
 import { GrowControl } from "./controls/parameter/GrowControl.js"
-import { TextControl } from "./controls/TextControl.js"
+import { TextControl } from "./controls/text/TextControl.js"
 import { ConnectionControl } from "./controls/connection/ConnectionControl.js"
 import { Joystick3DControl } from "./controls/parameter/Joystick3DControl.js"
 

@@ -1,6 +1,6 @@
 import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
-import { Control, ControlContext, ControlState } from "../Control.ts";
-import { ControlSettings, FONTS } from "../settings.ts";
+import { Control, ControlContext } from "../../Control.ts";
+import { ControlSettings, FONTS } from "../../settings.ts";
 //@ts-ignore
 import earcut from "earcut"
 //@ts-ignore
@@ -108,7 +108,6 @@ export class TextControl extends Control{
         textMesh.rotation.set(Math.PI/2,0,0)
         textMesh.position.set(0,-.37,-.25)
         this.mesh = textMesh
-
 
         // Outline Mesh
         if(this.outlineMesh){

@@ -2,8 +2,7 @@ import { Color3, Color4, Mesh, MeshBuilder, StandardMaterial, Texture, Transform
 import { WebAudioModule } from "@webaudiomodules/api";
 import { ControlMap } from "./control/ControlMap.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
-import { Control, ControlContext, ControlState } from "./control/Control.ts";
-import { stat } from "fs";
+import { Control, ControlContext } from "./control/Control.ts";
 import { parallel, parallelFor } from "./utils/async.ts";
 
 export interface ControlLibrary{
@@ -103,7 +102,7 @@ export class WamGUIGenerator{
 
         //// FRONT FACE ////
         let face = null as Mesh|null
-        this.front_face.link(({from,to})=>{
+        this.front_face.link(({to})=>{
             if(gui_target.babylonjs){
                 if(face!=null){
                     const mat = face.material as StandardMaterial
