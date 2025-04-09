@@ -59,6 +59,14 @@ export interface ControlContext{
         getValue(): number,
         stringify(value:number): string,
     }): void
+
+    /** A callback called on each field of the control that can be dragged in all 3 dimension. */
+    defineDraggableField(settings:{
+        target: AbstractMesh,
+        getName(): string,
+        getValue(): string,
+        drag(x: number, y: number, z: number): void,
+    }): void
 }
 
 

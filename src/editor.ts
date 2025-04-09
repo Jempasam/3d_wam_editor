@@ -147,6 +147,7 @@ async function main(){
             defineAnEventInput(settings) {},
             defineAnEventOutput(settings) {},
             defineField(settings) {},
+            defineDraggableField(settings) {},
         })
         let element = example.createElement()
         let option = iControlList.appendChild(html.a`<option value="${key}">${element}${control.label}</option>`)

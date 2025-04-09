@@ -39,6 +39,7 @@ export class WamGUIGenerator{
             defineField: ()=>{},
             defineAnEventInput: ()=>{},
             defineAnEventOutput: ()=>{},
+            defineDraggableField: ()=>{},
             ...context,
         }
         
@@ -65,16 +66,16 @@ export class WamGUIGenerator{
             const aspect_ratio = this.aspect_ratio.value
             const size = this.size.value
             let [width,height] = aspect_ratio>1 ? [1,1/aspect_ratio] : [aspect_ratio,1]
+            width*=size
+            height*=size
             if(this.pad_element){
-                width*=size
-                height*=size
                 this.pad_element.style.width = `${Math.round(100*width)}%`
                 this.pad_element.style.height = `${Math.round(100*height)}%`
                 this.pad_element.style.marginLeft = `${Math.round((1-width)*50)}%`
                 this.pad_element.style.marginTop = `${Math.round((1-height)*50)}%`
             }
             if(this.pad_mesh){
-                this.pad_mesh.scaling.set(width*size,1,height*size)
+                this.pad_mesh.scaling.set(width,1,height)
             }
         }
         this.aspect_ratio.observable.add(updateSize)

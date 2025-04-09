@@ -23,13 +23,17 @@ export class TextControl extends Control{
         return {
             Text: "text", 
             Color: "color", 
-            Font: "font"
+            Font: "font",
+            "Outline Color": "color",
+            "Outline Width": [0,.1],
         }
     }
 
     static getDefaultValues = ()=>({
         Text: "Text", 
-        Color: "#000000", 
+        Color: "#000000",
+        "Outline Color": "#ffffff",
+        "Outline Width": "0",
         Font: Object.entries(FONTS)[0][0], 
     })
 
@@ -42,7 +46,9 @@ export class TextControl extends Control{
         if(this.mesh)switch(label){
             case "Text": this.text = value; this.generateTextMesh(); break
             case "Font": this.font = value; this.generateTextMesh(); break
-            case "Color": (this.mesh.material as StandardMaterial).diffuseColor = Color3.FromHexString(value); break
+            case "Color": this.material!!.diffuseColor = Color3.FromHexString(value); break
+            case "Outline Color": this.outlineMaterial!!.diffuseColor = Color3.FromHexString(value); break
+            case "Outline Width": this.outlineWidth = parseFloat(value); this.generateTextMesh(); break
         }
     }
 
@@ -68,38 +74,80 @@ export class TextControl extends Control{
     
     scene: Scene|null = null
     transform: TransformNode|null = null
-    mesh: Mesh|null = null
+    material: StandardMaterial|null = null
+    outlineMaterial: StandardMaterial|null = null
 
-    private text = "_"
-    private font = Object.entries(FONTS)[0][0]
     override createNode(scene: Scene){
         const transform = new TransformNode("text_transform",scene)
+
+        this.material = new StandardMaterial("text_material", scene)
+        this.material.specularColor.set(0,0,0)
+
+        this.outlineMaterial = new StandardMaterial("text_outline_material", scene)
+        this.outlineMaterial.specularColor.set(0,0,0)
+
         this.transform = transform
         this.generateTextMesh()
         return transform
     }
 
+    private text = "_"
+    private outlineWidth = 0
+    private font = Object.entries(FONTS)[0][0]
+    
+    private mesh: Mesh|null = null
+    private outlineMesh: Mesh|null = null
+
     private generateTextMesh(){
-        if(this.transform){
-            const old_material= this.mesh?.material
-            const old_scaling= this.mesh?.scaling
-            if(this.mesh) this.mesh.dispose()
-            const ret = MeshBuilder.CreateText("Text", this.text, FONTS[this.font].babylon, {size:.6, depth:.15}, this.transform.getScene())!!
-            ret.rotation.set(Math.PI/2,0,0)
-            ret.position.set(0,-.37,-.25)
-            ret.parent = this.transform
-            if(old_material)ret.material = old_material
-            else{
-                const mat = ret.material = new StandardMaterial("text_material", this.transform.getScene())
-                mat.specularColor.set(0,0,0)
-            } 
-            if(old_scaling)ret.scaling.copyFrom(old_scaling)
-            this.mesh = ret
+        // Text Mesh
+        if(this.mesh) this.mesh.dispose()
+
+        const textMesh = MeshBuilder.CreateText("Text", this.text, FONTS[this.font].babylon, {size:.6, depth:.15}, this.transform!!.getScene())!!
+        textMesh.parent = this.transform
+        textMesh.material = this.material!!
+        textMesh.rotation.set(Math.PI/2,0,0)
+        textMesh.position.set(0,-.37,-.25)
+        this.mesh = textMesh
+
+
+        // Outline Mesh
+        if(this.outlineMesh){
+            this.outlineMesh.dispose()
+            this.outlineMesh = null
+        }
+        
+        if(this.outlineWidth>0.001){
+            const w = this.outlineWidth
+
+            const outlineMesh1 = textMesh.clone()
+            outlineMesh1.parent = null
+            outlineMesh1.scaling.setAll(1)
+            outlineMesh1.scaling.z=.8
+            outlineMesh1.rotation.setAll(0)
+            outlineMesh1.position.set(w,w,0)
+
+            const outlineMesh2 = outlineMesh1.clone()
+            outlineMesh2.position.set(-w,w,0)
+
+            const outlineMesh3 = outlineMesh1.clone()
+            outlineMesh3.position.set(0,-w,0)
+
+            const outlineMesh = Mesh.MergeMeshes([outlineMesh1, outlineMesh2, outlineMesh3], true, false)!!
+            ;[outlineMesh1, outlineMesh2, outlineMesh3].forEach(m=>m.dispose())
+            outlineMesh.material = this.outlineMaterial!!
+            outlineMesh.parent = this.transform
+            outlineMesh.rotation.set(Math.PI/2,0,0)
+            outlineMesh.position.set(0,-.37,-.25)
+            this.outlineMesh = outlineMesh
         }
     }
 
     override destroyNode(){
         this.transform?.dispose()
+        this.mesh?.dispose()
+        this.outlineMesh?.dispose()
+        this.material?.dispose()
+        this.outlineMaterial?.dispose()
     }
 
     override destroy(){}
