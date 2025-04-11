@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="search" placeholder="Search" id="search" style="width: 100%; padding: 1rem; box-sizing: border-box; margin-bottom: 1rem;">
+    <ul></ul>
+    <style>
+        html,body{
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            font-family: sans-serif;
+            background-color: #f0f0f0;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        ul{
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            list-style: none;
+            overflow-y: scroll;
+        }
+        li{
+            border: 1px solid black;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 20rem;
+            padding: 1rem;
+        }
+        img{
+            width: 60%;
+            height: auto;
+        }
+        h2{
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <script>
+        (async()=>{
+            const WAMS = {}
+            let search = ""
+
+            const list = document.querySelector('ul')
+
+            // Wam API
+            {
+                const wamapi = await fetch("https://www.webaudiomodules.com/community/plugins.json").then(res => res.json())
+                
+                for(const {identifier, path, website, name, description, thumbnail} of wamapi) WAMS[identifier]= {
+                    name,
+                    image: `https://www.webaudiomodules.com/community/plugins/${thumbnail}`,
+                    description,
+                    url: `${website}/${path}`
+                }
+            }
+
+            function match(a,search){
+                if(a==search) return true
+                if(a.toLowerCase().includes(search.toLowerCase())) return true
+                if(search.toLowerCase().includes(a.toLowerCase())) return true
+                return false
+            }
+
+            function generate(){
+                list.innerHTML = ''
+                for(const {name, image, description, url} of Object.values(WAMS)){
+                    if(search=="" || match(name, search) || match(description, search) || match(url, search)){
+                        const li = document.createElement('li')
+                        li.innerHTML = `<h2>${name}</h2><img src="${image}" alt="${name}"><p>${description}</p><em>${url}</em>`
+                        list.appendChild(li)
+                    }
+                }
+            }
+
+            generate()
+
+            const searchInput = document.querySelector('#search')
+            searchInput.addEventListener('input', (e) => {
+                search = e.target.value
+                generate()
+            })
+        })()
+    </script>
+</body>
+</html>
