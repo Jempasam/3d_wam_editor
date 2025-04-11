@@ -9,6 +9,7 @@ import { Selector } from "./gui/Selector.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
 import { html } from "./utils/doc.ts";
 import { ControlLibrary, WamGUICode, WamGUIGenerator, WAMGuiInitCode } from "./WamGUIGenerator.ts";
+import examples from "./examples.json";
 
 async function main(){
     
@@ -60,6 +61,7 @@ async function main(){
     const iWamUrl = document.querySelector<HTMLTextAreaElement>("#wam_url")!!
     const original_ui = document.querySelector<HTMLElement>("#original_ui")!!
     const iGetFields = document.querySelector<HTMLInputElement>("#fields_get")!!
+    const iExamples = document.querySelector<HTMLSelectElement>("#examples")!!
 
 
     //// INDICATOR ////
@@ -299,6 +301,16 @@ async function main(){
             }
             
         }
+    }
+    
+    for(const [id,example] of Object.entries(examples)){
+        const option = iExamples.appendChild(html.a`<option value="${id}">${id}</option>`)
+        option.onclick=()=>{
+            save_text_area.value = JSON.stringify(example)
+            // @ts-ignore
+            save_text_area.onchange()
+        }
+
     }
 
 
