@@ -2,6 +2,7 @@ import { WamParameterInfo } from "@webaudiomodules/api"
 import { Control, ControlContext, ControlState } from "../../Control.ts"
 import { ControlSettings } from "../../settings.ts"
 import { AbstractMesh } from "@babylonjs/core"
+import { stringifyWamParameter } from "../../../utils/wam.ts"
 
 /**
  * A color coded controls that change a numeric value.
@@ -102,16 +103,7 @@ export abstract class ParameterControl extends Control{
             },
             stringify(value) {
                 const p = control.parameter[index]; if(!p) return "none"
-                const {minValue, maxValue} = p
-                const unnormalized = value*(maxValue-minValue)+minValue
-                if(p.valueString) return p.valueString(unnormalized)
-                else{
-                    if(p.choices.length) return p.choices[Math.round(unnormalized)]
-                    else{
-                        const {units} = p
-                        return unnormalized.toPrecision(3)+units
-                    }
-                }
+                return stringifyWamParameter(p, value)
             },
         })
     }
