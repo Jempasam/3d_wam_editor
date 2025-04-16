@@ -127,9 +127,10 @@ export class WamGUIGenerator{
         //// FRONT FACE AND GRADIENT ////
         const updateElementBackground = ()=>{
             if(this.pad_element){
+                console.log(this.front_face.value)
                 this.pad_element!!.style.backgroundSize = "100% 100%"
                 if(this.front_face.value){
-                    this.pad_element!!.style.backgroundImage = `url(${this.front_face.value})`
+                    this.pad_element!!.style.backgroundImage = `url("${this.front_face.value}")`
                 }
                 else{
                     this.pad_element.style.backgroundImage = `linear-gradient(${this.top_color.value},${this.bottom_color.value})`
@@ -155,7 +156,7 @@ export class WamGUIGenerator{
         return generator
     }
 
-    static async create(gui_target: WamGUITarget, context: Partial<ControlContext>): Promise<WamGUIGenerator>{
+    static create(gui_target: WamGUITarget, context: Partial<ControlContext>): WamGUIGenerator{
         return new WamGUIGenerator(context, gui_target)
     }
 

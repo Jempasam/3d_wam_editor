@@ -25,7 +25,7 @@ export class ControlSettingsGUI{
     declare element: DocumentFragment
 
     /** Generate the control settings html GUI. */
-    constructor(settings: ControlSettings, wam_parameters_infos: WamParameterInfoMap){
+    constructor(settings: ControlSettings, wam_parameters_infos?: WamParameterInfoMap){
         let elements = []
         for(let [label,type] of Object.entries(settings)){
             let element: HTMLElement|null = null
@@ -72,7 +72,7 @@ export class ControlSettingsGUI{
             // WAM Parameter input : String value
             else if(type=="parameter"){
                 element = html.a`<select><option selected="true" value="">None</option></select>`
-                for(let [id,info] of Object.entries(wam_parameters_infos)){
+                for(let [id,info] of Object.entries(wam_parameters_infos??{})){
                     let option = html.a`<option>${info.label??info.id}</option>`
                     option.onclick = ()=> this.on_value_change(label,id)
                     element.appendChild(option)

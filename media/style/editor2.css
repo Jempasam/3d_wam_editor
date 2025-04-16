@@ -1,0 +1,411 @@
+html,body{
+    margin: 0;
+    padding: 0;
+
+    --back: rgb(67, 67, 67);
+    --text: white;
+    --backback: rgb(46, 46, 46);
+    --alt: cornflowerblue;
+
+    --select1: rgba(119, 207, 255, .2);
+    --select2: rgba(119, 207, 255, 1);
+    --select-hover: rgb(255, 171, 119);
+
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--text);
+}
+
+h3{
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+}
+
+/* INPUTS */
+.form_container{
+    label{
+        color: var(--text);
+        font-size: .8rem;
+        align-self: self-start;
+        margin-right: 3rem;
+        /*margin-bottom: -0.5rem;*/
+        &:not(:first-child){
+            padding-top: 0.5rem;
+        }
+    }
+
+    select{
+        border: 1px solid var(--alt);
+        background-color: var(--back);
+        border-radius: 0.5rem;
+        padding: 0.3rem;
+        color: var(--text);
+        &:hover{
+            background-color: var(--alt);
+        }
+    }
+    textarea{
+        border: 1px solid var(--alt);
+        background-color: var(--back);
+        border-radius: 0.5rem;
+        padding: 0.3rem;
+        color: var(--text);
+    }
+    input,button{
+        border: 1px solid var(--alt);
+        background-color: var(--back);
+        border-radius: 0.5rem;
+        padding: 0.3rem;
+        color: var(--text);
+        &:hover{
+            background-color: var(--alt);
+        }
+        margin-left: 1rem;
+    }
+    button{
+        cursor: pointer;
+        margin-bottom: .5rem;
+        margin-top: .5rem;
+    }
+    input[type=color]{
+        width: 3rem;
+        height: 1.8rem;
+        min-height: 1.8rem;
+        border: 2px solid var(--alt);
+    }
+    .directionnal_input{
+        align-self: center;
+        position: relative;
+        border: 1px solid var(--alt);
+        border-radius: 1rem;
+        height: 4rem;
+        width: 4rem;
+        >*{
+            width: 35%;
+            height: 35%;
+        }
+        >:nth-child(1){
+            position: absolute;
+            left: 32.5%;
+        }
+        >:nth-child(2){
+            position: absolute;
+            top: 32.5%;
+            right: 0%;
+        }
+        >:nth-child(3){
+            position: absolute;
+            left: 32.5%;
+            bottom: 0;
+        }
+        >:nth-child(4){
+            position: absolute;
+            left: 0;
+            top: 32.5%;
+        }
+    }
+}
+/* */
+
+.menu{
+    display: flex;
+    padding: .5rem;
+    max-height: 100%;
+    &._vertical{
+        flex-direction: column;
+        align-items: start;
+    }
+    &._center{
+        align-items: center;
+    }
+    &._middle{
+        justify-content: center;
+    }
+    &._fill{
+        width: 100%;
+        height: 100%;
+    }
+    &._scrollable{
+        overflow-y: scroll;
+    }
+}
+
+/* DISPLAY */
+.display{
+    background: 
+    linear-gradient(90deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 50%
+    ),
+    linear-gradient(0deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 50%
+    );
+    background-size: 5rem 5rem;
+    border: 1px solid var(--alt);
+    width: 20rem;
+    height: 20rem;
+}
+/* */
+
+/* DISPLAY */
+.container{
+    align-self: center;
+    background: 
+    linear-gradient(90deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 50%
+    ),
+    linear-gradient(0deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 50%
+    );
+    background-size: 5rem 5rem;
+    border: 1px solid var(--alt);
+    min-width: 3rem;
+    min-height: 3rem;
+    margin: .5rem;
+    overflow: scroll;
+}
+/* */
+
+/* INDICATOR */
+.indicator{
+    align-self: center;
+    background-color: gray;
+    padding: 0.5rem;
+    border-radius: 1rem;
+    font-variant-caps: all-petite-caps;
+    &._valid{
+        background-color: green;
+    }
+    &._waiting{
+        background-color: orange;
+    }
+    &._invalid{
+        background-color: red;
+    }
+}
+/* */
+
+/* CONTROLS_LIST */
+.item_selector{
+    display: flex;
+    
+    &._grid{
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    &._line{
+        flex-direction: column;
+        justify-content: start;
+        height: 100%;
+    }
+
+    width: 100%;
+    
+    overflow-y: scroll;
+
+    padding-left: 1rem;
+    padding-right: 1rem;
+    >li{
+        display: flex;
+        align-items: center;
+        justify-content: start;
+        flex-direction: column;
+        margin: .3rem;
+        padding: .2rem;
+        font-size: .6rem;
+        box-sizing: border-box;
+
+        >.-icon{
+            display: flex;
+            width: 3rem;
+            height: 3rem;
+            contain: strict;
+        }
+        >.-label{
+            text-align: center;
+            max-width: 3rem;
+        }
+
+        border-radius: 0.5rem;
+        &._selected{
+            background-color: var(--select1);
+            scale: 1.1;
+        }
+        &:not(._selected){
+            cursor: pointer;
+            &:hover{
+                scale: 1.1;
+            }
+        }
+        transition: scale .5s;
+    }
+}
+/* */
+
+/* CENTER PANE */
+.center_pane{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.center_top_pane{
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+/* */
+
+._contain{
+    contain: strict;
+}
+
+/* TOOLBAR */
+.toolbar{
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    align-items: center;
+    justify-content: start;
+    padding: .3rem;
+    margin: 0;
+    >li{
+        margin: .1rem;
+        >button{
+            background: none;
+            font-size: 1.1rem;
+            border: none;
+            outline: none;
+            width: 1.5rem;
+            height: 1.5rem;
+
+            background-color: var(--back);
+            color: var(--text);
+            
+        }
+        &:not(._disabled){
+            >button{
+                cursor: pointer;
+                &:hover{
+                    scale: 1.1;
+                    border: 1px solid var(--alt);
+                }
+                &:active{
+                    scale: 1.2;
+                    background-color: var(--select1);
+                }
+            }
+        }
+        &._disabled{
+            opacity: .15;
+            pointer-events: none;
+        }
+    }
+}
+/* */
+
+
+
+/* ADD */
+.tooltip_holder{
+    z-index: 1;
+    &:not(:hover){
+        .-tooltip{
+            display: none;
+        }
+    }
+    .-tooltip{
+        display: flex;
+        flex-direction: row;
+
+        pointer-events: none;
+        position: absolute;
+        left: 100%;
+        top: 0;
+        bottom: 0;
+        z-index: 1;
+        width: max-content;
+        padding-left: .5rem;
+        padding-right: .5rem;
+
+        background-color: var(--back);
+        border: 1px solid var(--alt);
+        border-left: none;
+        margin: 0;
+    }
+    .-shortcut{
+        font-size: .6em;
+        align-self: flex-start;
+        opacity: .5;
+        margin-left: .5rem;
+        margin-top: .2rem;
+    }
+    .-description{
+        font-size: .8rem;
+        align-self: center;
+        opacity: .6;
+        margin-left: .5rem;
+        &::before{ content: '...'; }
+    }
+}
+/* */
+
+/* TRANSFORMER */
+.transformer{
+    position: absolute;
+    background-color: var(--select1);
+    border: .2rem solid var(--select2);
+    box-sizing: border-box;
+    width: 10rem;
+    height: 10rem;
+    z-index: 1;
+
+    pointer-events: none;
+
+    >div.corner{
+        position: absolute;
+        width: .7rem;
+        height: .7rem;
+        background-color: var(--select2);
+        cursor: move;
+        pointer-events: all;
+        &:hover{ background-color: var(--select-hover); }
+        &._dragged{ background-color: var(--select-hover); scale:1.5; }
+        &._1{ left: -.4rem; top: -.4rem; }
+        &._2{ right: -.4rem; top: -.4rem; }
+        &._3{ right: -.4rem; bottom: -.4rem; }
+        &._4{ left: -.4rem; bottom: -.4rem; }
+        &._5{ left: calc(50% - .4rem); bottom: calc(50% - .4rem); }
+    }
+
+    >div.line{
+        position: absolute;
+        background-color: var(--select-hover);
+        &._y{
+            height: .1rem;
+            width: calc( 100% + 4rem );
+            left: -2rem;
+        }
+        &._x{
+            width: .1rem;
+            height: calc( 100% + 4rem );
+            top: -2rem;
+        }
+        &._hidden{
+            display: none;
+        }
+    }
+
+}
+/* */

@@ -12,6 +12,11 @@ export abstract class OValue<T>{
     /** Get the value */
     get value(){ return this.get() }
 
+    /** Register a listener and call it immediately with the current value. */
+    link(listener: (event:{from:T, to:T})=>void){
+        listener({from:this._value,to:this._value})
+        return this.observable.add(listener)
+    }
 }
 
 export class MOValue<T> extends OValue<T>{
@@ -34,11 +39,5 @@ export class MOValue<T> extends OValue<T>{
 
     /** Get the value */
     get value(){ return this.get() }
-
-    /** Register a listener and call it immediately with the current value. */
-    link(listener: (event:{from:T, to:T})=>void){
-        listener({from:this._value,to:this._value})
-        return this.observable.add(listener)
-    }
 
 }

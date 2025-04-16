@@ -302,7 +302,7 @@ export class Transformer {
                 if(!this.isPrecise && Math.abs(posY-l)<0.01){
                     posY = l
                     yBar.classList.remove("_hidden")
-                    yBar.style.top = "100%"
+                    yBar.style.top = "0%"
                     break
                 }
             }
