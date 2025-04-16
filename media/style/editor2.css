@@ -294,6 +294,13 @@ h3{
             color: var(--text);
             
         }
+        >hr{
+            height: 1rem;
+            width: .2rem;
+            background-color: var(--back);
+            border: none;
+            outline: none;
+        }
         &:not(._disabled){
             >button{
                 cursor: pointer;

@@ -12,6 +12,7 @@ import { LoadSavePane } from "./editor/LoadSavePane.ts"
 import { ControlLibrary } from "./WamGUIGenerator.ts"
 import { gunzip } from "zlib"
 import { MOValue } from "./observable/collections/OValue.ts"
+import { Item } from "./control/ControlMap.ts"
 
 let audioContext: AudioContext
 let host: string
@@ -100,6 +101,27 @@ function replaceSelecteds(){
     }
 }
 
+function rearrage(xl: keyof Readonly<Item>, yl:keyof Readonly<Item>, wl:keyof Readonly<Item>, hl:keyof Readonly<Item>){
+    const gui = editor.gui_generator.value
+    const selecteds = [...editor.selector.selecteds].sort((a,b)=>a.infos[xl]-b.infos[xl])
+    const minx = Math.min(...selecteds .map(it=>it.infos[xl]))
+    const maxx = Math.max(...selecteds .map(it=>it.infos[xl]+it.infos[wl]))
+    const centery = selecteds .map(it=>it.infos[yl]+it.infos[hl]/2) .reduce((a,b)=>a+b,0) / selecteds.length
+    const total_width = selecteds.map(it=>it.infos[wl]).reduce((a,b)=>a+b,0)
+    const spacing = (maxx-minx-total_width)/(selecteds.length-1)
+
+    let x = minx
+    for(const s of selecteds){
+        const index = gui.controls.values.indexOf(s.infos)
+        const y = centery-s.infos[hl]/2
+        const position = {x:0,y:0} as Item
+        position[xl] = x
+        position[yl] = y
+        gui.controls.move(index, position.x, position.y)
+        x += spacing + s.infos[wl]
+    }
+}
+
 let clipboard = new MOValue<{x:number, y:number, width:number, height:number, values:any, control:ControlLibrary['key']}[]>([])
 function copySelecteds(){
     clipboard.value = [...editor.selector.selecteds.values()]
@@ -124,7 +146,7 @@ function pasteSelecteds(){
 /* Editor Toolbar */
 const editor_toolbar = new ToolbarPane(
     {
-        icon:"+", label:"Add Control", description: "from the palette",
+        id:"add", icon:"+", label:"Add Control", description: "from the palette",
         shortcut: [{key:"a",ctrl:true}],
         action: (index)=>{
             const gui = editor.gui_generator.value
@@ -133,24 +155,24 @@ const editor_toolbar = new ToolbarPane(
         }
     },
     {
-        icon:"×", label:"Remove Controls", description: "selecteds",
+        id:"remove", icon:"×", label:"Remove Controls", description: "selecteds",
         shortcut: [{key:"Delete"},{key:"Backspace"},{key:"x",ctrl:true}],
         action:removeSelecteds
     },
     {
-        icon:"R", label:"Replace Controls", description: "selecteds by ones from the palette",
+        id:"replace", icon:"R", label:"Replace Controls", description: "selecteds by ones from the palette",
         shortcut: [{key:"r",ctrl:true}],
         action:replaceSelecteds
     },
     {
-        icon:"⿻", label:"Copy Controls",  description: "selecteds to the clipboard",
+        id:"copy", icon:"⿻", label:"Copy Controls",  description: "selecteds to the clipboard",
         shortcut: [{key:"c",ctrl:true}],
         action(){
             copySelecteds()
         }
     },
     {
-        icon:"✂", label:"Cut Controls",  description: "selecteds to the clipboard",
+        id:"cut", icon:"✂", label:"Cut Controls",  description: "selecteds to the clipboard",
         shortcut: [{key:"x",ctrl:true}],
         action(){
             copySelecteds()
@@ -158,29 +180,46 @@ const editor_toolbar = new ToolbarPane(
         }
     },
     {
-        icon:"📋︎", label:"Paste Controls",  description: "from the clipboard",
+        id:"paste", icon:"📋︎", label:"Paste Controls",  description: "from the clipboard",
         shortcut: [{key:"v",ctrl:true}],
         action(){
             pasteSelecteds()
         }
+    },
+    "separator",
+    {
+        id:"rearrange_x", icon:"┉", label:"Realign horizontally", description:"selecteds",
+        action(){ rearrage("x","y","width","height")}
+    },
+    {
+        id:"rearrange_y", icon:"┋", label:"Realign vertically", description:"selecteds",
+        action(){ rearrage("y","x","height","width")}
     }
 )
 
-selector.selected.link(({to:selected})=>{ editor_toolbar.setDisabled(0,selected==null) })
+selector.selected.link(({to:selected})=>{
+    editor_toolbar.setDisabled("add", selected==null)
+    editor_toolbar.setDisabled("replace", selected==null || editor.selector.selecteds.size==0)
+    
+})
 
 function updateSelectionTargetButton(){
     const isDisabled = editor.selector.selecteds.size==0
-    editor_toolbar.setDisabled(1,isDisabled)
-    editor_toolbar.setDisabled(2,isDisabled)
-    editor_toolbar.setDisabled(3,isDisabled)
-    editor_toolbar.setDisabled(4,isDisabled)
+    editor_toolbar.setDisabled("remove",isDisabled)
+    editor_toolbar.setDisabled("cut",isDisabled)
+    editor_toolbar.setDisabled("copy",isDisabled)
+    editor_toolbar.setDisabled("replace", selector.selected.value==null || editor.selector.selecteds.size==0)
+
+    const isDisabledMultitarget = editor.selector.selecteds.size<2
+    editor_toolbar.setDisabled("rearrange_x",isDisabledMultitarget)
+    editor_toolbar.setDisabled("rearrange_y",isDisabledMultitarget)
 }
 editor.on_select.register(updateSelectionTargetButton)
 editor.on_unselect.register(updateSelectionTargetButton)
 updateSelectionTargetButton()
 
 clipboard.link(({to})=>{
-    editor_toolbar.setDisabled(5,to.length==0)
+    editor_toolbar.setDisabled("paste",to.length==0)
 })
 
 const components: Record<string,IContentRenderer> = {wam_loader,editor,view_3d,selector,settings,editor_toolbar,wampad,load_save}
