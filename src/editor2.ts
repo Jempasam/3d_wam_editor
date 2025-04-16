@@ -17,7 +17,7 @@ import { Item } from "./control/ControlMap.ts"
 let audioContext: AudioContext
 let host: string
 
-await new Promise((resolve)=>document.addEventListener("click",resolve,{once:true}))
+//await new Promise((resolve)=>document.addEventListener("click",resolve,{once:true}))
 
 try{
     audioContext = new AudioContext()
