@@ -60,7 +60,7 @@ export class Decoration{
         const updateOutline = ()=>{
             if(this.outline_width.value>0){
                 shape.setAttribute("stroke", this.outline_color.value)
-                shape.setAttribute("stroke-width", Math.round(this.outline_width.value*100).toString())
+                shape.setAttribute("stroke-width", Math.round(this.outline_width.value*50).toString())
             }
             else{
                 shape.removeAttribute("stroke")
@@ -150,7 +150,7 @@ export class Decoration{
                 outline_mesh.position.set(0,-0.25,0)
                 outline_mesh.rotation.setAll(0)
                 const width = 1+this.outline_width.value
-                outline_mesh.scaling.set(width,0.5,width)
+                outline_mesh.scaling.set(width,0.48,width)
             }
             updateOutlineColor()
         }

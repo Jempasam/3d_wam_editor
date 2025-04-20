@@ -10,7 +10,6 @@ import { ToolbarPane } from "./editor/ToolbarPane.ts"
 import { WamPadPane } from "./editor/WamPadPane.ts"
 import { LoadSavePane } from "./editor/LoadSavePane.ts"
 import { ControlLibrary } from "./WamGUIGenerator.ts"
-import { gunzip } from "zlib"
 import { MOValue } from "./observable/collections/OValue.ts"
 import { Item } from "./control/ControlMap.ts"
 

@@ -37,15 +37,15 @@ export class WamGui3DPane implements IContentRenderer{
     }
 
     init(parameters: GroupPanelPartInitParameters): void {
-        this.key_handler = (event)=>{
-            switch(event.key){
-                case "z": this.container.position.x+=0.1; break
-                case "s": this.container.position.x-=0.1; break
-                case "q": this.container.position.z-=0.1; break
-                case "d": this.container.position.z+=0.1; break
-            }
-        }
-        document.addEventListener("keypress", this.key_handler)
+        //this.key_handler = (event)=>{
+        //    switch(event.key){
+        //        case "z": this.container.position.x+=0.1; break
+        //        case "s": this.container.position.x-=0.1; break
+        //        case "q": this.container.position.z-=0.1; break
+        //        case "d": this.container.position.z+=0.1; break
+        //    }
+        //}
+        //document.addEventListener("keypress", this.key_handler)
 
         this.engine.runRenderLoop(()=>this.scene.render())
     }
