@@ -33,7 +33,8 @@ export function html(strings: TemplateStringsArray, ...values: any): DocumentFra
     function addValue(value: any){
         if(value===null || value===undefined)result
         else if(value instanceof Node){
-            result+=`<span id="_sam_frament_target_${nodes.length}"></span>`
+            const type = (value as HTMLElement).tagName
+            result+=`<${type} id="_sam_frament_target_${nodes.length}"></${type}>`
             nodes.push(value)
         }
         else if(typeof value === "string")result+=escapeHtml(value)

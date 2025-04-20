@@ -12,7 +12,8 @@ export type ControlState =
   | ControlState[];
 
 /**
- * The context of creation of the control.
+ * The context of creation of the controls.
+ * Also given when a GUI is created so it can be used to create the controls of the GUI.
  */
 export interface ControlContext{
 

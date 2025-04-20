@@ -5,6 +5,7 @@ import { GrowControl } from "./controls/parameter/GrowControl.js"
 import { TextControl } from "./controls/text/TextControl.js"
 import { ConnectionControl } from "./controls/connection/ConnectionControl.js"
 import { Joystick3DControl } from "./controls/parameter/Joystick3DControl.js"
+import { DecorationControl } from "./controls/decoration/DecorationControl.js"
 
 /** List of available controls */
 export const controls: {[id:string]:(new(context:ControlContext)=>Control)&typeof Control} = {
@@ -17,6 +18,7 @@ export const controls: {[id:string]:(new(context:ControlContext)=>Control)&typeo
     "3d_joystick_control": Joystick3DControl,
     "grow_control": GrowControl,
     "text": TextControl,
+    "decoration": DecorationControl,
 }
 
 export default controls

@@ -8,7 +8,7 @@ import { ControlSettings, ControlSettingsGUI } from "./control/settings.ts";
 import { Selector } from "./gui/Selector.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
 import { html } from "./utils/doc.ts";
-import { ControlLibrary, WamGUICode, WamGUIGenerator, WAMGuiInitCode } from "./WamGUIGenerator.ts";
+import { ControlLibrary, WamGUICode, WamGUIGenerator, WAMGuiInitCode, WamPadShape } from "./WamGUIGenerator.ts";
 import examples from "./examples.json";
 
 async function main(){
@@ -62,6 +62,7 @@ async function main(){
     const original_ui = document.querySelector<HTMLElement>("#original_ui")!!
     const iGetFields = document.querySelector<HTMLInputElement>("#fields_get")!!
     const iExamples = document.querySelector<HTMLSelectElement>("#examples")!!
+    const iShape = document.querySelector<HTMLSelectElement>("#shape")!!
 
 
     //// INDICATOR ////
@@ -219,6 +220,7 @@ async function main(){
             new_generator.top_color.link(({to}) => iTopColor.value=to)
             new_generator.bottom_color.link(({to}) => iBottomColor.value=to)
             new_generator.front_face.link(({to}) => iFrontFace.value=to??"")
+            new_generator.pad_shape.link(({to}) => iShape.value=to.toString())
 
             new_generator.controls.on_add.register((item)=>{
                 const {container} = item
@@ -251,6 +253,7 @@ async function main(){
     iTopColor.oninput = ()=> wam_gui_generator.value.top_color.value = iTopColor.value
     iBottomColor.oninput = ()=> wam_gui_generator.value.bottom_color.value = iBottomColor.value
     iFrontFace.oninput = ()=> wam_gui_generator.value.front_face.value = iFrontFace.value=="" ? null : iFrontFace.value
+    iShape.oninput = ()=> wam_gui_generator.value.pad_shape.value = iShape.value as WamPadShape
     iAutoFrontFace.onclick = async()=>{
         // Get thumbnail url
         const wam_url = current_wam_url.value; if(wam_url.length==0) return

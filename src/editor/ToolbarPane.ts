@@ -1,4 +1,4 @@
-import { GroupPanelPartInitParameters, IContentRenderer } from "dockview-core"
+import { DockviewPanelApi, GroupPanelPartInitParameters, IContentRenderer } from "dockview-core"
 import { html } from "../utils/doc.ts"
 
 export type ToolbarItem = 
@@ -80,6 +80,10 @@ export class ToolbarPane implements IContentRenderer{
     }
 
     on_input = (event: KeyboardEvent)=>{
+        if(document.activeElement instanceof HTMLInputElement) return
+        if(document.activeElement instanceof HTMLTextAreaElement) return
+        if(document.activeElement instanceof HTMLSelectElement) return
+
         const binding = this.buttons[event.key]
         if(!binding)return
 
@@ -92,6 +96,8 @@ export class ToolbarPane implements IContentRenderer{
         if(alt && !event.altKey) return
 
         action(id)
+
+        event.preventDefault()
     }
 
     init(_: GroupPanelPartInitParameters): void {

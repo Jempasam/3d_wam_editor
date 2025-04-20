@@ -17,10 +17,12 @@ export class WamPadPane implements IContentRenderer{
         <div class="menu _vertical _scrollable form_container">
             <label>Pad Aspect Ratio</label> ${this.aspect_ratio}
             <label>Pad Size</label> ${this.size}
-            <label>Top Color</label> ${this.top_color}
-            <label>Bottom Color</label> ${this.bottom_color}
-            <label>Front face image</label> ${this.front_face}
-            ${this.auto_front_face}
+            <div class="menu _vertical _inner">
+                <label>Top Color</label> ${this.top_color}
+                <label>Bottom Color</label> ${this.bottom_color}
+                <label>Front face image</label> ${this.front_face}
+                ${this.auto_front_face}
+            </div>
         </div>
     `
 

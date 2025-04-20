@@ -42,6 +42,7 @@ h3{
         &:hover{
             background-color: var(--alt);
         }
+        margin-left: 1rem;
     }
     textarea{
         border: 1px solid var(--alt);
@@ -126,6 +127,11 @@ h3{
     }
     &._scrollable{
         overflow-y: scroll;
+    }
+    &._inner{
+        margin: .5rem;
+        border: var(--alt) 1px solid;
+        border-radius: .5rem;
     }
 }
 
@@ -437,7 +443,8 @@ h3{
     margin: 0;
     padding: 0;
     height: fit-content;
-    width: 100%;
+    width: 100vw;
+    box-sizing: border-box;
     
     list-style: none;
     display: flex;

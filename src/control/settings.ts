@@ -53,7 +53,8 @@ export class ControlSettingsGUI{
             // Choice input : String value
             else if(typeof type == "object" && "choice" in type){
                 element = (html.a`<select>${type.choice.map(c=>html.a`<option value="${c}">${c}</option>`)}</select>`) as HTMLSelectElement
-                (element as HTMLSelectElement).options[0].selected = true
+                console.log(type.choice.map(c=>html.a`<option value="${c}">${c}</option>`))
+                ;(element as HTMLSelectElement).options[0].selected = true
                 element.onchange = ()=> this.on_value_change(label,(element as HTMLInputElement).value)
             }
             else if(type == "font"){
