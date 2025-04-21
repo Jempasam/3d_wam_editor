@@ -7,6 +7,7 @@ export type ControlSettings = {
     [label:string]:
         "color"
         | "text"
+        | "boolean"
         | "font"
         | [number,number]
         | {min:number,max:number,step:number}
@@ -39,6 +40,11 @@ export class ControlSettingsGUI{
             else if(type=="text"){
                 element = html.a`<input type="text" value="Text">`
                 element.oninput = ()=> this.on_value_change(label,(element as HTMLInputElement).value)
+            }
+            // Boolean input : Boolean value
+            else if(type=="boolean"){
+                element = html.a`<input type="checkbox"/>`
+                element.oninput = ()=> this.on_value_change(label,(element as HTMLInputElement).checked)
             }
             // Simple range input (min,max) : Number value
             else if(Array.isArray(type)){

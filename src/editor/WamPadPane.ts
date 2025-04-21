@@ -3,14 +3,16 @@ import { html } from "../utils/doc.ts"
 import { OValue } from "../observable/collections/OValue.ts"
 import { WamGUIGenerator } from "../WamGUIGenerator.ts"
 import { WebAudioModule } from "@webaudiomodules/api"
+import { DecorationShapesPoints } from "../utils/visual/Decoration.ts"
 
 export class WamPadPane implements IContentRenderer{
 
     private shape = html.a`
         <select>
-            <option value=rectangle>Rectangle</option>
-            <option value=circle>Circle</option>
-            <option value=triangle>Triangle</option>
+            ${
+                Object.keys(DecorationShapesPoints)
+                    .map(it=>html.a`<option value=${it}>${it[0].toUpperCase()+it.substring(1)}</option>`)
+            }
         </select>
     ` as HTMLSelectElement
     private aspect_ratio = html.a`<input type="number" min="0.1" max="10" step="0.1" value="1"/>` as HTMLInputElement

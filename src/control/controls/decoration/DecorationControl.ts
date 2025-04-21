@@ -1,7 +1,7 @@
 import { AbstractMesh, Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core"
 import { Control, ControlContext } from "../../Control.ts"
 import { ControlSettings } from "../../settings.ts"
-import { Decoration } from "../../../utils/visual/Decoration.ts"
+import { Decoration, DecorationShapesPoints } from "../../../utils/visual/Decoration.ts"
 import { MOValue } from "../../../observable/collections/OValue.ts"
 
 
@@ -24,7 +24,7 @@ export abstract class DecorationControl extends Control{
 
     static override getSettings(): ControlSettings{
         return {
-            "Shape": {choice:["rectangle","triangle","circle"]},
+            "Shape": {choice:Object.keys(DecorationShapesPoints)},
             "Top Color": "color",
             "Bottom Color": "color",
             "Height": [0.1,1.0],
