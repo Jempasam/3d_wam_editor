@@ -2,7 +2,7 @@ import { Color3, Color4, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, Tr
 import { MOValue } from "../../observable/collections/OValue.ts"
 import { colorizeMesh, forEachBuffer, createSurface, uvFromDirection, createVolume } from "../vertexs.ts"
 
-function createCircle(corner: number, offset: number=0, ){
+function createCircle(corner: number, offset: number=0){
     const points = []
     for(let i=0; i<corner; i++){
         const x = Math.cos(i*Math.PI*2/corner + offset)/2
