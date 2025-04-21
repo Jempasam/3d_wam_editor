@@ -46,7 +46,11 @@ export class LoadSavePane implements IContentRenderer{
         }
 
         this.textarea.onchange = ()=> this.load(JSON.parse(this.textarea.value) as WamGUICode)
-        this.textarea.focus = ()=> this.textarea.value = JSON.stringify(this.gui.value.save(library))
+        this.textarea.onfocus = ()=>{
+            const object = this.gui.value.save(library) as WAMGuiInitCode
+            if(url.value.length>0) object.wam_url = url.value
+            this.textarea.value = JSON.stringify(object)
+        }
     }
 
     init(_: GroupPanelPartInitParameters): void {
