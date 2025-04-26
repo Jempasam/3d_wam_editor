@@ -1,7 +1,7 @@
 import { AbstractMesh, Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core"
 import { Control, ControlContext } from "../../Control.ts"
 import { ControlSettings } from "../../settings.ts"
-import { Decoration, DecorationShapesPoints } from "../../../utils/visual/Decoration.ts"
+import { Decoration, DECORATION_SHAPE_POINTS } from "../../../utils/visual/Decoration.ts"
 import { MOValue } from "../../../observable/collections/OValue.ts"
 
 
@@ -24,7 +24,7 @@ export abstract class DecorationControl extends Control{
 
     static override getSettings(): ControlSettings{
         return {
-            "Shape": {choice:Object.keys(DecorationShapesPoints)},
+            "Shape": {choice:Object.keys(DECORATION_SHAPE_POINTS)},
             "Top Color": "color",
             "Bottom Color": "color",
             "Height": [0.1,1.0],
@@ -32,6 +32,7 @@ export abstract class DecorationControl extends Control{
             "Outline Color": "color",
             "Outline Width": [0,1],
             "Front Face Image": "text",
+            "Front Face Color": "color",
         }
     }
 
@@ -45,6 +46,7 @@ export abstract class DecorationControl extends Control{
             "Outline Color": "#000000",
             "Outline Width": "0",
             "Front Face Image": "",
+            "Front Face Color": "#FFFFFF",
         }
     }
 
@@ -76,6 +78,9 @@ export abstract class DecorationControl extends Control{
                 break
             case "Front Face Image":
                 this.decoration.front_face.value = value.length==0 ? null : value
+                break
+            case "Front Face Color":
+                this.decoration.face_color.value = value
                 break
                 
         }

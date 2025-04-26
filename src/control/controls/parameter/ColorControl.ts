@@ -1,4 +1,4 @@
-import { AbstractMesh, Color3, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
+import { AbstractMesh, Color3, CreateHemisphere, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
 import { ControlContext } from "../../Control.ts"
 import { ControlSettings } from "../../settings.ts"
 import { ParameterControl } from "./ParameterControl.ts"
@@ -70,7 +70,10 @@ export class ColorControl extends ParameterControl{
     mesh?: AbstractMesh
 
     override createNode(scene: Scene){
-        const ret = MeshBuilder.CreateIcoSphere("color_control", {radius:0.5}, scene)
+        const ret = CreateHemisphere("color_control", {diameter:1,segments:8}, scene)
+        ret.scaling.y = 2
+        ret.position.y = -.5
+        ret.bakeCurrentTransformIntoVertices()
         this.material = new StandardMaterial("color_control", scene)
         this.mesh = ret
         ret.material = this.material

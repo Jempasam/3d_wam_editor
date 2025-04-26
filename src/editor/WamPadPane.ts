@@ -3,14 +3,14 @@ import { html } from "../utils/doc.ts"
 import { OValue } from "../observable/collections/OValue.ts"
 import { WamGUIGenerator } from "../WamGUIGenerator.ts"
 import { WebAudioModule } from "@webaudiomodules/api"
-import { DecorationShapesPoints } from "../utils/visual/Decoration.ts"
+import { DECORATION_SHAPE_POINTS } from "../utils/visual/Decoration.ts"
 
 export class WamPadPane implements IContentRenderer{
 
     private shape = html.a`
         <select>
             ${
-                Object.keys(DecorationShapesPoints)
+                Object.keys(DECORATION_SHAPE_POINTS)
                     .map(it=>html.a`<option value=${it}>${it[0].toUpperCase()+it.substring(1)}</option>`)
             }
         </select>
@@ -19,9 +19,10 @@ export class WamPadPane implements IContentRenderer{
     private size = html.a`<input type="number" min="0.1" max="1" step="0.1" value=".8"/>` as HTMLInputElement
     private top_color = html.a`<input type="color" value="#555555"/>` as HTMLInputElement
     private bottom_color = html.a`<input type="color" value="#222222"/>` as HTMLInputElement
+    private face_color = html.a`<input type="color" value="#ffffff"/>` as HTMLInputElement
     private front_face = html.a`<input type="text" value=""/>` as HTMLInputElement
     private auto_front_face = html.a`<button>frontface from thumbnail</button>` as HTMLButtonElement
-    private outline_width = html.a`<input type="range" min="0" max="0.5" step="0.1" value="0"/>` as HTMLInputElement
+    private outline_width = html.a`<input type="range" min="0" max="0.5" step="0.01" value="0"/>` as HTMLInputElement
     private outline_color = html.a`<input type="color" value="#000000"/>` as HTMLInputElement
 
     element = html.a/*html*/`
@@ -31,7 +32,7 @@ export class WamPadPane implements IContentRenderer{
             <label>Pad Size</label> ${this.size}
             <label>Pad Gradient</label> ${this.top_color} ${this.bottom_color}
             <label>Outline</label> ${this.outline_color} ${this.outline_width}
-            <label>Front face image</label> ${this.front_face}
+            <label>Front face image</label> ${this.front_face} ${this.face_color}
             ${this.auto_front_face}
         </div>
     `
@@ -48,11 +49,13 @@ export class WamPadPane implements IContentRenderer{
             gui.front_face.link(({to}) => pane.front_face.value=to??"")
             gui.pad_outline_color.link(({to}) => pane.outline_color.value=to)
             gui.pad_outline_width.link(({to}) => pane.outline_width.value=to.toString())
+            gui.front_face_color.link(({to}) => pane.face_color.value=to)
         })
         
         this.shape.oninput = ()=> gui_generator.value.pad_shape.value = this.shape.value as "rectangle"|"circle"|"triangle"
         this.top_color.oninput = ()=> gui_generator.value.top_color.value = this.top_color.value
         this.bottom_color.oninput = ()=> gui_generator.value.bottom_color.value = this.bottom_color.value
+        this.face_color.oninput = ()=> gui_generator.value.front_face_color.value = this.face_color.value
         this.front_face.oninput = ()=> gui_generator.value.front_face.value = this.front_face.value=="" ? null : this.front_face.value
         this.auto_front_face.onclick = async()=>{
             const wam_url = wam_url_value.value; if(wam_url.length==0) return

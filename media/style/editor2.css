@@ -204,6 +204,7 @@ h3{
     &._grid{
         flex-direction: row;
         flex-wrap: wrap;
+        max-height: 100%;
     }
 
     &._line{

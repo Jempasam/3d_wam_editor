@@ -12,11 +12,11 @@ import { LoadSavePane } from "./editor/LoadSavePane.ts"
 import { ControlLibrary } from "./WamGUIGenerator.ts"
 import { MOValue } from "./observable/collections/OValue.ts"
 import { Item } from "./control/ControlMap.ts"
+import { ImagesPane } from "./editor/ImagesPane.ts"
+import { DECORATION_IMAGES } from "./utils/visual/Decoration.ts"
 
 let audioContext: AudioContext
 let host: string
-
-//await new Promise((resolve)=>document.addEventListener("click",resolve,{once:true}))
 
 try{
     audioContext = new AudioContext()
@@ -31,6 +31,7 @@ const editor = new WamEditorPane(wam_loader.wam, view_3d.container)
 const selector = new ControlSelectorPane(controls)
 const wampad = new WamPadPane(editor.gui_generator, wam_loader.wam, wam_loader.url)
 const load_save = new LoadSavePane(editor.gui_generator, wam_loader.url, controls)
+const images = new ImagesPane(DECORATION_IMAGES)
 
 
 /* Settings */
@@ -221,7 +222,11 @@ clipboard.link(({to})=>{
     editor_toolbar.setDisabled("paste",to.length==0)
 })
 
-const components: Record<string,IContentRenderer> = {wam_loader,editor,view_3d,selector,settings,editor_toolbar,wampad,load_save}
+const components: Record<string,IContentRenderer> = {
+    wam_loader, editor, view_3d, selector,
+    settings, editor_toolbar, wampad, load_save,
+    images
+}
 
 /* */
 const container = document.getElementById("container")!!
@@ -302,7 +307,14 @@ api.addPanel({
     position: {referencePanel:"wam",direction:"within"},
 })
 
-api.fromJSON({"grid":{"root":{"type":"branch","data":[{"type":"branch","data":[{"type":"leaf","data":{"views":["selector"],"activeView":"selector","id":"left"},"size":386},{"type":"leaf","data":{"views":["settings"],"activeView":"settings","id":"1"},"size":385.20001220703125}],"size":456},{"type":"branch","data":[{"type":"leaf","data":{"views":["editor_toolbar"],"activeView":"editor_toolbar","id":"center"},"size":100},{"type":"leaf","data":{"views":["editor"],"activeView":"editor","id":"2"},"size":671.2000122070312}],"size":627},{"type":"branch","data":[{"type":"branch","data":[{"type":"leaf","data":{"views":["load_save"],"activeView":"load_save","id":"right"},"size":194},{"type":"leaf","data":{"views":["wam","wampad"],"activeView":"wam","id":"4"},"size":259}],"size":317},{"type":"leaf","data":{"views":["3d"],"activeView":"3d","id":"3"},"size":454.20001220703125}],"size":453}],"size":771.2000122070312},"width":1536,"height":771.2000122070312,"orientation":"HORIZONTAL"},"panels":{"selector":{"id":"selector","contentComponent":"selector","title":"Controls"},"settings":{"id":"settings","contentComponent":"settings","title":"Settings"},"editor_toolbar":{"id":"editor_toolbar","contentComponent":"editor_toolbar","title":"Editor Toolbar","maximumHeight":50},"editor":{"id":"editor","contentComponent":"editor","title":"Editor"},"load_save":{"id":"load_save","contentComponent":"load_save","title":"Load/Save"},"wam":{"id":"wam","contentComponent":"wam_loader","title":"Web Audio Module"},"wampad":{"id":"wampad","contentComponent":"wampad","title":"Pad"},"3d":{"id":"3d","contentComponent":"view_3d","title":"3D View"}},"activeGroup":"4"})
+api.addPanel({
+    id: "images",
+    title: "Images",
+    component: "images",
+    position: {referencePanel:"settings",direction:"within"},
+})
+
+api.fromJSON({"grid":{"root":{"type":"branch","data":[{"type":"branch","data":[{"type":"leaf","data":{"views":["selector"],"activeView":"selector","id":"left"},"size":386},{"type":"leaf","data":{"views":["settings","images"],"activeView":"settings","id":"1"},"size":385.20001220703125}],"size":384},{"type":"branch","data":[{"type":"leaf","data":{"views":["editor_toolbar"],"activeView":"editor_toolbar","id":"center"},"size":100},{"type":"leaf","data":{"views":["editor"],"activeView":"editor","id":"2"},"size":671.2000122070312}],"size":693.5999755859375},{"type":"branch","data":[{"type":"branch","data":[{"type":"branch","data":[{"type":"leaf","data":{"views":["wam"],"activeView":"wam","id":"right"},"size":193},{"type":"leaf","data":{"views":["load_save"],"activeView":"load_save","id":"5"},"size":193}],"size":225},{"type":"leaf","data":{"views":["wampad"],"activeView":"wampad","id":"4"},"size":233.4000244140625}],"size":386},{"type":"leaf","data":{"views":["3d"],"activeView":"3d","id":"3"},"size":385.20001220703125}],"size":458.4000244140625}],"size":771.2000122070312},"width":1536,"height":771.2000122070312,"orientation":"HORIZONTAL"},"panels":{"selector":{"id":"selector","contentComponent":"selector","title":"Controls"},"editor_toolbar":{"id":"editor_toolbar","contentComponent":"editor_toolbar","title":"Editor Toolbar","maximumHeight":50},"wam":{"id":"wam","contentComponent":"wam_loader","title":"Web Audio Module"},"settings":{"id":"settings","contentComponent":"settings","title":"Settings"},"images":{"id":"images","contentComponent":"images","title":"Images"},"editor":{"id":"editor","contentComponent":"editor","title":"Editor"},"3d":{"id":"3d","contentComponent":"view_3d","title":"3D View"},"wampad":{"id":"wampad","contentComponent":"wampad","title":"Pad"},"load_save":{"id":"load_save","contentComponent":"load_save","title":"Load/Save"}},"activeGroup":"center"})
 document.addEventListener("keypress", event=>{
     console.log(event.key)
     if(event.key=="e"){

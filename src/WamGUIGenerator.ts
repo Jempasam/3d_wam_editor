@@ -37,6 +37,7 @@ export class WamGUIGenerator{
 
     readonly top_color = this.pad_decoration.top_color
     readonly bottom_color = this.pad_decoration.bottom_color
+    readonly front_face_color = this.pad_decoration.face_color
     readonly pad_shape = this.pad_decoration.shape
     readonly front_face = this.pad_decoration.front_face
     readonly size = new MOValue(.8)
@@ -167,6 +168,7 @@ export class WamGUIGenerator{
         this.top_color.value = code.top_color
         this.bottom_color.value = code.bottom_color
         this.front_face.value = code.face??null
+        this.front_face_color.value = code.face_color??"#FFFFFF"
         this.pad_outline_width.value = code.outline_width ?? 0
         this.pad_outline_color.value = code.outline_color ?? "#000000"
         this.controls.splice(0,this.controls.length)
@@ -188,6 +190,7 @@ export class WamGUIGenerator{
             bottom_color: this.bottom_color.value,
             top_color: this.top_color.value,
             face: this.front_face.value??undefined,
+            face_color: this.front_face.value==null ? undefined : this.front_face_color.value,
             outline_color: this.pad_outline_color.value,
             outline_width: this.pad_outline_width.value,
             shape: this.pad_shape.value,
@@ -266,6 +269,7 @@ export interface WamGUICode{
     aspect_ratio: number,
     size: number,
     face?: string,
+    face_color?: string,
     shape?: string,
     outline_width?: number,
     outline_color?: string,

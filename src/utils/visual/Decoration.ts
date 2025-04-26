@@ -1,6 +1,6 @@
-import { Color3, Color4, Mesh, MeshBuilder, Scene, StandardMaterial, Texture, TransformNode, Vector2, Vector3, VertexBuffer } from "@babylonjs/core"
+import { Color3, Color4, Mesh, Scene, StandardMaterial, Texture, TransformNode, Vector2 } from "@babylonjs/core"
 import { MOValue } from "../../observable/collections/OValue.ts"
-import { colorizeMesh, forEachBuffer, createSurface, uvFromDirection, createVolume } from "../vertexs.ts"
+import { colorizeMesh, createSurface, createVolume } from "../vertexs.ts"
 
 function createCircle(corner: number, offset: number=0){
     const points = []
@@ -12,7 +12,7 @@ function createCircle(corner: number, offset: number=0){
     return points
 }
 
-export const DecorationShapesPoints = {
+export const DECORATION_SHAPE_POINTS = {
     "rectangle": [new Vector2(-.5,-.5), new Vector2(.5,-.5), new Vector2(.5,.5), new Vector2(-.5,.5)],
     "triangle": [new Vector2(0,.5), new Vector2(-.5,-.5), new Vector2(.5,-.5)],
     "circle": createCircle(32),
@@ -21,14 +21,24 @@ export const DecorationShapesPoints = {
     "octagon": createCircle(8,Math.PI/8),
 }
 
-export type DecorationShape = keyof typeof DecorationShapesPoints
+export const DECORATION_IMAGES = {} as Record<string,string>
+for(const [file, url] of Object.entries(import.meta.glob<any>("../../../media/images/*.png"))){
+    const file_full_name = file.split("/").pop() ?? ""
+    const [name,_] = file_full_name.split(".")
+    DECORATION_IMAGES[name] = (await url()).default  as string
+}
+
+export type DecorationShape = keyof typeof DECORATION_SHAPE_POINTS
+
+export type DecorationImage = (keyof typeof DECORATION_IMAGES)|string
 
 export class Decoration{
 
     readonly top_color = new MOValue("#aaaaaa")
     readonly bottom_color = new MOValue("#ffffff")
+    readonly face_color = new MOValue("#ffffff")
 
-    readonly front_face = new MOValue<string|null>(null)
+    readonly front_face = new MOValue<DecorationImage|null>(null)
     readonly shape = new MOValue<DecorationShape>("rectangle")
     
     readonly outline_color = new MOValue("#000000")
@@ -45,33 +55,38 @@ export class Decoration{
                 <stop offset="0%" stop-color="red" />
                 <stop offset="100%" stop-color="blue" />
             </linearGradient>
+            <pattern id="${id}pattern" patternUnits="userSpaceOnUse" width="100" height="100">
+                <rect preserveAspectRatio=none x="0" y="0" width="100" height="100" fill="url(#${id}gradient)" />
+                <image preserveAspectRatio=none href="" x="0" y="0" width="100" height="100" />
+            </pattern>
             <circle cx="50" cy="50" r="50" fill="transparent"/>
             <circle cx="50" cy="50" r="50" fill="transparent"/>
             <circle cx="50" cy="50" r="50" fill="transparent"/>
             <circle cx="50" cy="50" r="50" fill="transparent"/>
             <circle cx="50" cy="50" r="50" fill="transparent"/>
         `
-        let background = pad_element.children[0] as SVGElement
-        let shape = pad_element.children[1] as SVGElement
-        let shadows = Array.from({length:4}, (_,i)=>pad_element.children[1+i] as SVGElement)
+        const gradient = pad_element.children[0] as SVGGradientElement
+        const pattern = pad_element.children[1] as SVGPatternElement 
+        const image = pattern.children[1] as SVGImageElement
+        let shape = pad_element.children[2] as SVGElement
+        let shadows = Array.from({length:4}, (_,i)=>pad_element.children[3+i] as SVGElement)
+
+        const updateGradient = ()=>{
+            gradient.innerHTML = /*html*/`
+                <stop offset="0%" stop-color="${this.top_color.value}" />
+                <stop offset="100%" stop-color="${this.bottom_color.value}" />
+            `
+        }
 
         const updateBackground = ()=>{
             if(this.front_face.value){
-                background.outerHTML=/*html*/`
-                    <pattern id="${id}gradient" patternUnits="userSpaceOnUse" width="100" height="100">
-                        <image preserveAspectRatio=none href="${this.front_face.value}" x="0" y="0" width="100" height="100" />
-                    </pattern>
-                `
+                const url = DECORATION_IMAGES[this.front_face.value] ?? this.front_face.value
+                image.setAttribute("href", url)
+                pattern.appendChild(image)
             }
             else{
-                background.outerHTML=/*html*/`
-                    <linearGradient id="${id}gradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stop-color="${this.top_color.value}" />
-                        <stop offset="100%" stop-color="${this.bottom_color.value}" />
-                    </linearGradient>
-                `
+                image.remove()
             }
-            background = pad_element.children[0] as SVGElement
         }
 
         const updateOutline = ()=>{
@@ -87,7 +102,7 @@ export class Decoration{
 
         const updateShape = ()=>{
             let shape_fn: (size:number, fill:string)=>string
-            const points = DecorationShapesPoints[this.shape.value]
+            const points = DECORATION_SHAPE_POINTS[this.shape.value]
 
             shape_fn = (padding,content)=>{
                 const tsize = 100-padding
@@ -98,19 +113,19 @@ export class Decoration{
                 return  `<polygon points="${pts}" ${content} />`
             }
 
-            shape.outerHTML = shape_fn(0, `fill="url(#${id}gradient)"`)
+            shape.outerHTML = shape_fn(0, `fill="url(#${id}pattern)"`)
             ;[18,10,5,2].forEach((s,i)=>{
                 shadows[i].outerHTML = shape_fn(s, `stroke="rgba(0,0,0,.1)" stroke-width="${s}" fill=transparent`)
             })
-            shape = pad_element.children[1] as SVGElement
-            shadows = Array.from({length:4}, (_,i)=>pad_element.children[1+i] as SVGElement)
+            shape = pad_element.children[2] as SVGElement
+            shadows = Array.from({length:4}, (_,i)=>pad_element.children[3+i] as SVGElement)
 
             updateOutline()
         }
 
         const dispose = [
-            this.top_color.observable.add(updateBackground),
-            this.bottom_color.observable.add(updateBackground),
+            this.top_color.observable.add(updateGradient),
+            this.bottom_color.observable.add(updateGradient),
             this.front_face.observable.add(updateBackground),
             this.shape.observable.add(updateShape),
             this.outline_color.observable.add(updateOutline),
@@ -118,6 +133,7 @@ export class Decoration{
         ]
         updateShape()
         updateBackground()
+        updateGradient()
 
         return {
             dispose: ()=> dispose.forEach(it=>it()),
@@ -172,20 +188,30 @@ export class Decoration{
                 face = null
             }
             if(this.front_face.value!=null){
-                const points = DecorationShapesPoints[this.shape.value]
+                const url = DECORATION_IMAGES[this.front_face.value] ?? this.front_face.value
+                const points = DECORATION_SHAPE_POINTS[this.shape.value]
                 face = createSurface("wampad face",scene,points)
                 face!!.parent = mesh
                 face!!.position.y = 0.510
                 const faceMaterial = face!!.material = new StandardMaterial("wampad face mat", scene)
-                const texture = new Texture(this.front_face.value)
+                const texture = new Texture(url)
+                texture.hasAlpha = true
                 faceMaterial.diffuseTexture = texture
                 faceMaterial.specularColor = new Color3(0, 0, 0)
+                updateFaceColor()
+            }
+        }
+
+        const updateFaceColor = ()=>{
+            if(face!=null){
+                const color = Color4.FromHexString(this.face_color.value)
+                colorizeMesh(face, color, color)
             }
         }
 
         const updateShape = ()=>{
             mesh?.dispose()
-            const points = DecorationShapesPoints[this.shape.value]
+            const points = DECORATION_SHAPE_POINTS[this.shape.value]
             mesh = createVolume("decoration",scene,points)
  
             mesh!!.material = material
@@ -202,6 +228,7 @@ export class Decoration{
         const dispose = [
             this.top_color.observable.add(updateColor),
             this.bottom_color.observable.add(updateColor),
+            this.face_color.observable.add(updateFaceColor),
             this.front_face.observable.add(updateFace),
             this.shape.observable.add(updateShape),
             this.outline_color.observable.add(updateOutlineColor),

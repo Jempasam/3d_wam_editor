@@ -62,6 +62,7 @@ export class TextControl extends Control{
         this.element.style.boxSizing="border-box";
         this.element.style.justifyContent="center"
         this.element.style.alignItems="center"
+        this.element.style.textWrap="noWrap"
         const onresize = new ResizeObserver(()=>this.element!!.style.fontSize=this.element!!.clientHeight+"px")
         onresize.observe(this.element)
         return this.element
