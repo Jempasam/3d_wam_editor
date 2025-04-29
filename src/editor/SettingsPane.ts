@@ -1,7 +1,7 @@
 import { GroupPanelPartInitParameters, IContentRenderer } from "dockview-core";
 import { html } from "../utils/doc.ts";
 import { MOValue } from "../observable/collections/OValue.ts";
-import { CSettings, CSettingsValue, ControlSettingsGUI } from "../control/controls/settings/settings.ts";
+import { CSettings, CSettingsValue, ControlSettingsGUI, flatternSettings } from "../control/controls/settings/settings.ts";
 import { WamParameterInfoMap } from "@webaudiomodules/api";
 
 export class SettingsPane implements IContentRenderer{
@@ -30,7 +30,7 @@ export class SettingsPane implements IContentRenderer{
                 this.title.textContent = title
 
                 let gui = new ControlSettingsGUI(settings,this.parameters_infos?.())
-                for(let [label,_] of Object.entries(settings)){
+                for(let [label,_] of Object.entries(flatternSettings(settings))){
                     const value = getValue(label)
                     if(value!=undefined) gui.setValue(label,value)
                 }

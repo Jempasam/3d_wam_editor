@@ -128,3 +128,20 @@ export class ControlSettingsGUI{
         return values
     }
 }
+
+function flattenTo(from: CSettings, to: CSettings, prefix: String){
+    for(let [label,type] of Object.entries(from)){
+        if(typeof type == "object" && "sub" in type){
+            flattenTo(type.sub, to, `${prefix}${label}/`)
+        }
+        else{
+            to[`${prefix}${label}`] = type
+        }
+    }
+}
+
+export function flatternSettings(settings: CSettings){
+    const flattened: CSettings = {}
+    flattenTo(settings, flattened, "")
+    return flattened
+}

@@ -14,14 +14,38 @@ function createCircle(corner: number, offset: number=0){
     return points
 }
 
-export const DECORATION_SHAPE_POINTS = {
-    "rectangle": [new Vector2(-.5,-.5), new Vector2(.5,-.5), new Vector2(.5,.5), new Vector2(-.5,.5)],
-    "triangle": [new Vector2(0,.5), new Vector2(-.5,-.5), new Vector2(.5,-.5)],
-    "circle": createCircle(32),
-    "pentagon": createCircle(5,Math.PI/2),
-    "hexagon": createCircle(6),
-    "octagon": createCircle(8,Math.PI/8),
+function subdivide(points: Vector2[]): Vector2[]{
+    const new_points = []
+    for(let i=0; i<points.length; i++){
+        const p1 = points[i]
+        const p2 = points[(i+1)%points.length]
+        const mid = p1.add(p2).scaleInPlace(0.5)
+        new_points.push(p1, mid)
+    }
+    return new_points
 }
+
+export const DECORATION_SHAPE_POINTS = {
+    "rectangle": subdivide([new Vector2(-.5,-.5), new Vector2(.5,-.5), new Vector2(.5,.5), new Vector2(-.5,.5)]),
+    "triangle": subdivide([new Vector2(0,.5), new Vector2(-.5,-.5), new Vector2(.5,-.5)]),
+    "circle": createCircle(32),
+    "pentagon": subdivide(createCircle(5,Math.PI/2)),
+    "hexagon": subdivide(createCircle(6)),
+    "octagon": subdivide(createCircle(8,Math.PI/8)),
+}
+
+const noise = Array.from({length:100}, ()=>Math.random())
+
+export const DECORATION_SHAPE_MODIFIER: Record<string,(from:Vector2, i: number)=>Vector2> = {
+    "normal": it=>it.clone(),
+    "up_wide": it=>new Vector2(it.x*((it.y+.5)*.8+.2), it.y),
+    "down_wide": it=>new Vector2(it.x*((.5-it.y)*.8+.2), it.y),
+    "right_wide": it=>new Vector2(it.x, it.y*((it.x+.5)*.8+.2)),
+    "left_wide": it=>new Vector2(it.x, it.y*((.5-it.x)*.8+.2)),
+    "noise": (it,i)=>new Vector2(it.x*(noise[i*2]*.3+.7), it.y*(noise[i*2+1]*.3+.7)),
+    "thin": it=>new Vector2(it.x*(Math.abs(it.y)*2*.8+.2), it.y),
+}
+
 
 export const DECORATION_IMAGES = {} as Record<string,string>
 for(const [file, url] of Object.entries(import.meta.glob<any>("../../../media/images/*.png"))){
@@ -42,9 +66,20 @@ export class Decoration{
 
     readonly front_face = new MOValue<DecorationImage|null>(null)
     readonly shape = new MOValue<DecorationShape>("rectangle")
+    readonly modifier = new MOValue<keyof typeof DECORATION_SHAPE_MODIFIER>("normal")
+    readonly modifier_strength = new MOValue(.5)
     
     readonly outline_color = new MOValue("#000000")
     readonly outline_width = new MOValue(0)
+
+    get current_shape(): Vector2[]{
+        const points = DECORATION_SHAPE_POINTS[this.shape.value]
+        const modifier = DECORATION_SHAPE_MODIFIER[this.modifier.value]
+        const modified = points .map((it,i)=>modifier(it,i))
+        const strength = this.modifier_strength.value
+        const merged = Array.from({length:modified.length}, (_,i) => points[i].scale(1-strength).add(modified[i].scaleInPlace(strength)))
+        return merged
+    }
 
     createElement(): {element:Element, dispose():void}{
         const id = `${Math.random().toString(16)}${Math.random().toString(16)}${Math.random().toString(16)}`
@@ -104,7 +139,7 @@ export class Decoration{
 
         const updateShape = ()=>{
             let shape_fn: (size:number, fill:string)=>string
-            const points = DECORATION_SHAPE_POINTS[this.shape.value]
+            const points = this.current_shape
 
             shape_fn = (padding,content)=>{
                 const tsize = 100-padding
@@ -130,6 +165,8 @@ export class Decoration{
             this.bottom_color.observable.add(updateGradient),
             this.front_face.observable.add(updateBackground),
             this.shape.observable.add(updateShape),
+            this.modifier.observable.add(updateShape),
+            this.modifier_strength.observable.add(updateShape),
             this.outline_color.observable.add(updateOutline),
             this.outline_width.observable.add(updateOutline),
         ]
@@ -191,7 +228,7 @@ export class Decoration{
             }
             if(this.front_face.value!=null){
                 const url = DECORATION_IMAGES[this.front_face.value] ?? this.front_face.value
-                const points = DECORATION_SHAPE_POINTS[this.shape.value]
+                const points = this.current_shape
                 face = createSurface("wampad face",scene,points)
                 face!!.parent = mesh
                 face!!.position.y = 0.510
@@ -213,7 +250,7 @@ export class Decoration{
 
         const updateShape = ()=>{
             mesh?.dispose()
-            const points = DECORATION_SHAPE_POINTS[this.shape.value]
+            const points = this.current_shape
             mesh = createVolume("decoration",scene,points)
  
             mesh!!.material = material
@@ -233,6 +270,8 @@ export class Decoration{
             this.face_color.observable.add(updateFaceColor),
             this.front_face.observable.add(updateFace),
             this.shape.observable.add(updateShape),
+            this.modifier.observable.add(updateShape),
+            this.modifier_strength.observable.add(updateShape),
             this.outline_color.observable.add(updateOutlineColor),
             this.outline_width.observable.add(updateOutline),
         ]
@@ -260,6 +299,8 @@ export class Decoration{
             "Outline Width": [0,1],
             "Front Face Image": "text",
             "Front Face Color": "color",
+            "Modifier": {choice:Object.keys(DECORATION_SHAPE_MODIFIER)},
+            "Modifier Strength": [0,1],
         }
     }
 
@@ -272,6 +313,8 @@ export class Decoration{
             "Outline Width": 0,
             "Front Face Image": "",
             "Front Face Color": "#FFFFFF",
+            "Modifier": "normal",
+            "Modifier Strength": 0.5,
         }
     }
 
@@ -302,7 +345,12 @@ export class Decoration{
             case "Front Face Color":
                 this.face_color.value = value as string
                 break
-                
+            case "Modifier":
+                this.modifier.value = value as keyof typeof DECORATION_SHAPE_MODIFIER
+                break
+            case "Modifier Strength":
+                this.modifier_strength.value = value as number
+                break
         }
     }
 

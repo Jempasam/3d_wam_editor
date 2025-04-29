@@ -45,6 +45,8 @@ export class WamGUIGenerator{
     readonly aspect_ratio = new MOValue(1)
     readonly pad_outline_width = this.pad_decoration.outline_width
     readonly pad_outline_color = this.pad_decoration.outline_color
+    readonly modifier = this.pad_decoration.modifier
+    readonly modifier_strength = this.pad_decoration.modifier_strength
     
     private constructor(
         context: Partial<ControlContext>,
@@ -172,6 +174,8 @@ export class WamGUIGenerator{
         this.front_face_color.value = code.face_color??"#FFFFFF"
         this.pad_outline_width.value = code.outline_width ?? 0
         this.pad_outline_color.value = code.outline_color ?? "#000000"
+        this.modifier.value = code.modifier ?? "normal"
+        this.modifier_strength.value = code.modifier_strength ?? 0
         this.controls.splice(0,this.controls.length)
         for(let {control,values,x,y,width,height} of code.controls){
             const instance = new library[control](this.context)
@@ -195,6 +199,8 @@ export class WamGUIGenerator{
             outline_color: this.pad_outline_color.value,
             outline_width: this.pad_outline_width.value,
             shape: this.pad_shape.value,
+            modifier: this.modifier.value,
+            modifier_strength: this.modifier_strength.value,
             controls: this.controls.values.map(({control,values,x,y,width,height})=>{
                 const factory_id = Object.entries(library).find(([_,c])=>c===control.constructor)?.[0]
                 if(factory_id) return {x, y, width, height, values, control:factory_id}
@@ -274,6 +280,8 @@ export interface WamGUICode{
     shape?: string,
     outline_width?: number,
     outline_color?: string,
+    modifier?: string,
+    modifier_strength?: number,
     controls: {
         control: string,
         values: CSettingsValues,

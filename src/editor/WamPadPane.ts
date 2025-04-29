@@ -3,7 +3,7 @@ import { html } from "../utils/doc.ts"
 import { OValue } from "../observable/collections/OValue.ts"
 import { WamGUIGenerator } from "../WamGUIGenerator.ts"
 import { WebAudioModule } from "@webaudiomodules/api"
-import { DECORATION_SHAPE_POINTS } from "../utils/visual/Decoration.ts"
+import { DECORATION_SHAPE_MODIFIER, DECORATION_SHAPE_POINTS } from "../utils/visual/Decoration.ts"
 
 export class WamPadPane implements IContentRenderer{
 
@@ -24,15 +24,19 @@ export class WamPadPane implements IContentRenderer{
     private auto_front_face = html.a`<button>frontface from thumbnail</button>` as HTMLButtonElement
     private outline_width = html.a`<input type="range" min="0" max="0.5" step="0.01" value="0"/>` as HTMLInputElement
     private outline_color = html.a`<input type="color" value="#000000"/>` as HTMLInputElement
+    private modifier = html.a`<select>${Object.keys(DECORATION_SHAPE_MODIFIER).map(it=>html.a`<option value="${it}">${it}</option>`)}<select/>` as HTMLInputElement
+    private modifier_strength = html.a`<input type="range" min="0" max="1" step="0.01" value="0"/>` as HTMLInputElement
 
     element = html.a/*html*/`
         <div class="menu _vertical _scrollable form_container">
             <label>Shape</label> ${this.shape}
+            <label>Modifier</label> ${this.modifier} ${this.modifier_strength}
             <label>Pad Aspect Ratio</label> ${this.aspect_ratio}
             <label>Pad Size</label> ${this.size}
             <label>Pad Gradient</label> ${this.top_color} ${this.bottom_color}
             <label>Outline</label> ${this.outline_color} ${this.outline_width}
             <label>Front face image</label> ${this.front_face} ${this.face_color}
+            <label>
             ${this.auto_front_face}
         </div>
     `
@@ -50,6 +54,8 @@ export class WamPadPane implements IContentRenderer{
             gui.pad_outline_color.link(({to}) => pane.outline_color.value=to)
             gui.pad_outline_width.link(({to}) => pane.outline_width.value=to.toString())
             gui.front_face_color.link(({to}) => pane.face_color.value=to)
+            gui.modifier.link(({to}) => pane.modifier.value=to)
+            gui.modifier_strength.link(({to}) => pane.modifier_strength.value=to.toString())
         })
         
         this.shape.oninput = ()=> gui_generator.value.pad_shape.value = this.shape.value as "rectangle"|"circle"|"triangle"
@@ -67,6 +73,8 @@ export class WamPadPane implements IContentRenderer{
         this.size.oninput = ()=> gui_generator.value.size.value = parseFloat(this.size.value)
         this.outline_color.oninput = ()=> gui_generator.value.pad_outline_color.value = this.outline_color.value
         this.outline_width.oninput = ()=> gui_generator.value.pad_outline_width.value = parseFloat(this.outline_width.value)
+        this.modifier.oninput = ()=> gui_generator.value.modifier.value = this.modifier.value as string
+        this.modifier_strength.oninput = ()=> gui_generator.value.modifier_strength.value = parseFloat(this.modifier_strength.value)
     }
 
     init(_: GroupPanelPartInitParameters): void {
