@@ -4,7 +4,7 @@ import { initializeWamHost } from "@webaudiomodules/sdk";
 import { Control, ControlContext } from "./control/Control.ts";
 import { ControlMap } from "./control/ControlMap.ts";
 import controls from "./control/controls.ts";
-import { CSettings, ControlSettingsGUI } from "./control/settings.ts";
+import { CSettings, ControlSettingsGUI } from "./control/controls/settings/settings.ts";
 import { Selector } from "./gui/Selector.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
 import { html } from "./utils/doc.ts";

@@ -1,4 +1,4 @@
-import { CSettings, ControlSettingsGUI } from "./control/settings.ts"
+import { CSettings, ControlSettingsGUI } from "./control/controls/settings/settings.ts"
 
 const target = document.getElementsByTagName("body")[0]
 

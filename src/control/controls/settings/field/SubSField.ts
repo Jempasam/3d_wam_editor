@@ -1,6 +1,6 @@
 import { WamParameterInfoMap } from "@webaudiomodules/api";
 import { html } from "../../../../utils/doc.ts";
-import { ControlSettingsGUI, CSettings, CSettingsValue } from "../../../settings.ts";
+import { ControlSettingsGUI, CSettings, CSettingsValue } from "../settings.ts";
 import { SettingsField } from "../SettingsField.ts";
 
 export class SubSField implements SettingsField{

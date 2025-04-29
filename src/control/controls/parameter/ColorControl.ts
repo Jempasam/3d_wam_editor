@@ -1,6 +1,6 @@
 import { AbstractMesh, Color3, CreateHemisphere, Scene, StandardMaterial } from "@babylonjs/core"
 import { ControlContext } from "../../Control.ts"
-import { CSettings, CSettingsValue } from "../../settings.ts"
+import { CSettings, CSettingsValue } from "../settings/settings.ts"
 import { ParameterControl } from "./ParameterControl.ts"
 
 

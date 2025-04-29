@@ -1,7 +1,7 @@
 import { GroupPanelPartInitParameters, IContentRenderer } from "dockview-core";
 import { html } from "../utils/doc.ts";
 import { MOValue } from "../observable/collections/OValue.ts";
-import { CSettings, CSettingsValue, ControlSettingsGUI } from "../control/settings.ts";
+import { CSettings, CSettingsValue, ControlSettingsGUI } from "../control/controls/settings/settings.ts";
 import { WamParameterInfoMap } from "@webaudiomodules/api";
 
 export class SettingsPane implements IContentRenderer{

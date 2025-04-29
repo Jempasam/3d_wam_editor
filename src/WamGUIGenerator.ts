@@ -5,7 +5,7 @@ import { MOValue } from "./observable/collections/OValue.ts";
 import { Control, ControlContext } from "./control/Control.ts";
 import { parallel, parallelFor } from "./utils/async.ts";
 import { Decoration } from "./utils/visual/Decoration.ts";
-import { CSettingsValues } from "./control/settings.ts";
+import { CSettingsValues } from "./control/controls/settings/settings.ts";
 
 export interface ControlLibrary{
     [id:string]: (new(context:ControlContext)=>Control) & (typeof Control)

@@ -1,4 +1,4 @@
-import { CSettingsValue } from "../../settings.ts"
+import { CSettingsValue } from "./settings.ts"
 
 export interface SettingsField{
 

@@ -1,5 +1,5 @@
 import { WamNode, WebAudioModule } from "@webaudiomodules/api"
-import { CSettings, CSettingsValue, CSettingsValues } from "./settings.js"
+import { CSettings, CSettingsValue, CSettingsValues } from "./controls/settings/settings.js"
 import { AbstractMesh, Scene, TransformNode } from "@babylonjs/core"
 import { ControlLibrary } from "../WamGUIGenerator.js"
 import { flatten } from "../utils/serializable.js";

@@ -1,6 +1,6 @@
 import { Scene, TransformNode } from "@babylonjs/core"
 import { Control, ControlContext, flattenCDefault } from "../../Control.ts"
-import { CSettings, CSettingsValue } from "../../settings.ts"
+import { CSettings, CSettingsValue } from "../settings/settings.ts"
 import { Decoration } from "../../../utils/visual/Decoration.ts"
 import { MOValue } from "../../../observable/collections/OValue.ts"
 

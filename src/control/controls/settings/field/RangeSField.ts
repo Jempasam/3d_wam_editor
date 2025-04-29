@@ -1,5 +1,5 @@
 import { html } from "../../../../utils/doc.ts";
-import { CSettingsValue } from "../../../settings.ts";
+import { CSettingsValue } from "../settings.ts";
 import { SettingsField } from "../SettingsField.ts";
 
 export class RangeSField implements SettingsField{

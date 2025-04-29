@@ -1,4 +1,4 @@
-import { ControlSettingsGUI } from "./control/settings.ts"
+import { ControlSettingsGUI } from "./control/controls/settings/settings.ts"
 
 const settings = document.getElementById("settings")!!
 const settingsGUI = new ControlSettingsGUI({

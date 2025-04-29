@@ -3,7 +3,7 @@ import { Control } from "./Control.ts"
 import { FriendlyIterable } from "../utils/FriendlyIterable.ts"
 import { html } from "../utils/doc.ts"
 import { OSource } from "../observable/source/OSource.ts"
-import { CSettingsValue, CSettingsValues } from "./settings.ts"
+import { CSettingsValue, CSettingsValues } from "./controls/settings/settings.ts"
 
 
 export interface Item{

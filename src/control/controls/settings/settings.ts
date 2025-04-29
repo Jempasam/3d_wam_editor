@@ -1,13 +1,13 @@
-import {html} from "../utils/doc.ts"
+import {html} from "../../../utils/doc.ts"
 import { WamParameterInfoMap } from "@webaudiomodules/api"
-import { SettingsField } from "./controls/settings/SettingsField.ts"
-import { StringInputSField } from "./controls/settings/field/StringInputSField.ts"
-import { CheckboxSField } from "./controls/settings/field/CheckboxSField.ts"
-import { RangeSField } from "./controls/settings/field/RangeSField.ts"
-import { SelectSField } from "./controls/settings/field/SelectSField.ts"
-import { FontSField } from "./controls/settings/field/FontSField.ts"
-import { SubSField } from "./controls/settings/field/SubSField.ts"
-import { ErrorSField } from "./controls/settings/field/ErrorSField.ts"
+import { SettingsField } from "./SettingsField.ts"
+import { StringInputSField } from "./field/StringInputSField.ts"
+import { CheckboxSField } from "./field/CheckboxSField.ts"
+import { RangeSField } from "./field/RangeSField.ts"
+import { SelectSField } from "./field/SelectSField.ts"
+import { FontSField } from "./field/FontSField.ts"
+import { SubSField } from "./field/SubSField.ts"
+import { ErrorSField } from "./field/ErrorSField.ts"
 
 export type CSettingsValue = string|number|boolean
 
@@ -61,7 +61,7 @@ export class ControlSettingsGUI{
         // Choice input : String value
         else if(typeof type == "object" && "choice" in type) parameter = new SelectSField(type.choice)
         
-            // Font input : String value
+        // Font input : String value
         else if(type == "font") parameter = new FontSField()
 
         // WAM Parameter input : String value

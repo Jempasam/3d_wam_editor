@@ -1,7 +1,7 @@
 import { Color3, Color4, Mesh, Scene, StandardMaterial, Texture, TransformNode, Vector2 } from "@babylonjs/core"
 import { MOValue } from "../../observable/collections/OValue.ts"
 import { colorizeMesh, createSurface, createVolume } from "../vertexs.ts"
-import { CSettings, CSettingsValue } from "../../control/settings.ts"
+import { CSettings, CSettingsValue } from "../../control/controls/settings/settings.ts"
 import { DefaultCSettingsValues } from "../../control/Control.ts"
 
 function createCircle(corner: number, offset: number=0){

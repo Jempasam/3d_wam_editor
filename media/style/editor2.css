@@ -33,6 +33,19 @@ h3{
         }
     }
 
+    .either{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        >div{
+            display: flex;
+        }
+        >button{
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+    }
+
     select{
         border: 1px solid var(--alt);
         background-color: var(--back);

@@ -1,6 +1,6 @@
 import { IFontData } from "@babylonjs/core";
 import { html } from "../../../../utils/doc.ts";
-import { CSettingsValue } from "../../../settings.ts";
+import { CSettingsValue } from "../settings.ts";
 import { SettingsField } from "../SettingsField.ts";
 
 export class FontSField implements SettingsField{

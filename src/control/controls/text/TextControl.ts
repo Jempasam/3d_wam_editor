@@ -1,6 +1,6 @@
 import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
 import { Control, ControlContext } from "../../Control.ts";
-import { CSettings, CSettingsValue } from "../../settings.ts";
+import { CSettings, CSettingsValue } from "../settings/settings.ts";
 //@ts-ignore
 import earcut from "earcut"
 import { FONTS } from "../settings/field/FontSField.ts";

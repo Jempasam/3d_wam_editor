@@ -1,6 +1,6 @@
 import { WamParameterInfo } from "@webaudiomodules/api"
 import { Control, ControlContext } from "../../Control.ts"
-import { CSettings, CSettingsValue } from "../../settings.ts"
+import { CSettings, CSettingsValue } from "../settings/settings.ts"
 import { AbstractMesh } from "@babylonjs/core"
 import { stringifyWamParameter } from "../../../utils/wam.ts"
 
