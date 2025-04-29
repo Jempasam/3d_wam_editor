@@ -1,7 +1,7 @@
-import { AbstractMesh, Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core"
-import { Control, ControlContext } from "../../Control.ts"
-import { ControlSettings } from "../../settings.ts"
-import { Decoration, DECORATION_SHAPE_POINTS } from "../../../utils/visual/Decoration.ts"
+import { Scene, TransformNode } from "@babylonjs/core"
+import { Control, ControlContext, flattenCDefault } from "../../Control.ts"
+import { CSettings, CSettingsValue } from "../../settings.ts"
+import { Decoration } from "../../../utils/visual/Decoration.ts"
 import { MOValue } from "../../../observable/collections/OValue.ts"
 
 
@@ -22,66 +22,32 @@ export abstract class DecorationControl extends Control{
         super(context)
     }
 
-    static override getSettings(): ControlSettings{
+    static override getSettings(): CSettings{
         return {
-            "Shape": {choice:Object.keys(DECORATION_SHAPE_POINTS)},
-            "Top Color": "color",
-            "Bottom Color": "color",
             "Height": [0.1,1.0],
             "Rotation": {min:0,max:360,step:1},
-            "Outline Color": "color",
-            "Outline Width": [0,1],
-            "Front Face Image": "text",
-            "Front Face Color": "color",
+            "Shape": {sub:Decoration.getSettings()},
         }
     }
 
     static override getDefaultValues(){
-        return {
-            "Shape": "rectangle",
-            "Top Color": "#FFFFFF",
-            "Bottom Color": "#AAAAAA",
-            "Height": "0.5",
-            "Rotation": "0",
-            "Outline Color": "#000000",
-            "Outline Width": "0",
-            "Front Face Image": "",
-            "Front Face Color": "#FFFFFF",
-        }
+        return flattenCDefault({
+            "Height": 0.5,
+            "Rotation": 0,
+            "Shape": Decoration.getDefaultValues(),
+        })
     }
 
-    override updateValue(label: string, value: string){
+    override updateValue(label: string, value: CSettingsValue){
         switch(label){
-            case "Shape":
-                this.decoration.shape.value = value as "rectangle"|"triangle"|"circle"
-                break
-            case "Top Color":
-                this.decoration.top_color.value = value
-                break
-            case "Bottom Color":
-                this.decoration.bottom_color.value = value
-                break
-            case "Border Color":
-                this.decoration.front_face
-                break
             case "Height":
-                this.height.value = parseFloat(value)
+                this.height.value = value as number
                 break
             case "Rotation":
-                this.rotation.value = parseFloat(value)
+                this.rotation.value = value as number
                 break
-            case "Outline Width":
-                this.decoration.outline_width.value = parseFloat(value)
-                break
-            case "Outline Color":
-                this.decoration.outline_color.value = value
-                break
-            case "Front Face Image":
-                this.decoration.front_face.value = value.length==0 ? null : value
-                break
-            case "Front Face Color":
-                this.decoration.face_color.value = value
-                break
+            default:
+                if(label.startsWith("Shape/")) this.decoration.updateValue(label.split("/",2)[1], value)
                 
         }
     }

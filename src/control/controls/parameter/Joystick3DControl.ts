@@ -1,6 +1,6 @@
-import { AbstractMesh, Color3, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
+import { AbstractMesh, Color3, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
 import { ControlContext } from "../../Control.ts"
-import { ControlSettings } from "../../settings.ts"
+import { CSettings, CSettingsValue } from "../../settings.ts"
 import { ParameterControl } from "./ParameterControl.ts"
 
 
@@ -17,7 +17,7 @@ export class Joystick3DControl extends ParameterControl{
 
     protected static override getParameterLabels(){ return ["Target X", "Target Y", "Target Z"] }
 
-    static override getSettings(): ControlSettings{
+    static override getSettings(): CSettings{
         return {
             "Zone Color":"color",
             "Cursor Color":"color",
@@ -30,22 +30,22 @@ export class Joystick3DControl extends ParameterControl{
         return {
             "Zone Color": "#aaaaff",
             "Cursor Color": "#ff0000",
-            "Cursor Size": "0.1",
+            "Cursor Size": 0.1,
         }
     }
 
-    override updateValue(label: string, value: string){
+    override updateValue(label: string, value: CSettingsValue){
         switch(label){
             case "Zone Color":
-                if(this.zoneElement) this.zoneElement.style.backgroundColor = value
-                if(this.zoneMesh) (this.zoneMesh.material as StandardMaterial).diffuseColor = Color3.FromHexString(value)
+                if(this.zoneElement) this.zoneElement.style.backgroundColor = value as string
+                if(this.zoneMesh) (this.zoneMesh.material as StandardMaterial).diffuseColor = Color3.FromHexString(value as string)
                 break
             case "Cursor Color":
-                if(this.cursorElement) this.cursorElement.style.backgroundColor = value
-                if(this.cursorMesh) (this.cursorMesh.material as StandardMaterial).diffuseColor = Color3.FromHexString(value)
+                if(this.cursorElement) this.cursorElement.style.backgroundColor = value as string
+                if(this.cursorMesh) (this.cursorMesh.material as StandardMaterial).diffuseColor = Color3.FromHexString(value as string)
                 break
             case "Cursor Size":
-                const size = parseFloat(value)
+                const size = value as number
                 if(this.cursorMesh){
                     this.cursorMesh.scaling.setAll(size)
                     this.xLine!!.scaling.setAll(size/3).y = 1

@@ -18,8 +18,8 @@ export class WamEditorPane implements IContentRenderer{
     on_unselect = new OSource<Parameters<WamEditorPane['selector']['on_select']>[0]>()
 
     constructor(
-        private wam: OValue<WebAudioModule|null>,
-        private node_container?: TransformNode,
+        wam: OValue<WebAudioModule|null>,
+        node_container?: TransformNode,
     ){
         this.container.style = `
             display: flex;
@@ -96,7 +96,7 @@ export class WamEditorPane implements IContentRenderer{
         return {horizontal, vertical}
     }
 
-    init(parameters: GroupPanelPartInitParameters): void {
+    init(_: GroupPanelPartInitParameters): void {
     }
 
 }

@@ -4,7 +4,7 @@ import { initializeWamHost } from "@webaudiomodules/sdk";
 import { Control, ControlContext } from "./control/Control.ts";
 import { ControlMap } from "./control/ControlMap.ts";
 import controls from "./control/controls.ts";
-import { ControlSettings, ControlSettingsGUI } from "./control/settings.ts";
+import { CSettings, ControlSettingsGUI } from "./control/settings.ts";
 import { Selector } from "./gui/Selector.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
 import { html } from "./utils/doc.ts";
@@ -165,7 +165,7 @@ async function main(){
 
     function setControlSettings(
         name: string,
-        settings: ControlSettings|null, 
+        settings: CSettings|null, 
         getValue = (label:string)=>(undefined as string|undefined),
         setValue = (label:string, value:string)=>{}
     ){

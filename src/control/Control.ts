@@ -1,7 +1,8 @@
 import { WamNode, WebAudioModule } from "@webaudiomodules/api"
-import { ControlSettings } from "./settings.js"
+import { CSettings, CSettingsValue, CSettingsValues } from "./settings.js"
 import { AbstractMesh, Scene, TransformNode } from "@babylonjs/core"
 import { ControlLibrary } from "../WamGUIGenerator.js"
+import { flatten } from "../utils/serializable.js";
 
 export type ControlState =
   | string
@@ -10,6 +11,12 @@ export type ControlState =
   | null
   | { [property: string]: ControlState }
   | ControlState[];
+
+export type DefaultCSettingsValues = {[label:string] : string|number|boolean|DefaultCSettingsValues}
+
+export function flattenCDefault(from: DefaultCSettingsValues){
+    return flatten(from,"/") as CSettingsValues
+}
 
 /**
  * The context of creation of the controls.
@@ -98,13 +105,13 @@ export abstract class Control{
 
     
     /** Get the list of parameters */
-    static getSettings(): ControlSettings{ throw new Error("Not implemented") }
+    static getSettings(): CSettings{ throw new Error("Not implemented") }
     
     /** The default values of the parameters. */
-    static getDefaultValues(): {[label:string]:string}{ throw new Error("Not implemented") }
+    static getDefaultValues(): CSettingsValues{ throw new Error("Not implemented") }
 
     /** Set a value of a parameter */
-    abstract updateValue(label: string, value: string): void
+    abstract updateValue(label: string, value: CSettingsValue): void
 
     /** Free the resources used by the control */
     abstract destroy(): void
@@ -139,7 +146,8 @@ export abstract class Control{
      * It is called in the constructor.
      */
     setDefaultValues(){
-        for(let [label,value] of Object.entries(this.factory.getDefaultValues())){
+        const flattened = this.factory.getDefaultValues()
+        for(let [label,value] of Object.entries(flattened)){
             this.updateValue(label,value)
         }
     }

@@ -1,6 +1,6 @@
-import { AbstractMesh, Color3, CreateHemisphere, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
+import { AbstractMesh, Color3, CreateHemisphere, Scene, StandardMaterial } from "@babylonjs/core"
 import { ControlContext } from "../../Control.ts"
-import { ControlSettings } from "../../settings.ts"
+import { CSettings, CSettingsValue } from "../../settings.ts"
 import { ParameterControl } from "./ParameterControl.ts"
 
 
@@ -15,7 +15,7 @@ export class ColorControl extends ParameterControl{
         super(context)
     }
 
-    static override getSettings(): ControlSettings{
+    static override getSettings(): CSettings{
         return {"Low Color":"color", "High Color":"color", ...super.getSettings()}
     }
 
@@ -26,11 +26,11 @@ export class ColorControl extends ParameterControl{
     ;["Low Color"]: Color3 = Color3.White()
     ;["High Color"]: Color3 = Color3.White()
 
-    override updateValue(label: string, value: string){
+    override updateValue(label: string, value: CSettingsValue){
         switch(label){
             case "Low Color":
             case "High Color":
-                this[label] = Color3.FromHexString(value)
+                this[label] = Color3.FromHexString(value as string)
                 this.updateColor()
                 break
             default:
@@ -39,7 +39,7 @@ export class ColorControl extends ParameterControl{
     }
 
     updateColor(){
-        const color = Color3.Lerp(this["Low Color"]??Color3.White, this["High Color"]??Color3.White, this.normalized)
+        const color = Color3.Lerp(this["Low Color"]??Color3.White, this["High Color"]??Color3.White, this.normalized[0])
         if(this.element) this.element.style.backgroundColor = color.toHexString()
         if(this.material) this.material.diffuseColor = color
     }

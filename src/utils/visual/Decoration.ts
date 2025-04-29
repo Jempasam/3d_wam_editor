@@ -1,6 +1,8 @@
 import { Color3, Color4, Mesh, Scene, StandardMaterial, Texture, TransformNode, Vector2 } from "@babylonjs/core"
 import { MOValue } from "../../observable/collections/OValue.ts"
 import { colorizeMesh, createSurface, createVolume } from "../vertexs.ts"
+import { CSettings, CSettingsValue } from "../../control/settings.ts"
+import { DefaultCSettingsValues } from "../../control/Control.ts"
 
 function createCircle(corner: number, offset: number=0){
     const points = []
@@ -246,6 +248,61 @@ export class Decoration{
                 transform.dispose()
                 mesh?.dispose()
             }
+        }
+    }
+
+    static getSettings(): CSettings{
+        return {
+            "Shape": {choice:Object.keys(DECORATION_SHAPE_POINTS)},
+            "Top Color": "color",
+            "Bottom Color": "color",
+            "Outline Color": "color",
+            "Outline Width": [0,1],
+            "Front Face Image": "text",
+            "Front Face Color": "color",
+        }
+    }
+
+    static getDefaultValues(): DefaultCSettingsValues{
+        return {
+            "Shape": "rectangle",
+            "Top Color": "#FFFFFF",
+            "Bottom Color": "#AAAAAA",
+            "Outline Color": "#000000",
+            "Outline Width": 0,
+            "Front Face Image": "",
+            "Front Face Color": "#FFFFFF",
+        }
+    }
+
+    updateValue(label: string, value: CSettingsValue){
+        switch(label){
+            case "Shape":
+                this.shape.value = value as "rectangle"|"triangle"|"circle"
+                break
+            case "Top Color":
+                this.top_color.value = value as string
+                break
+            case "Bottom Color":
+                this.bottom_color.value = value as string
+                break
+            case "Border Color":
+                this.front_face.value = value as string
+                break
+            case "Outline Width":
+                this.outline_width.value = value as number
+                break
+            case "Outline Color":
+                this.outline_color.value = value as string
+                break
+            case "Front Face Image":
+                const str = value as string
+                this.front_face.value = str.length==0 ? null : str
+                break
+            case "Front Face Color":
+                this.face_color.value = value as string
+                break
+                
         }
     }
 

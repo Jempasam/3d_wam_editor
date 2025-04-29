@@ -1,6 +1,6 @@
 import { Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core"
-import { Control, ControlContext, ControlState } from "../../Control.ts"
-import { ControlSettings } from "../../settings.ts"
+import { Control, ControlContext } from "../../Control.ts"
+import { CSettings, CSettingsValue } from "../../settings.ts"
 
 
 /**
@@ -12,7 +12,7 @@ export abstract class ConnectionControl extends Control{
         super(context)
     }
 
-    static override getSettings(): ControlSettings{
+    static override getSettings(): CSettings{
         return {"Color":"color"}
     }
 
@@ -20,11 +20,11 @@ export abstract class ConnectionControl extends Control{
         return {"Color":this.defaultColor}
     }
 
-    override updateValue(label: string, value: string){
+    override updateValue(label: string, value: CSettingsValue){
         switch(label){
             case "Color":
-                if(this.element) this.element.style.backgroundColor = value
-                if(this.material) this.material.diffuseColor = Color3.FromHexString(value)
+                if(this.element) this.element.style.backgroundColor = value as string
+                if(this.material) this.material.diffuseColor = Color3.FromHexString(value as string)
                 break
         }
     }

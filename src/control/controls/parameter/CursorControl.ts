@@ -1,6 +1,6 @@
-import { AbstractMesh, Color3, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
 import { ControlContext } from "../../Control.js";
-import { ControlSettings } from "../../settings.js";
+import { CSettings, CSettingsValue } from "../../settings.js";
 import { ParameterControl } from "./ParameterControl.js";
 
 /**
@@ -14,7 +14,7 @@ export class CursorControl extends ParameterControl{
         super(context)
     }
 
-    static override getSettings(): ControlSettings{
+    static override getSettings(): CSettings{
         return {
             "Base Color":"color",
             "Cursor Color":"color",
@@ -32,11 +32,11 @@ export class CursorControl extends ParameterControl{
     ;["Base Color"]: Color3 = Color3.White()
     ;["Cursor Color"]: Color3 = Color3.White()
 
-    override updateValue(label: string, value: string){
+    override updateValue(label: string, value: CSettingsValue){
         switch(label){
             case "Base Color":
             case "Cursor Color":
-                this[label] = Color3.FromHexString(value)
+                this[label] = Color3.FromHexString(value as string)
                 this.updateColor()
                 break
             default:
@@ -111,8 +111,8 @@ export class CursorControl extends ParameterControl{
     }
 
     onParamChange(): void {
-        if(this.cylinder) this.cylinder.rotation.y = (this.normalized-0.5)*Math.PI
-        if(this.element) this.element.style.rotate = `${Math.round((this.normalized-0.5)*180)}deg`
+        if(this.cylinder) this.cylinder.rotation.y = (this.normalized[0]-0.5)*Math.PI
+        if(this.element) this.element.style.rotate = `${Math.round((this.normalized[0]-0.5)*180)}deg`
     }
 
     override destroyNode(){

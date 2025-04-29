@@ -1,16 +1,16 @@
 import { GroupPanelPartInitParameters, IContentRenderer } from "dockview-core";
 import { html } from "../utils/doc.ts";
 import { MOValue } from "../observable/collections/OValue.ts";
-import { ControlSettings, ControlSettingsGUI } from "../control/settings.ts";
+import { CSettings, CSettingsValue, ControlSettingsGUI } from "../control/settings.ts";
 import { WamParameterInfoMap } from "@webaudiomodules/api";
 
 export class SettingsPane implements IContentRenderer{
 
     settings = new MOValue<{
         title: string,
-        settings: ControlSettings,
-        setValue(label:string,value:string):void,
-        getValue(label:string):string|undefined,
+        settings: CSettings,
+        setValue(label:string, value:CSettingsValue):void,
+        getValue(label:string): CSettingsValue|null,
     }|null>(null)
 
     values: Record<string,string> = {}

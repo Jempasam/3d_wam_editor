@@ -1,6 +1,6 @@
 import { WamParameterInfo } from "@webaudiomodules/api"
-import { Control, ControlContext, ControlState } from "../../Control.ts"
-import { ControlSettings } from "../../settings.ts"
+import { Control, ControlContext } from "../../Control.ts"
+import { CSettings, CSettingsValue } from "../../settings.ts"
 import { AbstractMesh } from "@babylonjs/core"
 import { stringifyWamParameter } from "../../../utils/wam.ts"
 
@@ -51,8 +51,8 @@ export abstract class ParameterControl extends Control{
 
     protected static getParameterLabels(){ return ["Target"] }
 
-    static override getSettings(): ControlSettings{
-        const settings: ControlSettings = {}
+    static override getSettings(): CSettings{
+        const settings: CSettings = {}
         for(const label of this.getParameterLabels()){
             settings[label] = "parameter"
         }
@@ -63,12 +63,12 @@ export abstract class ParameterControl extends Control{
     value: number[]
     normalized: number[]
 
-    override updateValue(label: string, value: string){
+    override updateValue(label: string, value: CSettingsValue){
         let i=0
         for(const l of (this.constructor as typeof ParameterControl).getParameterLabels()){
             if(label==l){
-                this.wam?.audioNode?.getParameterInfo(value)?.then(it=>{
-                    this.parameter[i]=it[value]
+                this.wam?.audioNode?.getParameterInfo(value as string)?.then(it=>{
+                    this.parameter[i]=it[value as string]
                 })
                 break
             }

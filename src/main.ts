@@ -1,8 +1,8 @@
-import { ControlSettings, ControlSettingsGUI } from "./control/settings.ts"
+import { CSettings, ControlSettingsGUI } from "./control/settings.ts"
 
 const target = document.getElementsByTagName("body")[0]
 
-const control_settings: ControlSettings = {
+const control_settings: CSettings = {
     Text: "text", 
     Color: "color", 
     Font: "font", 

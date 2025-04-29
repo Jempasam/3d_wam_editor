@@ -1,118 +1,130 @@
-import { IFontData } from "@babylonjs/core"
 import {html} from "../utils/doc.ts"
-import { WamParameterInfo, WamParameterInfoMap } from "@webaudiomodules/api"
+import { WamParameterInfoMap } from "@webaudiomodules/api"
+import { SettingsField } from "./controls/settings/SettingsField.ts"
+import { StringInputSField } from "./controls/settings/field/StringInputSField.ts"
+import { CheckboxSField } from "./controls/settings/field/CheckboxSField.ts"
+import { RangeSField } from "./controls/settings/field/RangeSField.ts"
+import { SelectSField } from "./controls/settings/field/SelectSField.ts"
+import { FontSField } from "./controls/settings/field/FontSField.ts"
+import { SubSField } from "./controls/settings/field/SubSField.ts"
+import { ErrorSField } from "./controls/settings/field/ErrorSField.ts"
 
+export type CSettingsValue = string|number|boolean
 
-export type ControlSettings = {
+export type CSettings = {
     [label:string]:
         "color"
         | "text"
+        | "long_text"
         | "boolean"
         | "font"
         | [number,number]
         | {min:number,max:number,step:number}
         | {"choice":string[]}
         | "parameter"
+        | {sub:CSettings}
 }
 
+export type CSettingsValues = {
+    [label:string]: CSettingsValue
+}
 
 /**
  * A GUI for control settings.
  */
 export class ControlSettingsGUI{
 
-    on_value_change = (label:string,value:any)=>{}
+    on_value_change: (label:string, value:CSettingsValue)=>void = ()=>{}
 
     declare element: DocumentFragment
 
+    private parameters: { [label:string]: SettingsField } = {}
+
+    private addParameter(label: string, type: CSettings["a"], wam_parameters_infos?: WamParameterInfoMap): DocumentFragment{
+        let parameter: SettingsField|null = null
+        
+        // Color input : String value
+        if(type=="color") parameter = new StringInputSField("color","#ffffff")
+
+        // Text input : String value
+        else if(type=="text") parameter = new StringInputSField("text","")
+
+        // Boolean input : Boolean value
+        else if(type=="boolean") parameter = new CheckboxSField()
+
+        // Simple range input (min,max) : Number value
+        else if(Array.isArray(type)) parameter = new RangeSField(type[0], type[1], (type[1]-type[0])/100)
+
+        // Complex range input (min,max,step) : Number value
+        else if(typeof type == "object" && "min" in type) parameter = new RangeSField(type.min, type.max, type.step)
+
+        // Choice input : String value
+        else if(typeof type == "object" && "choice" in type) parameter = new SelectSField(type.choice)
+        
+            // Font input : String value
+        else if(type == "font") parameter = new FontSField()
+
+        // WAM Parameter input : String value
+        else if(type=="parameter"){
+            const entries = Object.values(wam_parameters_infos??{})
+            parameter = new SelectSField(
+                ["None", ...entries.map(it=>it.label??it.id)],
+                ["", ...entries.map(it=>it.id)],
+            )
+        }
+
+        // Sub settings : ControlSettings value
+        else if(typeof type == "object" && "sub" in type) parameter = new SubSField(type.sub, wam_parameters_infos)
+            
+        // Unsupported setting type
+        else parameter = new ErrorSField()
+
+        if(parameter){
+            this.parameters[label] = parameter
+            parameter.addOnChange((l,v)=>{
+                console.log(["on_change",`${label}${l}`,label,l,v])
+                this.on_value_change(`${label}${l}`,v)
+            })
+            return html`<label>${label}</label>${parameter.element}`
+        }
+        else return html``
+        
+    }
+
     /** Generate the control settings html GUI. */
-    constructor(settings: ControlSettings, wam_parameters_infos?: WamParameterInfoMap){
+    constructor(settings: CSettings, wam_parameters_infos?: WamParameterInfoMap){
         let elements = []
         for(let [label,type] of Object.entries(settings)){
-            let element: HTMLElement|null = null
-            
-            // Color input : String value
-            if(type=="color"){
-                element = html.a`<input type="color" value="#ffffff">`
-                element.oninput = ()=> this.on_value_change(label,(element as HTMLInputElement).value)
-            }
-            // Text input : String value
-            else if(type=="text"){
-                element = html.a`<input type="text" value="Text">`
-                element.oninput = ()=> this.on_value_change(label,(element as HTMLInputElement).value)
-            }
-            // Boolean input : Boolean value
-            else if(type=="boolean"){
-                element = html.a`<input type="checkbox"/>`
-                element.oninput = ()=> this.on_value_change(label,(element as HTMLInputElement).checked)
-            }
-            // Simple range input (min,max) : Number value
-            else if(Array.isArray(type)){
-                element = html.a`<input type="range" min="${type[0]}" step="${(type[1]-type[0])/100}" max="${type[1]}" value="${type[0]}">`
-                element.oninput = ()=> this.on_value_change(label,Number.parseFloat((element as HTMLInputElement).value))
-            }
-            // Complex range input (min,max,step) : Number value
-            else if(typeof type == "object" && "min" in type){
-                element = html.a`<input type="range" min="${type.min}" step="${type.step}" max="${type.max}" value="${type.min}">`
-                element.oninput = ()=> this.on_value_change(label,Number.parseFloat((element as HTMLInputElement).value))
-            }
-            // Choice input : String value
-            else if(typeof type == "object" && "choice" in type){
-                element = (html.a`<select>${type.choice.map(c=>html.a`<option value="${c}">${c}</option>`)}</select>`) as HTMLSelectElement
-                console.log(type.choice.map(c=>html.a`<option value="${c}">${c}</option>`))
-                ;(element as HTMLSelectElement).options[0].selected = true
-                element.onchange = ()=> this.on_value_change(label,(element as HTMLInputElement).value)
-            }
-            else if(type == "font"){
-                /** @type {HTMLSelectElement} */
-                element =  html.a`<select></select>`
-                for(let [name,{css}] of Object.entries(FONTS)){
-                    let option = html.a`<option value="${name}">${name}</option>`
-                    option.style.fontFamily = `'${css}'`
-                    element.appendChild(option)
-                }
-                element.onchange = ()=> {
-                    this.on_value_change(label, (element as HTMLInputElement).value)
-                    element!!.style.fontFamily = `'${(element as HTMLInputElement).value}'`
-                }
-            }
-            // WAM Parameter input : String value
-            else if(type=="parameter"){
-                element = html.a`<select><option selected="true" value="">None</option></select>`
-                for(let [id,info] of Object.entries(wam_parameters_infos??{})){
-                    let option = html.a`<option>${info.label??info.id}</option>`
-                    option.onclick = ()=> this.on_value_change(label,id)
-                    element.appendChild(option)
-                }
-            }
-            // Unsupported setting type
-            else element = html.a`<span style="color:red;">Unsupported Setting</span>`
-
-            element.setAttribute("data-parameter-name",label)
-            elements.push(html`<label>${label}</label>${element}`)
+            elements.push(this.addParameter(label,type,wam_parameters_infos))
         }
         this.element = html`${elements}`
     }
 
-    /** The the value of a setting */
-    setValue(label: string, value: any){
-        let element = /** @type {HTMLInputElement} */ (this.element.querySelector(`[data-parameter-name="${label}"]`))
-        if(element) (element as HTMLInputElement).value= ""+value
+    /** Set the value of a setting */
+    setValue(label: string, value: CSettingsValue){
+        const [base,rest] = label.split("/",2)
+        this.parameters[base]?.set(rest??"",value)
     }
-}
 
-
-export const FONTS: Record<string,{css:string, babylon:IFontData}> = {}
-for(const [file, url] of Object.entries(import.meta.glob("../../media/fonts/*"))){
-    const file_full_name = file.split("/").pop() ?? ""
-    const [name,extension] = file_full_name.split(".")
-    FONTS[name] ??= {css:"", babylon:{} as IFontData}
-    if(extension=="ttf" || extension=="otf"){
-        const font_url = ((await url()) as any).default as string
-        document.fonts.add(await new FontFace(name, `url(${font_url})`).load())
-        FONTS[name].css = name
+    /** Get the value of a setting */
+    getValue(label: string): CSettingsValue{
+        const [base,rest] = label.split("/",2)
+        return this.parameters[base]?.get(rest??"")
     }
-    else{
-        FONTS[name].babylon = (await url()) as IFontData
+
+    /** Set the values of multiple settings */
+    setValues(values: CSettingsValues){
+        for(let [label,value] of Object.entries(values)){
+            this.setValue(label,value)
+        }
+    }
+
+    /** Get the values of multiple settings */
+    getValues(): CSettingsValues{
+        const values: CSettingsValues = {}
+        for(let label of Object.keys(this.parameters)){
+            values[label] = this.getValue(label)
+        }
+        return values
     }
 }

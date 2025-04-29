@@ -1,7 +1,7 @@
 
-import { AbstractMesh, Color3, MeshBuilder, PointerDragBehavior, Scene, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
+import { AbstractMesh, Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
 import { ControlContext } from "../../Control.js";
-import { ControlSettings } from "../../settings.js";
+import { CSettings, CSettingsValue } from "../../settings.js";
 import { ParameterControl } from "./ParameterControl.js";
 
 /**
@@ -15,7 +15,7 @@ export class GrowControl extends ParameterControl{
         super(context)
     }
 
-    static override getSettings(): ControlSettings{
+    static override getSettings(): CSettings{
         return {"Color":"color", "Base Color":"color", ...super.getSettings()}
     }
 
@@ -26,11 +26,11 @@ export class GrowControl extends ParameterControl{
     ;["Color"]: Color3 = Color3.White()
     ;["Base Color"]: Color3 = Color3.White()
 
-    override updateValue(label: string, value: string){
+    override updateValue(label: string, value: CSettingsValue){
         switch(label){
             case "Color":
             case "Base Color":
-                this[label] = Color3.FromHexString(value)
+                this[label] = Color3.FromHexString(value as string)
                 this.updateColor()
                 break
             default:
@@ -96,8 +96,8 @@ export class GrowControl extends ParameterControl{
 
     onParamChange(): void {
         if(this.mesh){
-            this.mesh.scaling.y=0.2+this.normalized*0.8
-            this.mesh.position.y=this.normalized*0.4-0.3
+            this.mesh.scaling.y=0.2+this.normalized[0]*0.8
+            this.mesh.position.y=this.normalized[0]*0.4-0.3
         }
     }
 

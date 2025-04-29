@@ -3,6 +3,7 @@ import { Control } from "./Control.ts"
 import { FriendlyIterable } from "../utils/FriendlyIterable.ts"
 import { html } from "../utils/doc.ts"
 import { OSource } from "../observable/source/OSource.ts"
+import { CSettingsValue, CSettingsValues } from "./settings.ts"
 
 
 export interface Item{
@@ -10,7 +11,7 @@ export interface Item{
     y: number
     width: number
     height: number
-    values: any
+    values: CSettingsValues
     control: Control
     container: HTMLElement|null
     node: TransformNode|null
@@ -30,7 +31,7 @@ export class ControlMap{
     ){ }
 
     /** Splice on the control array */
-    splice(index: number, deleteCount: number, ...items: {x:number,y:number,width:number,height:number,values:Record<string,string>,control:Control}[]){
+    splice(index: number, deleteCount: number, ...items: {x:number,y:number,width:number,height:number,values:CSettingsValues,control:Control}[]){
 
         // Addeds
         let added_controls = []
@@ -116,7 +117,7 @@ export class ControlMap{
     }
 
     /** Set a value of a parameter */
-    setValue(index: number, label: string, value: string){
+    setValue(index: number, label: string, value: CSettingsValue){
         let control_info = this.#controls[index]
         control_info.values[label] = value
         control_info.control.updateValue(label,value)

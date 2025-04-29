@@ -5,6 +5,7 @@ import { MOValue } from "./observable/collections/OValue.ts";
 import { Control, ControlContext } from "./control/Control.ts";
 import { parallel, parallelFor } from "./utils/async.ts";
 import { Decoration } from "./utils/visual/Decoration.ts";
+import { CSettingsValues } from "./control/settings.ts";
 
 export interface ControlLibrary{
     [id:string]: (new(context:ControlContext)=>Control) & (typeof Control)
@@ -151,7 +152,7 @@ export class WamGUIGenerator{
         this.controls.splice(0,this.controls.length)
     }
 
-    addControl(added: {control:ControlLibrary[0], values:Record<string,string>, x:number, y:number, width:number, height:number}){
+    addControl(added: {control:ControlLibrary[0], values:CSettingsValues, x:number, y:number, width:number, height:number}){
         const control = new added.control(this.context)
         this.controls.splice(this.controls.length, 0, {control, x:added.x, y:added.y, height:added.height, width:added.width, values:added.values})
     }
@@ -275,7 +276,7 @@ export interface WamGUICode{
     outline_color?: string,
     controls: {
         control: string,
-        values: Record<string,string>,
+        values: CSettingsValues,
         x: number,
         y: number,
         width: number,

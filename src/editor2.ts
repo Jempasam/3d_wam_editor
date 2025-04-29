@@ -14,6 +14,7 @@ import { MOValue } from "./observable/collections/OValue.ts"
 import { Item } from "./control/ControlMap.ts"
 import { ImagesPane } from "./editor/ImagesPane.ts"
 import { DECORATION_IMAGES } from "./utils/visual/Decoration.ts"
+import { CSettingsValues } from "./control/settings.ts"
 
 let audioContext: AudioContext
 let host: string
@@ -37,7 +38,7 @@ const images = new ImagesPane(DECORATION_IMAGES)
 /* Settings */
 const settings = new SettingsPane(()=>wam_loader.parameters_info)
 
-let parameter_values = {} as Record<string,string>
+let parameter_values = {} as CSettingsValues
 
 selector.selected.observable.register(({to:selected})=>{
     if(selected){

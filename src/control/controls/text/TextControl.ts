@@ -1,8 +1,9 @@
 import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
 import { Control, ControlContext } from "../../Control.ts";
-import { ControlSettings, FONTS } from "../../settings.ts";
+import { CSettings, CSettingsValue } from "../../settings.ts";
 //@ts-ignore
 import earcut from "earcut"
+import { FONTS } from "../settings/field/FontSField.ts";
 //@ts-ignore
 window.earcut = earcut
 
@@ -19,7 +20,7 @@ export class TextControl extends Control{
             super(context)
     }
 
-    static getSettings(): ControlSettings{
+    static getSettings(): CSettings{
         return {
             Text: "text", 
             Color: "color", 
@@ -33,22 +34,22 @@ export class TextControl extends Control{
         Text: "Text", 
         Color: "#000000",
         "Outline Color": "#ffffff",
-        "Outline Width": "0",
+        "Outline Width": 0,
         Font: Object.entries(FONTS)[0][0], 
     })
 
-    updateValue(label: string, value: string){
+    updateValue(label: string, value: CSettingsValue){
         if(this.element)switch(label){
-            case "Text": this.element.textContent = value; break
-            case "Color": this.element.style.color = value; break
-            case "Font": this.element.style.fontFamily = value; break
+            case "Text": this.element.textContent = value as string; break
+            case "Color": this.element.style.color = value as string; break
+            case "Font": this.element.style.fontFamily = value as string; break
         }
         if(this.mesh)switch(label){
-            case "Text": this.text = value; this.generateTextMesh(); break
-            case "Font": this.font = value; this.generateTextMesh(); break
-            case "Color": this.material!!.diffuseColor = Color3.FromHexString(value); break
-            case "Outline Color": this.outlineMaterial!!.diffuseColor = Color3.FromHexString(value); break
-            case "Outline Width": this.outlineWidth = parseFloat(value); this.generateTextMesh(); break
+            case "Text": this.text = value as string; this.generateTextMesh(); break
+            case "Font": this.font = value as string; this.generateTextMesh(); break
+            case "Color": this.material!!.diffuseColor = Color3.FromHexString(value as string); break
+            case "Outline Color": this.outlineMaterial!!.diffuseColor = Color3.FromHexString(value as string); break
+            case "Outline Width": this.outlineWidth = value as number; this.generateTextMesh(); break
         }
     }
 
