@@ -8,7 +8,7 @@ import { MOValue } from "../../../observable/collections/OValue.ts"
 /**
  * An event and audio input control that changes a numeric value.
  */
-export abstract class DecorationControl extends Control{
+export class DecorationControl extends Control{
 
     static override label = "Decoration"
 

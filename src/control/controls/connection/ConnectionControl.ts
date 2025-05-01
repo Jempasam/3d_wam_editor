@@ -16,7 +16,7 @@ export abstract class ConnectionControl extends Control{
         return {"Color":"color"}
     }
 
-    static getDefaultValues(){
+    static override getDefaultValues(){
         return {"Color":this.defaultColor}
     }
 

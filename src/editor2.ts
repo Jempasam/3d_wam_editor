@@ -4,7 +4,7 @@ import { initializeWamHost } from "@webaudiomodules/sdk"
 import { WamGui3DPane } from "./editor/WamGui3DPane.ts"
 import { WamEditorPane } from "./editor/WamEditorPane.ts"
 import { ControlSelectorPane } from "./editor/ControlSelectorPane.ts"
-import controls from "./control/controls.ts"
+import controls, { control_categories } from "./control/controls.ts"
 import { SettingsPane } from "./editor/SettingsPane.ts"
 import { ToolbarPane } from "./editor/ToolbarPane.ts"
 import { WamPadPane } from "./editor/WamPadPane.ts"
@@ -17,6 +17,7 @@ import { DECORATION_IMAGES } from "./utils/visual/Decoration.ts"
 import { CSettingsValues } from "./control/controls/settings/settings.ts"
 import { ExamplesPane } from "./editor/ExamplesPane.ts"
 import example_json from "./examples.json"
+import { AutoLayoutPane } from "./editor/AutoLayoutPane.ts"
 
 let audioContext: AudioContext
 let host: string
@@ -36,6 +37,7 @@ const wampad = new WamPadPane(editor.gui_generator, wam_loader.wam, wam_loader.u
 const load_save = new LoadSavePane(editor.gui_generator, wam_loader.url, controls)
 const images = new ImagesPane(DECORATION_IMAGES)
 const examples = new ExamplesPane(example_json as any, editor.gui_generator, wam_loader.url, controls)
+const autolayout = new AutoLayoutPane(wam_loader.wam, wam_loader.url, controls, control_categories)
 
 
 /* Settings */
@@ -130,13 +132,16 @@ let clipboard = new MOValue<{x:number, y:number, width:number, height:number, va
 function copySelecteds(){
     clipboard.value = [...editor.selector.selecteds.values()]
         .map(({infos:{x,y,width,height,values,control}}) =>({
-            x,y,width,height,
+            x:x+0.02, y:y+0.02, width, height,
             values: structuredClone(values),
             control: control.factory
         }))
 }
 
 function pasteSelecteds(){
+    const controls = editor.gui_generator.value.controls
+    let first = controls.length
+    let count = clipboard.value.length
     editor.selector.selecteds = []
     for(const {x,y,width,height,values,control} of clipboard.value){
         editor.gui_generator.value.addControl({
@@ -144,6 +149,9 @@ function pasteSelecteds(){
             values: structuredClone(values)
         })
     }
+    editor.selector.selecteds = [...controls.values]
+        .slice(first,first+count)
+        .map(infos=>({element:infos.container!!, infos}))
 }
 
 
@@ -229,7 +237,7 @@ clipboard.link(({to})=>{
 const components: Record<string,IContentRenderer> = {
     wam_loader, editor, view_3d, selector,
     settings, editor_toolbar, wampad, load_save,
-    images, examples: examples
+    images, examples: examples, autolayout,
 }
 
 /* */
@@ -247,85 +255,96 @@ const options: DockviewComponentOptions = {
 const api = createDockview(container, options)
 /* */
 
-const left = api.addGroup({ id:"left", direction: "right" })
-const center = api.addGroup({ id:"center", direction:"right" })
-const right = api.addGroup({ id:"right", direction:"right" })
+function layout(){
+    const left = api.addGroup({ id:"left", direction: "right" })
+    const center = api.addGroup({ id:"center", direction:"right" })
+    const right = api.addGroup({ id:"right", direction:"right" })
 
-/*api.addPanel({
-    id: "selector",
-    title: "Controls",
-    component: "selector",
-    position: {referenceGroup:"left"},
-})
+    api.addPanel({
+        id: "selector",
+        title: "Controls",
+        component: "selector",
+        position: {referenceGroup:"left"},
+    })
 
-api.addPanel({
-    id: "settings",
-    title: "Settings",
-    component: "settings",
-    position: {referenceGroup:"left", direction:"below"},
-    
-})
-
-
-api.addPanel({
-    id: "editor_toolbar",
-    title: "Editor Toolbar",
-    component: "editor_toolbar",
-    maximumHeight: 50,
-    position: {referenceGroup:"center"},
-})
-
-api.addPanel({
-    id: "editor",
-    title: "Editor",
-    component: "editor",
-    position: {referenceGroup:"center", direction:"below"},
-})
+    api.addPanel({
+        id: "settings",
+        title: "Settings",
+        component: "settings",
+        position: {referenceGroup:"left", direction:"below"},
+        
+    })
 
 
-api.addPanel({
-    id: "wam",
-    title: "Web Audio Module",
-    component: "wam_loader",
-    position: {referenceGroup:"right"},
-})
+    api.addPanel({
+        id: "editor_toolbar",
+        title: "Editor Toolbar",
+        component: "editor_toolbar",
+        maximumHeight: 50,
+        position: {referenceGroup:"center"},
+    })
 
-api.addPanel({
-    id: "3d",
-    title: "3D View",
-    component: "view_3d",
-    position: {referenceGroup:"right", direction:"below"},
-})
+    api.addPanel({
+        id: "editor",
+        title: "Editor",
+        component: "editor",
+        position: {referenceGroup:"center", direction:"below"},
+    })
 
-api.addPanel({
-    id: "wampad",
-    title: "Pad",
-    component: "wampad",
-    position: {referencePanel:"wam", direction:"right"},
-})
 
-api.addPanel({
-    id: "load_save",
-    title: "Load/Save",
-    component: "load_save",
-    position: {referencePanel:"wam",direction:"within"},
-})
+    api.addPanel({
+        id: "wam",
+        title: "Web Audio Module",
+        component: "wam_loader",
+        position: {referenceGroup:"right"},
+    })
 
-api.addPanel({
-    id: "images",
-    title: "Images",
-    component: "images",
-    position: {referencePanel:"settings",direction:"within"},
-})
+    api.addPanel({
+        id: "3d",
+        title: "3D View",
+        component: "view_3d",
+        position: {referenceGroup:"right", direction:"below"},
+    })
 
-api.addPanel({
-    id: "examples",
-    title: "Examples",
-    component: "examples",
-    position: {referencePanel:"settings",direction:"within"},
-})*/
+    api.addPanel({
+        id: "wampad",
+        title: "Pad",
+        component: "wampad",
+        position: {referencePanel:"wam", direction:"right"},
+    })
 
-api.fromJSON({"grid":{"root":{"type":"branch","data":[{"type":"branch","data":[{"type":"leaf","data":{"views":["selector"],"activeView":"selector","id":"left"},"size":365},{"type":"leaf","data":{"views":["settings","images","examples"],"activeView":"settings","id":"1"},"size":365.4000244140625}],"size":356.8000183105469},{"type":"branch","data":[{"type":"leaf","data":{"views":["editor_toolbar"],"activeView":"editor_toolbar","id":"center"},"size":100},{"type":"leaf","data":{"views":["editor"],"activeView":"editor","id":"2"},"size":630.4000244140625}],"size":692.7999572753906},{"type":"branch","data":[{"type":"branch","data":[{"type":"leaf","data":{"views":["wam"],"activeView":"wam","id":"right"},"size":243},{"type":"leaf","data":{"views":["wampad","load_save"],"activeView":"wampad","id":"4"},"size":243.4000244140625}],"size":365},{"type":"leaf","data":{"views":["3d"],"activeView":"3d","id":"3"},"size":365.4000244140625}],"size":486.4000244140625}],"size":730.4000244140625},"width":1536,"height":730.4000244140625,"orientation":"HORIZONTAL"},"panels":{"selector":{"id":"selector","contentComponent":"selector","title":"Controls"},"editor_toolbar":{"id":"editor_toolbar","contentComponent":"editor_toolbar","title":"Editor Toolbar","maximumHeight":50},"wam":{"id":"wam","contentComponent":"wam_loader","title":"Web Audio Module"},"settings":{"id":"settings","contentComponent":"settings","title":"Settings"},"images":{"id":"images","contentComponent":"images","title":"Images"},"examples":{"id":"examples","contentComponent":"examples","title":"Examples"},"editor":{"id":"editor","contentComponent":"editor","title":"Editor"},"3d":{"id":"3d","contentComponent":"view_3d","title":"3D View"},"wampad":{"id":"wampad","contentComponent":"wampad","title":"Pad"},"load_save":{"id":"load_save","contentComponent":"load_save","title":"Load/Save"}},"activeGroup":"4"})
+    api.addPanel({
+        id: "load_save",
+        title: "Load/Save",
+        component: "load_save",
+        position: {referencePanel:"wam",direction:"within"},
+    })
+
+    api.addPanel({
+        id: "images",
+        title: "Images",
+        component: "images",
+        position: {referencePanel:"settings",direction:"within"},
+    })
+
+    api.addPanel({
+        id: "examples",
+        title: "Examples",
+        component: "examples",
+        position: {referencePanel:"settings",direction:"within"},
+    })
+
+    api.addPanel({
+        id: "autolayout",
+        title: "Auto Layout",
+        component: "autolayout",
+        position: {referencePanel:"settings",direction:"within"},
+    })
+}
+
+//layout()
+api.fromJSON({"grid":{"root":{"type":"branch","data":[{"type":"branch","data":[{"type":"leaf","data":{"views":["selector"],"activeView":"selector","id":"left"},"size":386},{"type":"leaf","data":{"views":["settings","images","examples"],"activeView":"settings","id":"1"},"size":385.20001220703125}],"size":384},{"type":"branch","data":[{"type":"leaf","data":{"views":["editor_toolbar"],"activeView":"editor_toolbar","id":"center"},"size":100},{"type":"leaf","data":{"views":["editor"],"activeView":"editor","id":"2"},"size":671.2000122070312}],"size":689},{"type":"branch","data":[{"type":"branch","data":[{"type":"leaf","data":{"views":["wam"],"activeView":"wam","id":"right"},"size":254},{"type":"leaf","data":{"views":["wampad","load_save"],"activeView":"wampad","id":"4"},"size":209}],"size":386},{"type":"leaf","data":{"views":["3d","autolayout"],"activeView":"3d","id":"3"},"size":385.20001220703125}],"size":463}],"size":771.2000122070312},"width":1536,"height":771.2000122070312,"orientation":"HORIZONTAL"},"panels":{"selector":{"id":"selector","contentComponent":"selector","title":"Controls"},"editor_toolbar":{"id":"editor_toolbar","contentComponent":"editor_toolbar","title":"Editor Toolbar","maximumHeight":50},"wam":{"id":"wam","contentComponent":"wam_loader","title":"Web Audio Module"},"settings":{"id":"settings","contentComponent":"settings","title":"Settings"},"images":{"id":"images","contentComponent":"images","title":"Images"},"examples":{"id":"examples","contentComponent":"examples","title":"Examples"},"editor":{"id":"editor","contentComponent":"editor","title":"Editor"},"3d":{"id":"3d","contentComponent":"view_3d","title":"3D View"},"autolayout":{"id":"autolayout","contentComponent":"autolayout","title":"Auto Layout"},"wampad":{"id":"wampad","contentComponent":"wampad","title":"Pad"},"load_save":{"id":"load_save","contentComponent":"load_save","title":"Load/Save"}},"activeGroup":"center"})
+
 document.addEventListener("keypress", event=>{
     console.log(event.key)
     if(event.key=="e"){

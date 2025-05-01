@@ -1,4 +1,3 @@
-import { Control, ControlContext } from "./Control.js"
 import { ColorControl } from "./controls/parameter/ColorControl.js"
 import { CursorControl } from "./controls/parameter/CursorControl.js"
 import { GrowControl } from "./controls/parameter/GrowControl.js"
@@ -6,9 +5,11 @@ import { TextControl } from "./controls/text/TextControl.js"
 import { ConnectionControl } from "./controls/connection/ConnectionControl.js"
 import { Joystick3DControl } from "./controls/parameter/Joystick3DControl.js"
 import { DecorationControl } from "./controls/decoration/DecorationControl.js"
+import { ControlLibrary } from "../WamGUIGenerator.js"
+import { CSettingsValues } from "./controls/settings/settings.js"
 
 /** List of available controls */
-export const controls: {[id:string]:(new(context:ControlContext)=>Control)&typeof Control} = {
+export const controls: ControlLibrary = {
     "input_control": ConnectionControl.Input,
     "output_control": ConnectionControl.Output,
     "midi_input_control": ConnectionControl.MidiInput,
@@ -19,6 +20,28 @@ export const controls: {[id:string]:(new(context:ControlContext)=>Control)&typeo
     "grow_control": GrowControl,
     "text": TextControl,
     "decoration": DecorationControl,
+}
+
+type ControlCategory = {control:keyof ControlLibrary, values: CSettingsValues}[]
+
+export const control_categories = {
+    input: [
+        {control:"input_control", values: {}},
+    ] as ControlCategory,
+    output: [
+        {control:"output_control", values: {}},
+    ] as ControlCategory,
+    event_input: [
+        {control:"midi_input_control", values: {}},
+    ] as ControlCategory,
+    event_output: [
+        {control:"midi_output_control", values: {}},
+    ] as ControlCategory,
+    parameter: [
+        {control:"color_control", values: {}},
+        {control:"cursor_control", values: {"Base Color":"[color]"}},
+        {control:"grow_control", values: {"Base Color":"[color]"}},
+    ] as ControlCategory,
 }
 
 export default controls

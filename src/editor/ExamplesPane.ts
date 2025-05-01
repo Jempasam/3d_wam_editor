@@ -1,6 +1,4 @@
 import { GroupPanelPartInitParameters, IContentRenderer } from "dockview-core";
-import examples from "../examples.json"
-import { ArcRotateCamera, CreateScreenshot, Engine, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 import { ControlLibrary, WamGUICode, WamGUIGenerator, WAMGuiInitCode } from "../WamGUIGenerator.ts";
 import controls from "../control/controls.ts";
 import { html } from "../utils/doc.ts";
@@ -34,7 +32,7 @@ export class ExamplesPane implements IContentRenderer{
         const list = html.a`<ul class="item_selector _grid"></ul>`
         this.element.replaceChildren(list)
         
-        for(let [key,code] of Object.entries(examples)){
+        for(let [key,code] of Object.entries(this.examples)){
             ;(async()=>{
                 const icon = html.a`<div class="-icon"></div>`
                 icon.style.contain="strict"
@@ -50,6 +48,10 @@ export class ExamplesPane implements IContentRenderer{
                 list.appendChild(entry)
             })()
         }
+    }
+
+    dispose(): void {
+        this.element.replaceChildren()
     }
 
 }
