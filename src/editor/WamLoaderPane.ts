@@ -49,6 +49,7 @@ export class WamLoaderPane implements IContentRenderer{
 
         // Wam to GUI
         this.wam.observable.register(async({from:oldwam, to:wam})=>{
+            console.log("new gui")
             this.indicator.set("wait","Loading the GUI")
             if(oldwam){
                 oldwam.destroyGui(this.gui.value!!)

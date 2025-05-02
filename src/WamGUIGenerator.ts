@@ -68,6 +68,7 @@ export class WamGUIGenerator{
 
             const visual = this.pad_decoration.createScene(root.getScene())
             const pad_node = this.pad_node = visual.node
+            pad_node.parent = root
             this.disposables.push(visual.dispose)
 
             const updateSize = ()=>{

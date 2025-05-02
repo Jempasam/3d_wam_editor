@@ -63,6 +63,20 @@
                 }
             }
 
+            // Faust Wams
+            {
+                const wams = ["vocalBPMIDI", "fluteMIDI", "guitarMIDI","clarinetMIDI"]
+                const fausturl = "https://mainline.i3s.unice.fr/PedalEditor/Back-End/functional-pedals/published/{NAME}/indexGUIStandard.js"
+                for(const wam of wams){
+                    WAMS[wam] = {
+                        name: wam,
+                        image: "https://miro.medium.com/v2/resize:fit:791/0*hOP3fWny8EIR04RV.png",
+                        description: "Faust WAM",
+                        url: fausturl.replace("{NAME}", wam)
+                    }
+                }
+            }
+
             function match(a,search){
                 if(a==search) return true
                 if(a.toLowerCase().includes(search.toLowerCase())) return true
