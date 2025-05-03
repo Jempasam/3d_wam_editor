@@ -33,13 +33,23 @@ export abstract class ConnectionControl extends Control{
     private  material?: StandardMaterial
     
     override createElement(){
-        this.element = document.createElement("div")
+        const element = this.element = document.createElement("div")
         this.element.style.display="block"
         this.element.style.width="100%"
         this.element.style.height="100%"
         this.element.style.borderRadius="50%"
         this.element.style.boxSizing="border-box";
         this.element.style.backgroundColor = "#00FF00"
+
+        const wam = this.wam
+        if(wam)((this.context.html as any)[this.getCallbackName()])({
+            target: this.element,
+            node: wam.audioNode,
+            setConnected(connected: boolean) {
+                if(connected) element.style.scale = "0.5"
+                else element.style.scale = "1"
+            },
+        })
         
         return this.element
     }
@@ -62,10 +72,10 @@ export abstract class ConnectionControl extends Control{
         mesh.position.y = -0.5
         
         const wam = this.wam
-        if(wam)(this.context[this.getCallbackName()] as ControlContext['defineAnInput'])({
+        if(wam)((this.context.babylonjs as any)[this.getCallbackName()])({
             target: mesh,
             node: wam.audioNode,
-            setConnected(connected) {
+            setConnected(connected: boolean) {
                 if(connected) mesh.scaling.setAll(0.5)
                 else mesh.scaling.setAll(1)
             },
@@ -85,33 +95,33 @@ export abstract class ConnectionControl extends Control{
     
     protected static defaultColor = "#00FF00"
 
-    protected getCallbackName(): keyof ControlContext { return "defineAnInput" }
+    protected getCallbackName(): string { return "defineAnInput" }
 
     static Input = class extends ConnectionControl{
         static label = "Input"
         static description = "An audio signal input"
         protected static defaultColor = "#00FF00"
-        protected override getCallbackName(): keyof ControlContext { return "defineAnInput" }
+        protected override getCallbackName(): string { return "defineAnInput" }
     }
 
     static Output = class extends ConnectionControl{
         static label = "Output"
         static description = "An audio signal output"
         protected static defaultColor = "#FF0000"
-        protected override getCallbackName(): keyof ControlContext { return "defineAnOutput" }
+        protected override getCallbackName(): string { return "defineAnOutput" }
     }
 
     static MidiInput = class extends ConnectionControl{
         static label = "MIDI Input"
         static description = "A MIDI signal input"
         protected static defaultColor = "#33BB88"
-        protected override getCallbackName(): keyof ControlContext { return "defineAnEventInput" }
+        protected override getCallbackName(): string { return "defineAnEventInput" }
     }
 
     static MidiOutput = class extends ConnectionControl{
         static label = "MIDI Output"
         static description = "A MIDI signal output"
         protected static defaultColor = "#BB3388"
-        protected override getCallbackName(): keyof ControlContext { return "defineAnEventOutput" }
+        protected override getCallbackName(): string { return "defineAnEventOutput" }
     }
 }

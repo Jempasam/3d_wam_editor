@@ -1,7 +1,6 @@
 import { WamParameterInfo } from "@webaudiomodules/api"
-import { Control, ControlContext } from "../../Control.ts"
+import { Control, ControlContext, ControlContextTarget } from "../../Control.ts"
 import { CSettings, CSettingsValue } from "../settings/settings.ts"
-import { AbstractMesh } from "@babylonjs/core"
 import { stringifyWamParameter } from "../../../utils/wam.ts"
 
 /**
@@ -13,7 +12,6 @@ export abstract class ParameterControl extends Control{
 
     constructor(context: ControlContext){
         super(context)
-
         if(this.wam){
             const control = this
             this.timeout = setTimeout(async function timeout(){
@@ -80,9 +78,9 @@ export abstract class ParameterControl extends Control{
 
     }
 
-    declareField(mesh: AbstractMesh, index: number=0){
+    declareField<C,T>(target: ControlContextTarget<C,T>, mesh: T, index: number=0){
         const control = this
-        this.context.defineField({
+        target.defineField({
             target: mesh,
             getName() {
                 if(!control.parameter[index]) return "none"

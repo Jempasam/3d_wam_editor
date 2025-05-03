@@ -3,6 +3,7 @@ import { ControlLibrary, WamGUICode, WamGUIGenerator, WAMGuiInitCode } from "../
 import controls from "../control/controls.ts";
 import { html } from "../utils/doc.ts";
 import { MOValue, OValue } from "../observable/collections/OValue.ts";
+import { DEFAULT_CONTROL_CONTEXT_TARGET } from "../control/Control.ts";
 
 export class ExamplesPane implements IContentRenderer{
 
@@ -36,7 +37,10 @@ export class ExamplesPane implements IContentRenderer{
             ;(async()=>{
                 const icon = html.a`<div class="-icon"></div>`
                 icon.style.contain="strict"
-                const gui = await WamGUIGenerator.create({html:icon},{})
+                const gui = await WamGUIGenerator.create({html:{
+                    root: icon,
+                    ...DEFAULT_CONTROL_CONTEXT_TARGET,
+                }})
                 await gui.load(code as WamGUICode,controls)
                 let entry = list.appendChild(html.a`
                     <li value="${key}">

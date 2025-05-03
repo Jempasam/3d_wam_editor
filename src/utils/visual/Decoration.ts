@@ -272,7 +272,6 @@ export class Decoration{
         const updateHeight = ()=>{
             transform.scaling.y = this.height.value
             transform.position.y = -(1-this.height.value)/2
-            console.log("updateHeight",this.height.value)
         }
 
         const updateRotation = ()=>{
@@ -320,7 +319,7 @@ export class Decoration{
         "Front Face Color": "color",
         "Modifier": {choice:Object.keys(DECORATION_SHAPE_MODIFIER)},
         "Modifier Strength": [0,1],
-        "Height": [0,1],
+        "Height": [0.1,1],
         "Rotation": {min:0,max:360,step:1},
     }
 

@@ -33,9 +33,10 @@ export class MorphControl extends ParameterControl{
     }
 
     static getDefaultValues(){
+        const sub = {...Decoration.SETTINGS_DEFAULTS, "Shape":"circle"}
         return flattenCDefault({
-            "Low Shape": Decoration.SETTINGS_DEFAULTS,
-            "High Shape": Decoration.SETTINGS_DEFAULTS,
+            "Low Shape": sub,
+            "High Shape": sub,
         })
     }
 
@@ -75,6 +76,9 @@ export class MorphControl extends ParameterControl{
         this.html_gui = this.decoration.createElement()
         this.html_gui.element.setAttribute("width", "100%")
         this.html_gui.element.setAttribute("height", "100%")
+
+        this.declareField(this.context.html!!, this.html_gui.element)
+
         return this.html_gui.element as HTMLElement
     }
 
@@ -88,6 +92,7 @@ export class MorphControl extends ParameterControl{
 
     override createNode(scene: Scene){
         this.node_gui = this.decoration.createScene(scene)
+        this.declareField(this.context.babylonjs!!, this.node_gui.node)
         return this.node_gui.node
     }
 

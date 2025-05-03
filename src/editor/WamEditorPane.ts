@@ -1,12 +1,13 @@
 import { GroupPanelPartInitParameters, IContentRenderer } from "dockview-core";
 import { html } from "../utils/doc.ts";
-import { TransformNode } from "@babylonjs/core";
+import { AbstractMesh, TransformNode } from "@babylonjs/core";
 import { MOValue, OValue } from "../observable/collections/OValue.ts";
 import { WamGUIGenerator } from "../WamGUIGenerator.ts";
 import { Selector } from "../gui/Selector.ts";
 import { ControlMap } from "../control/ControlMap.ts";
 import { OSource } from "../observable/source/OSource.ts";
 import { WebAudioModule } from "@webaudiomodules/api";
+import { ControlContextTarget, DEFAULT_CONTROL_CONTEXT_TARGET } from "../control/Control.ts";
 
 export class WamEditorPane implements IContentRenderer{
 
@@ -27,15 +28,22 @@ export class WamEditorPane implements IContentRenderer{
             width: 100%;
         `
 
-        this.gui_generator = new MOValue(WamGUIGenerator.create({html:this.container, babylonjs:node_container},{}))
+        const html: ControlContextTarget<HTMLElement,HTMLElement> = {
+            root: this.container,
+            ...DEFAULT_CONTROL_CONTEXT_TARGET,
+        }
 
-        console.log("add observable")
-        const w = wam
-        wam.observable.register(({to:wam})=>{
-            console.log("WAM LOAD", w.observable)
+        const babylonjs: ControlContextTarget<TransformNode,AbstractMesh>|undefined = node_container ? {
+            root: node_container,
+            ...DEFAULT_CONTROL_CONTEXT_TARGET,
+        } : undefined 
+
+        this.gui_generator = new MOValue(WamGUIGenerator.create({wam:wam.value??undefined, html, babylonjs}))
+
+        wam.observable.register(({})=>{
             console.trace()
             this.gui_generator.value.dispose()
-            this.gui_generator.value = WamGUIGenerator.create({html:this.container, babylonjs:node_container},{wam:wam??undefined})
+            this.gui_generator.value = WamGUIGenerator.create({wam:wam.value, html, babylonjs})
         })
         
         this.selector = new Selector<{element:HTMLElement,infos:ReturnType<ControlMap['get']>}>(

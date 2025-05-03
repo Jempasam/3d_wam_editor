@@ -1,7 +1,7 @@
 import { GroupPanelPartInitParameters, IContentRenderer } from "dockview-core";
 import { html } from "../utils/doc.ts";
 import { MOValue } from "../observable/collections/OValue.ts";
-import { Control } from "../control/Control.ts";
+import { Control, DEFAULT_CONTROL_CONTEXT_TARGET } from "../control/Control.ts";
 import { ControlLibrary } from "../WamGUIGenerator.ts";
 
 export class ControlSelectorPane implements IContentRenderer{
@@ -35,12 +35,10 @@ export class ControlSelectorPane implements IContentRenderer{
     
         for(let [key,control] of Object.entries(this.controls)){
             let example = new control({
-                defineAnInput(settings) {},
-                defineAnOutput(settings) {},
-                defineAnEventInput(settings) {},
-                defineAnEventOutput(settings) {},
-                defineField(settings) {},
-                defineDraggableField(settings) {},
+                html: {
+                    root: document.createElement("div"),
+                    ...DEFAULT_CONTROL_CONTEXT_TARGET,
+                }
             })
             let element = example.createElement()
             let option = list.appendChild(html.a`

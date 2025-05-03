@@ -1,6 +1,6 @@
 import { GroupPanelPartInitParameters, IContentRenderer } from "dockview-core";
 import { html } from "../utils/doc.ts";
-import { ArcRotateCamera, BackgroundMaterial, Color4, Engine, MeshBuilder, Scene, TransformNode, Vector3 } from "@babylonjs/core";
+import { ArcRotateCamera, Color4, Engine, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 
 
 export class WamGui3DPane implements IContentRenderer{
@@ -36,7 +36,7 @@ export class WamGui3DPane implements IContentRenderer{
         this.container = new TransformNode("node_container", this.scene)
     }
 
-    init(parameters: GroupPanelPartInitParameters): void {
+    init(_: GroupPanelPartInitParameters): void {
         //this.key_handler = (event)=>{
         //    switch(event.key){
         //        case "z": this.container.position.x+=0.1; break

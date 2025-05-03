@@ -60,6 +60,8 @@ export class ColorControl extends ParameterControl{
         this.element.style.height="100%"
         this.element.style.borderRadius="50%"
         this.element.style.boxSizing="border-box";
+
+        this.declareField(this.context.html!!, this.element)
         
         return this.element
     }
@@ -79,7 +81,7 @@ export class ColorControl extends ParameterControl{
         this.material = new StandardMaterial("color_control", scene)
         this.mesh = ret
         ret.material = this.material
-        this.declareField(ret)
+        this.declareField(this.context.babylonjs!!, ret)
         return ret
     }
 

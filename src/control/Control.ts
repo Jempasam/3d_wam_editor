@@ -18,6 +18,65 @@ export function flattenCDefault(from: DefaultCSettingsValues){
     return flatten(from,"/") as CSettingsValues
 }
 
+export interface ControlContextTarget<C,T>{
+    root: C
+
+    /** A callback called on each output of the control. */
+    defineAnOutput(settings:{
+        target: T,
+        node: AudioNode,
+        setConnected(connected:boolean): void,
+    }): void
+
+    /** A callback called on each input of the control. */
+    defineAnInput(settings:{
+        target: T,
+        node: AudioNode,
+        setConnected(connected:boolean): void,
+    }): void
+
+    /** A callback called on each midi/event output of the control. */
+    defineAnEventInput(settings:{
+        target: T,
+        node: WamNode,
+        setConnected(connected:boolean): void,
+    }): void
+
+    /** A callback called on each midi/event input of the control. */
+    defineAnEventOutput(settings:{
+        target: T,
+        node: WamNode,
+        setConnected(connected:boolean): void,
+    }): void
+
+    /** A callback called on each field of the control. */
+    defineField(settings:{
+        target: T,
+        getName(): string,
+        getStepSize(): number,
+        setValue(value:number): void,
+        getValue(): number,
+        stringify(value:number): string,
+    }): void
+
+    /** A callback called on each field of the control that can be dragged in all 3 dimension. */
+    defineDraggableField(settings:{
+        target: T,
+        getName(): string,
+        getValue(): string,
+        drag(x: number, y: number, z: number): void,
+    }): void
+}
+
+export const DEFAULT_CONTROL_CONTEXT_TARGET = {
+    defineAnEventInput(_: any) {},
+    defineAnEventOutput(_: any) {},
+    defineAnInput(_: any) {},
+    defineAnOutput(_: any) {},
+    defineDraggableField(_: any) {},
+    defineField(_: any) {},
+}
+
 /**
  * The context of creation of the controls.
  * Also given when a GUI is created so it can be used to create the controls of the GUI.
@@ -30,51 +89,11 @@ export interface ControlContext{
      */
     wam?: WebAudioModule
 
-    /** A callback called on each output of the control. */
-    defineAnOutput(settings:{
-        target: AbstractMesh,
-        node: AudioNode,
-        setConnected(connected:boolean): void,
-    }): void
+    /** The 3d context */
+    babylonjs?: ControlContextTarget<TransformNode,AbstractMesh>
 
-    /** A callback called on each input of the control. */
-    defineAnInput(settings:{
-        target: AbstractMesh,
-        node: AudioNode,
-        setConnected(connected:boolean): void,
-    }): void
-
-    /** A callback called on each midi/event output of the control. */
-    defineAnEventInput(settings:{
-        target: AbstractMesh,
-        node: WamNode,
-        setConnected(connected:boolean): void,
-    }): void
-
-    /** A callback called on each midi/event input of the control. */
-    defineAnEventOutput(settings:{
-        target: AbstractMesh,
-        node: WamNode,
-        setConnected(connected:boolean): void,
-    }): void
-
-    /** A callback called on each field of the control. */
-    defineField(settings:{
-        target: AbstractMesh,
-        getName(): string,
-        getStepSize(): number,
-        setValue(value:number): void,
-        getValue(): number,
-        stringify(value:number): string,
-    }): void
-
-    /** A callback called on each field of the control that can be dragged in all 3 dimension. */
-    defineDraggableField(settings:{
-        target: AbstractMesh,
-        getName(): string,
-        getValue(): string,
-        drag(x: number, y: number, z: number): void,
-    }): void
+    /** The html context */
+    html?: ControlContextTarget<HTMLElement,HTMLElement>
 }
 
 

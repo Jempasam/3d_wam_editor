@@ -11,11 +11,6 @@ export interface ControlLibrary{
     [id:string]: (new(context:ControlContext)=>Control) & (typeof Control)
 }
 
-export interface WamGUITarget{
-    html?: HTMLElement,
-    babylonjs?: TransformNode,
-}
-
 export type WamPadShape = "rectangle"
     | "circle"
     | "triangle"
@@ -50,21 +45,14 @@ export class WamGUIGenerator{
     
     private constructor(
         context: Partial<ControlContext>,
-        readonly gui_target: WamGUITarget = {},
     ){
         this.context = {
-            defineAnInput: ()=>{},
-            defineAnOutput: ()=>{},
-            defineField: ()=>{},
-            defineAnEventInput: ()=>{},
-            defineAnEventOutput: ()=>{},
-            defineDraggableField: ()=>{},
             ...context,
         }
 
 
-        if(gui_target.babylonjs){
-            const root = gui_target.babylonjs
+        if(this.context.babylonjs){
+            const {root} = this.context.babylonjs
 
             const visual = this.pad_decoration.createScene(root.getScene())
             const pad_node = this.pad_node = visual.node
@@ -86,8 +74,8 @@ export class WamGUIGenerator{
         }
 
 
-        if(gui_target.html){
-            const root = gui_target.html
+        if(this.context.html){
+            const {root} = this.context.html
 
             const visual = this.pad_decoration.createElement()
             const pad_element = this.pad_element = visual.element as HTMLElement
@@ -114,7 +102,7 @@ export class WamGUIGenerator{
 
 
         //// CONTROLS ////
-        this.controls = new ControlMap(gui_target.html, gui_target.babylonjs)
+        this.controls = new ControlMap(this.context.html?.root, this.context.babylonjs?.root)
 
     }
 
@@ -128,11 +116,11 @@ export class WamGUIGenerator{
      * @param groupId The groupd id of the web audio module host.
      * @returns 
      */
-    static async create_and_init(context: Partial<ControlContext>, gui_target: WamGUITarget, init_code: WAMGuiInitCode, library: ControlLibrary, audioContext: BaseAudioContext, groupId: string): Promise<WamGUIGenerator>{
+    static async create_and_init(context: Partial<ControlContext>, init_code: WAMGuiInitCode, library: ControlLibrary, audioContext: BaseAudioContext, groupId: string): Promise<WamGUIGenerator>{
         const wam_type = (await import(init_code.wam_url))?.default as typeof WebAudioModule
         const wam_instance = await wam_type.createInstance(groupId, audioContext)
         context={...context, wam:wam_instance}
-        const generator = new WamGUIGenerator(context, gui_target)
+        const generator = new WamGUIGenerator(context)
         generator.load(init_code, library)
         return generator
     }
@@ -144,8 +132,8 @@ export class WamGUIGenerator{
      * @param context 
      * @returns 
      */
-    static create(gui_target: WamGUITarget, context: Partial<ControlContext>): WamGUIGenerator{
-        return new WamGUIGenerator(context, gui_target)
+    static create(context: Partial<ControlContext>): WamGUIGenerator{
+        return new WamGUIGenerator(context)
     }
 
     dispose(){

@@ -151,7 +151,7 @@ export class Joystick3DControl extends ParameterControl{
         this.cursorMesh.parent = this.zoneMesh
 
         const control = this
-        this.context.defineDraggableField({
+        this.context.babylonjs!!.defineDraggableField({
             target: this.zoneMesh,
             getName() {
                 return control.parameter

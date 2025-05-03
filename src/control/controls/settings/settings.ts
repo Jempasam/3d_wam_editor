@@ -82,7 +82,6 @@ export class ControlSettingsGUI{
         if(parameter){
             this.parameters[label] = parameter
             parameter.addOnChange((l,v)=>{
-                console.log(["on_change",`${label}${l}`,label,l,v])
                 this.on_value_change(`${label}${l}`,v)
             })
             return html`<label>${label}</label>${parameter.element}`

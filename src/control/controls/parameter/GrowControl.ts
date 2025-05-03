@@ -64,6 +64,9 @@ export class GrowControl extends ParameterControl{
         this.element.style.boxSizing="border-box";
         this.element.style.borderWidth="10%"
         this.element.style.borderStyle="solid"
+
+        this.declareField(this.context.html!!, this.element)
+
         return this.element
     }
 
@@ -91,7 +94,7 @@ export class GrowControl extends ParameterControl{
         this.mesh.material = this.material
         this.mesh.setParent(this.transform)
 
-        this.declareField(this.mesh)
+        this.declareField(this.context.babylonjs!!, this.mesh)
 
         return this.transform
     }

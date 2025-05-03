@@ -6,6 +6,7 @@ import { html } from "../utils/doc.ts"
 import { Color3 } from "@babylonjs/core"
 import { CSettingsValue, CSettingsValues } from "../control/controls/settings/settings.ts"
 import { linkInput } from "../observable/input_observable.ts"
+import { DEFAULT_CONTROL_CONTEXT_TARGET } from "../control/Control.ts"
 
 export class AutoLayoutPane implements IContentRenderer{
 
@@ -145,8 +146,6 @@ export class AutoLayoutPane implements IContentRenderer{
                 id: infos[i][0],
             })
         }
-
-        const connexion_size = Math.min(0.3,tile_width-spacing)
         
         return {
             ratio,
@@ -196,7 +195,7 @@ export class AutoLayoutPane implements IContentRenderer{
             if(this.builder)this.builder.dispose()
 
             try{
-                this.builder = WamGUIGenerator.create({html:viewer_pane},{})
+                this.builder = WamGUIGenerator.create({html:{root:viewer_pane, ...DEFAULT_CONTROL_CONTEXT_TARGET}})
 
                 const layout = await this.autoLayout()
                 if(!layout) return
@@ -212,7 +211,6 @@ export class AutoLayoutPane implements IContentRenderer{
                     const completable = structuredClone(this.parameter.value.values)
                     this.replace_value(completable, {color:layout.top_color})
                     const values = {...structuredClone(control.getDefaultValues()), ...completable }
-                    console.log(values)
                     this.replace_value(values, {color:layout.top_color})
                     this.builder.addControl({control,x,y,width,height,values})
                 }

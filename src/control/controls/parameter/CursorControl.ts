@@ -70,6 +70,8 @@ export class CursorControl extends ParameterControl{
         this.element.style.boxSizing="border-box";
         this.element.style.position="relative"
 
+        this.declareField(this.context.html!!, this.element)
+
         this.cursor = document.createElement("div")
         this.cursor.style.position="absolute"
         this.cursor.style.display="block"
@@ -107,7 +109,7 @@ export class CursorControl extends ParameterControl{
         this.cursor_material.specularColor.set(0,0,0)
         cursor.setParent(cylinder)
         
-        this.declareField(cylinder)
+        this.declareField(this.context.babylonjs!!, cylinder)
 
         return this.transform
     }
