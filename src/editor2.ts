@@ -50,6 +50,7 @@ selector.selected.observable.register(({to:selected})=>{
         parameter_values = selected.control.getDefaultValues()
         settings.settings.value = {
             title: selected.control.label,
+            description: selected.control.description,
             settings: selected.control.getSettings(),
             getValue(label) {
                 return parameter_values[label]
@@ -66,6 +67,7 @@ editor.on_select.register(({infos})=>{
     settings.settings.value = {
         title: control.factory.label,
         settings: control.factory.getSettings(),
+        description: control.factory.description,
         getValue(label) {
             return values[label]
         },    

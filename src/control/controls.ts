@@ -7,6 +7,7 @@ import { Joystick3DControl } from "./controls/parameter/Joystick3DControl.js"
 import { DecorationControl } from "./controls/decoration/DecorationControl.js"
 import { ControlLibrary } from "../WamGUIGenerator.js"
 import { CSettingsValues } from "./controls/settings/settings.js"
+import { MorphControl } from "./controls/parameter/MorphControl.js"
 
 /** List of available controls */
 export const controls: ControlLibrary = {
@@ -20,6 +21,7 @@ export const controls: ControlLibrary = {
     "grow_control": GrowControl,
     "text": TextControl,
     "decoration": DecorationControl,
+    "morph_control": MorphControl,
 }
 
 type ControlCategory = {control:keyof ControlLibrary, values: CSettingsValues}[]

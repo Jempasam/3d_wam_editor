@@ -11,6 +11,8 @@ export class ColorControl extends ParameterControl{
 
     static label = "Color Changing"
 
+    static description = "A control that change between two colors depending on its value."
+
     constructor(context: ControlContext){
         super(context)
     }

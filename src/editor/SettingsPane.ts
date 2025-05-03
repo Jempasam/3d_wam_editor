@@ -8,6 +8,7 @@ export class SettingsPane implements IContentRenderer{
 
     settings = new MOValue<{
         title: string,
+        description: string,
         settings: CSettings,
         setValue(label:string, value:CSettingsValue):void,
         getValue(label:string): CSettingsValue|null,
@@ -16,8 +17,9 @@ export class SettingsPane implements IContentRenderer{
     values: Record<string,string> = {}
 
     private title = html.a`<h3></h3>`
-    private settings_container = html.a`<div class="menu _vertical _scrollable form_container"></div>`
-    element = html.a`<div class="menu _vertical">${this.title}${this.settings_container}</div>`
+    private description = html.a`<p></p>`
+    private settings_container = html.a`<div class="menu _vertical _scrollable _inner form_container"></div>`
+    element = html.a`<div class="menu _vertical">${this.title}${this.description}${this.settings_container}</div>`
 
     constructor(
         private parameters_infos?: ()=>WamParameterInfoMap
@@ -28,6 +30,7 @@ export class SettingsPane implements IContentRenderer{
             if(config){
                 const {title, settings, getValue, setValue} = config
                 this.title.textContent = title
+                this.description.textContent = config.description
 
                 let gui = new ControlSettingsGUI(settings,this.parameters_infos?.())
                 for(let [label,_] of Object.entries(flatternSettings(settings))){

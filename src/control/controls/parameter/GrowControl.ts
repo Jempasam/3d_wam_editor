@@ -11,6 +11,8 @@ export class GrowControl extends ParameterControl{
 
     static label = "Size Changing"
 
+    static description = "A control that grow and shrink depending on its value."
+
     constructor(context: ControlContext){
         super(context)
     }

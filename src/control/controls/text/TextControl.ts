@@ -16,6 +16,8 @@ export class TextControl extends Control{
 
     static label = "Text"
 
+    static description = "A text display."
+
     constructor(context: ControlContext){
             super(context)
     }

@@ -88,6 +88,8 @@ export abstract class Control{
 
     static label: string = "Unnamed Control"
 
+    static description: string = "No description"
+
     wam?: WebAudioModule
 
     /**

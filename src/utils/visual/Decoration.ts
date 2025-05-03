@@ -1,8 +1,7 @@
 import { Color3, Color4, Mesh, Scene, StandardMaterial, Texture, TransformNode, Vector2 } from "@babylonjs/core"
 import { MOValue } from "../../observable/collections/OValue.ts"
 import { colorizeMesh, createSurface, createVolume } from "../vertexs.ts"
-import { CSettings, CSettingsValue } from "../../control/controls/settings/settings.ts"
-import { DefaultCSettingsValues } from "../../control/Control.ts"
+import { CSettings, CSettingsValue, CSettingsValues } from "../../control/controls/settings/settings.ts"
 
 function createCircle(corner: number, offset: number=0){
     const points = []
@@ -71,6 +70,9 @@ export class Decoration{
     
     readonly outline_color = new MOValue("#000000")
     readonly outline_width = new MOValue(0)
+
+    readonly height = new MOValue(1)
+    readonly rotation = new MOValue(0)
 
     get current_shape(): Vector2[]{
         const points = DECORATION_SHAPE_POINTS[this.shape.value]
@@ -185,7 +187,9 @@ export class Decoration{
         material.diffuseColor = new Color3(1, 1, 1)
         material.specularColor = new Color3(0, 0, 0)
 
-        let transform = new TransformNode("decoration",scene)
+        let root = new TransformNode("decoration root",scene)
+        let transform = new TransformNode("decoration transform",scene)
+        transform.parent = root
         let mesh = null as Mesh|null
         let outline_mesh = null as Mesh|null
 
@@ -209,10 +213,10 @@ export class Decoration{
                 outline_mesh = mesh!!.clone("outline", undefined, true)
                 outline_mesh.makeGeometryUnique()
                 outline_mesh.parent = mesh
-                outline_mesh.position.set(0,-0.25,0)
+                outline_mesh.position.set(0,-0.10,0)
                 outline_mesh.rotation.setAll(0)
                 const width = 1+this.outline_width.value
-                outline_mesh.scaling.set(width,0.48,width)
+                outline_mesh.scaling.set(width,0.78,width)
             }
             updateOutlineColor()
         }
@@ -262,7 +266,19 @@ export class Decoration{
             updateColor()
             updateFace()
             updateOutline()
+            updateRotation()
         }
+
+        const updateHeight = ()=>{
+            transform.scaling.y = this.height.value
+            transform.position.y = -(1-this.height.value)/2
+            console.log("updateHeight",this.height.value)
+        }
+
+        const updateRotation = ()=>{
+            mesh!!.rotation.y = this.rotation.value*Math.PI/180
+        }
+
 
         const dispose = [
             this.top_color.observable.add(updateColor),
@@ -274,13 +290,17 @@ export class Decoration{
             this.modifier_strength.observable.add(updateShape),
             this.outline_color.observable.add(updateOutlineColor),
             this.outline_width.observable.add(updateOutline),
+            this.height.observable.add(updateHeight),
+            this.rotation.observable.add(updateRotation),
         ]
 
         updateShape()
         updateFace()
+        updateHeight()
+        updateRotation()
 
         return {
-            node:transform,
+            node:root,
             dispose(){
                 dispose.forEach(it=>it())
                 material.dispose()
@@ -290,68 +310,63 @@ export class Decoration{
         }
     }
 
-    static getSettings(): CSettings{
-        return {
-            "Shape": {choice:Object.keys(DECORATION_SHAPE_POINTS)},
-            "Top Color": "color",
-            "Bottom Color": "color",
-            "Outline Color": "color",
-            "Outline Width": [0,1],
-            "Front Face Image": "text",
-            "Front Face Color": "color",
-            "Modifier": {choice:Object.keys(DECORATION_SHAPE_MODIFIER)},
-            "Modifier Strength": [0,1],
-        }
+    static SETTINGS: CSettings = {
+        "Shape": {choice:Object.keys(DECORATION_SHAPE_POINTS)},
+        "Top Color": "color",
+        "Bottom Color": "color",
+        "Outline Color": "color",
+        "Outline Width": [0,1],
+        "Front Face Image": "text",
+        "Front Face Color": "color",
+        "Modifier": {choice:Object.keys(DECORATION_SHAPE_MODIFIER)},
+        "Modifier Strength": [0,1],
+        "Height": [0,1],
+        "Rotation": {min:0,max:360,step:1},
     }
 
-    static getDefaultValues(): DefaultCSettingsValues{
-        return {
-            "Shape": "rectangle",
-            "Top Color": "#FFFFFF",
-            "Bottom Color": "#AAAAAA",
-            "Outline Color": "#000000",
-            "Outline Width": 0,
-            "Front Face Image": "",
-            "Front Face Color": "#FFFFFF",
-            "Modifier": "normal",
-            "Modifier Strength": 0.5,
-        }
+    static SETTINGS_DEFAULTS: CSettingsValues = {
+        "Shape": "rectangle",
+        "Top Color": "#FFFFFF",
+        "Bottom Color": "#AAAAAA",
+        "Outline Color": "#000000",
+        "Outline Width": 0,
+        "Front Face Image": "",
+        "Front Face Color": "#FFFFFF",
+        "Modifier": "normal",
+        "Modifier Strength": 0.5,
+        "Height": 1,
+        "Rotation": 0,
     }
 
-    updateValue(label: string, value: CSettingsValue){
-        switch(label){
-            case "Shape":
-                this.shape.value = value as "rectangle"|"triangle"|"circle"
-                break
-            case "Top Color":
-                this.top_color.value = value as string
-                break
-            case "Bottom Color":
-                this.bottom_color.value = value as string
-                break
-            case "Border Color":
-                this.front_face.value = value as string
-                break
-            case "Outline Width":
-                this.outline_width.value = value as number
-                break
-            case "Outline Color":
-                this.outline_color.value = value as string
-                break
-            case "Front Face Image":
-                const str = value as string
-                this.front_face.value = str.length==0 ? null : str
-                break
-            case "Front Face Color":
-                this.face_color.value = value as string
-                break
-            case "Modifier":
-                this.modifier.value = value as keyof typeof DECORATION_SHAPE_MODIFIER
-                break
-            case "Modifier Strength":
-                this.modifier_strength.value = value as number
-                break
-        }
+    static SETTINGS_GETTERS: Record<string,(decoration:Decoration)=>CSettingsValue> = {
+        "Shape" : it => it.shape.value,
+        "Top Color": it => it.top_color.value,
+        "Bottom Color": it => it.bottom_color.value,
+        "Outline Color": it => it.outline_color.value,
+        "Outline Width": it => it.outline_width.value,
+        "Front Face Image": it => it.front_face.value ?? "",
+        "Front Face Color": it => it.face_color.value,
+        "Modifier": it => it.modifier.value,
+        "Modifier Strength": it => it.modifier_strength.value,
+        "Height": it => it.height.value,
+        "Rotation": it => it.rotation.value,
+    }
+
+    static SETTINGS_SETTERS: Record<string,(decoration:Decoration, value:CSettingsValue)=>void> = {
+        "Shape" : (it,value) => it.shape.value = value as DecorationShape,
+        "Top Color": (it,value) => it.top_color.value = value as string,
+        "Bottom Color": (it,value) => it.bottom_color.value = value as string,
+        "Outline Color": (it,value) => it.outline_color.value = value as string,
+        "Outline Width": (it,value) => it.outline_width.value = value as number,
+        "Front Face Image": (it,value) => {
+            const str = value as string
+            it.front_face.value = str.length==0 ? null : str
+        },
+        "Front Face Color": (it,value) => it.face_color.value = value as string,
+        "Modifier": (it,value) => it.modifier.value = value as keyof typeof DECORATION_SHAPE_MODIFIER,
+        "Modifier Strength": (it,value) => it.modifier_strength.value = value as number,
+        "Height": (it,value) => it.height.value = value as number,
+        "Rotation": (it,value) => it.rotation.value = value as number,
     }
 
 }

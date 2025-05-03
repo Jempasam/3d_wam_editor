@@ -89,24 +89,28 @@ export abstract class ConnectionControl extends Control{
 
     static Input = class extends ConnectionControl{
         static label = "Input"
+        static description = "An audio signal input"
         protected static defaultColor = "#00FF00"
         protected override getCallbackName(): keyof ControlContext { return "defineAnInput" }
     }
 
     static Output = class extends ConnectionControl{
         static label = "Output"
+        static description = "An audio signal output"
         protected static defaultColor = "#FF0000"
         protected override getCallbackName(): keyof ControlContext { return "defineAnOutput" }
     }
 
     static MidiInput = class extends ConnectionControl{
         static label = "MIDI Input"
+        static description = "A MIDI signal input"
         protected static defaultColor = "#33BB88"
         protected override getCallbackName(): keyof ControlContext { return "defineAnEventInput" }
     }
 
     static MidiOutput = class extends ConnectionControl{
         static label = "MIDI Output"
+        static description = "A MIDI signal output"
         protected static defaultColor = "#BB3388"
         protected override getCallbackName(): keyof ControlContext { return "defineAnEventOutput" }
     }

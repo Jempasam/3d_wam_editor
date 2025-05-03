@@ -10,6 +10,8 @@ export class CursorControl extends ParameterControl{
 
     static label = "Rotating Cursor"
 
+    static description = "A control that rotate a cursor depending on its value."
+
     constructor(context: ControlContext){
         super(context)
     }

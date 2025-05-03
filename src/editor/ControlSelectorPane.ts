@@ -33,21 +33,6 @@ export class ControlSelectorPane implements IContentRenderer{
             }
         }
     
-        /*function showSelectedControlSettings(){
-            if(selector.selected){
-                control_values = selected_control.control.getDefaultValues()
-                setControlSettings(
-                    selected_control.control.label,
-                    selected_control.control.getSettings(),
-                    (label) => control_values[label],
-                    (label,value) => control_values[label]=value
-                )
-            }
-            else{
-                setControlSettings("",null)
-            }
-        }*/
-    
         for(let [key,control] of Object.entries(this.controls)){
             let example = new control({
                 defineAnInput(settings) {},
@@ -59,7 +44,7 @@ export class ControlSelectorPane implements IContentRenderer{
             })
             let element = example.createElement()
             let option = list.appendChild(html.a`
-                <li value="${key}">
+                <li value="${key}" title="${control.description}">
                     <div class="-icon">${element}</div>
                     <span class="-label">${control.label}</span>
                 </li>
