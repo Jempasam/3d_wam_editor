@@ -24,6 +24,7 @@ export function normalizeWamParameter(parameter: WamParameterInfo, value: number
 
 export function denormalizeWamParameter(parameter: WamParameterInfo, value: number): number {
     const p = parameter
+    value = Math.max(0, Math.min(1, value))
     if(p.denormalize) return p.denormalize(value)
     const {minValue,maxValue} = p
     return value*(maxValue-minValue)+minValue

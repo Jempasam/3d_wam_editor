@@ -1,6 +1,6 @@
 import { WamParameterInfo, WebAudioModule } from "@webaudiomodules/api";
 import { FieldValue, FieldValueFactory } from "./FieldValue.ts";
-import { normalizeWamParameter, stringifyWamParameter } from "../../utils/wam.ts";
+import { denormalizeWamParameter, normalizeWamParameter, stringifyWamParameter } from "../../utils/wam.ts";
 
 
 export class ParameterFieldValue implements FieldValue{
@@ -44,12 +44,11 @@ export class ParameterFieldValue implements FieldValue{
     }
 
     setValue(normalized: number): void {
-        const {minValue,maxValue,id} = this.info
-        let value = Math.round(normalized*(maxValue-minValue)+minValue)
-        value = Math.max(minValue, Math.min(maxValue, value))
+        const {id} = this.info
+        let value = denormalizeWamParameter(this.info, normalized)
         this.wam.audioNode.setParameterValues({[id]:{value, normalized:false, id:id}})
         this.value = value
-        this.normalized = (value-minValue)/(maxValue-minValue)
+        this.normalized = Math.min(1, Math.max(0, normalized))
         this.onChange(this.normalized)
     }
 

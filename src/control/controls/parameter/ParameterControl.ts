@@ -39,10 +39,10 @@ export abstract class ParameterControl extends Control{
 
     abstract onParamChange(index:number): void
 
-    declareField<C,T>(target: ControlContextTarget<C,T>, mesh: T, index: number=0){
+    declareField<C,T>(target: ControlContextTarget<C,T>, mesh: T|(T[]), index: number=0){
         const control = this
         target.defineField({
-            target: mesh,
+            target: Array.isArray(mesh) ? mesh : [mesh],
             getName() {
                 return control.fields[index].getName()
             },

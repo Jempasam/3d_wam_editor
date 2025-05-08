@@ -23,35 +23,35 @@ export interface ControlContextTarget<C,T>{
 
     /** A callback called on each output of the control. */
     defineAnOutput(settings:{
-        target: T,
+        target: T[],
         node: AudioNode,
         setConnected(connected:boolean): void,
     }): void
 
     /** A callback called on each input of the control. */
     defineAnInput(settings:{
-        target: T,
+        target: T[],
         node: AudioNode,
         setConnected(connected:boolean): void,
     }): void
 
     /** A callback called on each midi/event output of the control. */
     defineAnEventInput(settings:{
-        target: T,
+        target: T[],
         node: WamNode,
         setConnected(connected:boolean): void,
     }): void
 
     /** A callback called on each midi/event input of the control. */
     defineAnEventOutput(settings:{
-        target: T,
+        target: T[],
         node: WamNode,
         setConnected(connected:boolean): void,
     }): void
 
     /** A callback called on each field of the control. */
     defineField(settings:{
-        target: T,
+        target: T[],
         getName(): string,
         getStepCount(): number,
         setValue(value:number): void,
@@ -61,7 +61,7 @@ export interface ControlContextTarget<C,T>{
 
     /** A callback called on each field of the control that can be dragged in all 3 dimension. */
     defineDraggableField(settings:{
-        target: T,
+        target: T[],
         getName(): string,
         getValue(): string,
         drag(x: number, y: number, z: number): void,

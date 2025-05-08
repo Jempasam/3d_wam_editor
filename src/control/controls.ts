@@ -8,6 +8,8 @@ import { DecorationControl } from "./controls/decoration/DecorationControl.js"
 import { ControlLibrary } from "../WamGUIGenerator.js"
 import { CSettingsValues } from "./controls/settings/settings.js"
 import { MorphControl } from "./controls/parameter/MorphControl.js"
+import { HashControl } from "./controls/parameter/HashControl.js"
+import { JaugeControl } from "./controls/parameter/JaugeControl.js"
 
 /** List of available controls */
 export const controls: ControlLibrary = {
@@ -22,6 +24,8 @@ export const controls: ControlLibrary = {
     "text": TextControl.Type,
     "decoration": DecorationControl.Type,
     "morph_control": MorphControl.Type,
+    "hash_control": HashControl.Type,
+    "jauge": JaugeControl.Type
 }
 
 type ControlCategory = {control:keyof ControlLibrary, values: CSettingsValues}[]

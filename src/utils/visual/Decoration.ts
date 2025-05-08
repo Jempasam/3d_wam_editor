@@ -83,7 +83,7 @@ export class Decoration{
         return merged
     }
 
-    createElement(): {element:Element, dispose():void}{
+    createElement(): {element:HTMLElement, dispose():void}{
         const id = `${Math.random().toString(16)}${Math.random().toString(16)}${Math.random().toString(16)}`
 
         const pad_element = document.createElementNS("http://www.w3.org/2000/svg","svg")
@@ -178,7 +178,7 @@ export class Decoration{
 
         return {
             dispose: ()=> dispose.forEach(it=>it()),
-            element: pad_element as Element,
+            element: pad_element as any as HTMLElement,
         }
     }
 

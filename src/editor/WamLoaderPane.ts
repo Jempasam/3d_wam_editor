@@ -53,6 +53,7 @@ export class WamLoaderPane implements IContentRenderer{
             this.indicator.set("wait","Loading the GUI")
             if(oldwam){
                 oldwam.destroyGui(this.gui.value!!)
+                oldwam.audioNode.destroy()
             }
             try{
                 if(wam){
@@ -71,7 +72,7 @@ export class WamLoaderPane implements IContentRenderer{
         })
     }
 
-    init(parameters: GroupPanelPartInitParameters): void {
+    init(_: GroupPanelPartInitParameters): void {
     }
     
 }

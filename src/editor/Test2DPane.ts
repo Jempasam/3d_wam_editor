@@ -26,15 +26,17 @@ export class Test2DPane implements IContentRenderer{
             this.example.value.dispose()
 
 
-            function treatConnection(config: {target:HTMLElement, setConnected:(it:boolean)=>void}, name:string){
-                config.target.addEventListener("mouseenter", ()=>{
-                    text.innerText = name
-                    config.setConnected(true)
-                })
-                config.target.addEventListener("mouseleave", ()=>{
-                    text.innerText = `...`
-                    config.setConnected(false)
-                })
+            function treatConnection(config: {target:HTMLElement[], setConnected:(it:boolean)=>void}, name:string){
+                for(const target of config.target){
+                    target.addEventListener("mouseenter", ()=>{
+                        text.innerText = name
+                        config.setConnected(true)
+                    })
+                    target.addEventListener("mouseleave", ()=>{
+                        text.innerText = `...`
+                        config.setConnected(false)
+                    })
+                }
             }
 
             this.example.value = WamGUIGenerator.create({
@@ -47,32 +49,34 @@ export class Test2DPane implements IContentRenderer{
                     defineAnInput(config){ treatConnection(config,"Audio Input") },
                     defineAnOutput(config){ treatConnection(config,"Audio Output") },
                     defineField(config) {
-                        config.target.style.cursor = "pointer"
-                        config.target.addEventListener("mouseenter", () => {
-                            text.innerText = `${config.getName()}: ${config.stringify(config.getValue())}`
-                        })
-                        config.target.addEventListener("mouseleave", () => {
-                            text.innerText = `...`
-                        })
-                        config.target.addEventListener("mousedown", (e) => {
-                            const startingValue = config.getValue()
-                            const stepSize = 1/(config.getStepCount()||1000000)
-                            const speed = 3/(config.getStepCount()||10)
-                            const startY = e.clientY
-                            const drag = (e: MouseEvent) => {
-                                const offset  = (startY - e.clientY) * speed
-                                let newvalue = startingValue + offset/100
-                                newvalue = Math.round(newvalue/stepSize)*stepSize
-                                newvalue = Math.max(0, Math.min(1, newvalue))
-                                config.setValue(newvalue)
-                                console.log(config.getValue())
-                                text.innerText = `${config.getName()}: ${config.stringify(newvalue)}`
-                            }
-                            document.addEventListener("mousemove", drag)
-                            document.addEventListener("mouseup", () => {
-                                document.removeEventListener("mousemove", drag)
-                            }, { once: true })
-                        })
+                        for(const target of config.target){
+                            target.style.cursor = "pointer"
+                            target.addEventListener("mouseenter", () => {
+                                text.innerText = `${config.getName()}: ${config.stringify(config.getValue())}`
+                            })
+                            target.addEventListener("mouseleave", () => {
+                                text.innerText = `...`
+                            })
+                            target.addEventListener("mousedown", (e) => {
+                                const startingValue = config.getValue()
+                                const stepSize = 1/(config.getStepCount()||1000000)
+                                const speed = 3/(config.getStepCount()||10)
+                                const startY = e.clientY
+                                const drag = (e: MouseEvent) => {
+                                    const offset  = (startY - e.clientY) * speed
+                                    let newvalue = startingValue + offset/100
+                                    newvalue = Math.round(newvalue/stepSize)*stepSize
+                                    newvalue = Math.max(0, Math.min(1, newvalue))
+                                    config.setValue(newvalue)
+                                    console.log(config.getValue())
+                                    text.innerText = `${config.getName()}: ${config.stringify(newvalue)}`
+                                }
+                                document.addEventListener("mousemove", drag)
+                                document.addEventListener("mouseup", () => {
+                                    document.removeEventListener("mousemove", drag)
+                                }, { once: true })
+                            })
+                        }
                     },
                 }
             })

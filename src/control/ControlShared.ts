@@ -1,6 +1,7 @@
 import { StandardMaterial } from "@babylonjs/core";
 import { AsyncShareMapDataType, ShareMapDataType } from "./ShareMap.ts";
 import { createFieldFactories, FieldValueFactory } from "./value/FieldValue.ts";
+import { SharedGainAnalyzer } from "./shared/SharedGainAnalyzer.ts";
 
 
 export const ControlShared = {
@@ -14,5 +15,13 @@ export const ControlShared = {
         create(env){ return createFieldFactories(env.host.wam) },
         dispose(_){ },
     } as AsyncShareMapDataType<Record<string,FieldValueFactory>>,
+
+    ANALYZER: {
+        create(env){
+            if(env.host.wam) return new SharedGainAnalyzer(env.host.wam.audioContext.createGain())
+            else return null
+        },
+        dispose(ret){ ret?.dispose() },
+    } as ShareMapDataType<SharedGainAnalyzer|null>,
 
 }
