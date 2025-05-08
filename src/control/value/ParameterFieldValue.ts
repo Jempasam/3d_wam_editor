@@ -48,7 +48,7 @@ export class ParameterFieldValue implements FieldValue{
         let value = denormalizeWamParameter(this.info, normalized)
         this.wam.audioNode.setParameterValues({[id]:{value, normalized:false, id:id}})
         this.value = value
-        this.normalized = Math.min(1, Math.max(0, normalized))
+        this.normalized = normalizeWamParameter(this.info, value)
         this.onChange(this.normalized)
     }
 

@@ -31,7 +31,7 @@ export class ConnectionControl extends Control{
 
         const wam = this.wam
         if(wam)((this.host.html as any)[(this.factory as any).config.callbackName])({
-            target: this.element,
+            target: [this.element],
             node: wam.audioNode,
             setConnected(connected: boolean) {
                 if(connected) element.style.scale = "0.5"
@@ -61,7 +61,7 @@ export class ConnectionControl extends Control{
         
         const wam = this.wam
         if(wam)((this.host.babylonjs as any)[(this.factory as any).config.callbackName])({
-            target: mesh,
+            target: [mesh],
             node: wam.audioNode,
             setConnected(connected: boolean) {
                 if(connected) mesh.scaling.setAll(0.5)

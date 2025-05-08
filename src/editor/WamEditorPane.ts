@@ -26,6 +26,7 @@ export class WamEditorPane implements IContentRenderer{
             display: flex;
             aspect-ratio: 1/1;
             width: 100%;
+            overflow: hidden;
         `
 
         const html: ControlContextTarget<HTMLElement,HTMLElement> = {

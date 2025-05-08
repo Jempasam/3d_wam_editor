@@ -63,12 +63,12 @@ export class Test2DPane implements IContentRenderer{
                                 const speed = 3/(config.getStepCount()||10)
                                 const startY = e.clientY
                                 const drag = (e: MouseEvent) => {
+                                    e.preventDefault()
                                     const offset  = (startY - e.clientY) * speed
                                     let newvalue = startingValue + offset/100
                                     newvalue = Math.round(newvalue/stepSize)*stepSize
                                     newvalue = Math.max(0, Math.min(1, newvalue))
                                     config.setValue(newvalue)
-                                    console.log(config.getValue())
                                     text.innerText = `${config.getName()}: ${config.stringify(newvalue)}`
                                 }
                                 document.addEventListener("mousemove", drag)
