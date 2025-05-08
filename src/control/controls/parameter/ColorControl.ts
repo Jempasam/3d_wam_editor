@@ -1,29 +1,13 @@
 import { AbstractMesh, Color3, CreateHemisphere, Scene, StandardMaterial } from "@babylonjs/core"
-import { ControlContext } from "../../Control.ts"
+import { Control, ControlEnv } from "../../Control.ts"
 import { CSettings, CSettingsValue } from "../settings/settings.ts"
-import { ParameterControl } from "./ParameterControl.ts"
+import { ParameterControl, ParameterControlFactory } from "./ParameterControl.ts"
 
 
 /**
  * A color coded controls that change a numeric value.
  */
 export class ColorControl extends ParameterControl{
-
-    static label = "Color Changing"
-
-    static description = "A control that change between two colors depending on its value."
-
-    constructor(context: ControlContext){
-        super(context)
-    }
-
-    static override getSettings(): CSettings{
-        return {"Low Color":"color", "High Color":"color", ...super.getSettings()}
-    }
-
-    static getDefaultValues(){
-        return {"Low Color":"#222222", "High Color":"#0000ff"}
-    }
 
     ;["Low Color"]: Color3 = Color3.White()
     ;["High Color"]: Color3 = Color3.White()
@@ -41,7 +25,7 @@ export class ColorControl extends ParameterControl{
     }
 
     updateColor(){
-        const color = Color3.Lerp(this["Low Color"]??Color3.White, this["High Color"]??Color3.White, this.normalized[0])
+        const color = Color3.Lerp(this["Low Color"]??Color3.White, this["High Color"]??Color3.White, this.fields[0].getValue())
         if(this.element) this.element.style.backgroundColor = color.toHexString()
         if(this.material) this.material.diffuseColor = color
     }
@@ -61,7 +45,7 @@ export class ColorControl extends ParameterControl{
         this.element.style.borderRadius="50%"
         this.element.style.boxSizing="border-box";
 
-        this.declareField(this.context.html!!, this.element)
+        this.declareField(this.host.html!!, this.element)
         
         return this.element
     }
@@ -81,7 +65,7 @@ export class ColorControl extends ParameterControl{
         this.material = new StandardMaterial("color_control", scene)
         this.mesh = ret
         ret.material = this.material
-        this.declareField(this.context.babylonjs!!, ret)
+        this.declareField(this.host.babylonjs!!, ret)
         return ret
     }
 
@@ -90,5 +74,30 @@ export class ColorControl extends ParameterControl{
         this.mesh?.dispose()
         this.material?.dispose()
     }
+
+    static Factory = class _ extends ParameterControlFactory {
+
+        constructor(readonly env: ControlEnv){super()}
+            
+        label = "Color Changing"
+
+        description = "A control that change between two colors depending on its value."
+        
+        getSettings(){
+            return {"Low Color":"color", "High Color":"color", ...super.getSettings()} as CSettings
+        }
+
+        getDefaultValues(){
+            return {"Low Color":"#222222", "High Color":"#0000ff"}
+        }
+
+        async create(): Promise<Control> {
+            await this.init()
+            return new ColorControl(this)
+        }
+
+    }
+
+    static Type = async (env: ControlEnv) => new this.Factory(env)
 }
 

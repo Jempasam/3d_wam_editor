@@ -43,7 +43,7 @@ export class WamEditorPane implements IContentRenderer{
         wam.observable.register(({})=>{
             console.trace()
             this.gui_generator.value.dispose()
-            this.gui_generator.value = WamGUIGenerator.create({wam:wam.value, html, babylonjs})
+            this.gui_generator.value = WamGUIGenerator.create({wam:wam.value??undefined, html, babylonjs})
         })
         
         this.selector = new Selector<{element:HTMLElement,infos:ReturnType<ControlMap['get']>}>(

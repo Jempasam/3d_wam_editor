@@ -1,44 +1,17 @@
 import { Color3, Mesh, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
-import { Control, ControlContext } from "../../Control.ts";
+import { Control, ControlEnv, ControlFactory } from "../../Control.ts";
 import { CSettings, CSettingsValue } from "../settings/settings.ts";
+import { FONTS } from "../settings/field/FontSField.ts";
 //@ts-ignore
 import earcut from "earcut"
-import { FONTS } from "../settings/field/FontSField.ts";
 //@ts-ignore
 window.earcut = earcut
 
-//window.earcut = (await import("earcut")).default
 
 /**
  * A text display control
  */
 export class TextControl extends Control{
-
-    static label = "Text"
-
-    static description = "A text display."
-
-    constructor(context: ControlContext){
-            super(context)
-    }
-
-    static getSettings(): CSettings{
-        return {
-            Text: "text", 
-            Color: "color", 
-            Font: "font",
-            "Outline Color": "color",
-            "Outline Width": [0,.1],
-        }
-    }
-
-    static getDefaultValues = ()=>({
-        Text: "Text", 
-        Color: "#000000",
-        "Outline Color": "#ffffff",
-        "Outline Width": 0,
-        Font: Object.entries(FONTS)[0][0], 
-    })
 
     updateValue(label: string, value: CSettingsValue){
         if(this.element)switch(label){
@@ -154,4 +127,38 @@ export class TextControl extends Control{
     }
 
     override destroy(){}
+
+    static Factory = class _ implements ControlFactory {
+
+        constructor(public env: ControlEnv){}
+        
+        label = "Text"
+        
+        description = "A text display."
+
+        getSettings(): CSettings{
+            return {
+                Text: "text", 
+                Color: "color", 
+                Font: "font",
+                "Outline Color": "color",
+                "Outline Width": [0,.1],
+            }
+        }
+    
+        getDefaultValues = ()=>({
+            Text: "Text", 
+            Color: "#000000",
+            "Outline Color": "#ffffff",
+            "Outline Width": 0,
+            Font: Object.entries(FONTS)[0][0], 
+        })
+
+        async create(): Promise<Control> {
+            return new TextControl(this)
+        }
+
+    }
+
+    static Type = async (env: ControlEnv) => new this.Factory(env)
 }

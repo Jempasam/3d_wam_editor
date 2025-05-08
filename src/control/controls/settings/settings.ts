@@ -1,5 +1,4 @@
 import {html} from "../../../utils/doc.ts"
-import { WamParameterInfoMap } from "@webaudiomodules/api"
 import { SettingsField } from "./SettingsField.ts"
 import { StringInputSField } from "./field/StringInputSField.ts"
 import { CheckboxSField } from "./field/CheckboxSField.ts"
@@ -21,7 +20,6 @@ export type CSettings = {
         | [number,number]
         | {min:number,max:number,step:number}
         | {"choice":string[]}
-        | "parameter"
         | {sub:CSettings}
 }
 
@@ -40,7 +38,7 @@ export class ControlSettingsGUI{
 
     private parameters: { [label:string]: SettingsField } = {}
 
-    private addParameter(label: string, type: CSettings["a"], wam_parameters_infos?: WamParameterInfoMap): DocumentFragment{
+    private addParameter(label: string, type: CSettings["a"]): DocumentFragment{
         let parameter: SettingsField|null = null
         
         // Color input : String value
@@ -64,17 +62,8 @@ export class ControlSettingsGUI{
         // Font input : String value
         else if(type == "font") parameter = new FontSField()
 
-        // WAM Parameter input : String value
-        else if(type=="parameter"){
-            const entries = Object.values(wam_parameters_infos??{})
-            parameter = new SelectSField(
-                ["None", ...entries.map(it=>it.label??it.id)],
-                ["", ...entries.map(it=>it.id)],
-            )
-        }
-
         // Sub settings : ControlSettings value
-        else if(typeof type == "object" && "sub" in type) parameter = new SubSField(type.sub, wam_parameters_infos)
+        else if(typeof type == "object" && "sub" in type) parameter = new SubSField(type.sub)
             
         // Unsupported setting type
         else parameter = new ErrorSField()
@@ -91,10 +80,10 @@ export class ControlSettingsGUI{
     }
 
     /** Generate the control settings html GUI. */
-    constructor(settings: CSettings, wam_parameters_infos?: WamParameterInfoMap){
+    constructor(settings: CSettings){
         let elements = []
         for(let [label,type] of Object.entries(settings)){
-            elements.push(this.addParameter(label,type,wam_parameters_infos))
+            elements.push(this.addParameter(label,type))
         }
         this.element = html`${elements}`
     }

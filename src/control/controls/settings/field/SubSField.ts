@@ -1,4 +1,3 @@
-import { WamParameterInfoMap } from "@webaudiomodules/api";
 import { html } from "../../../../utils/doc.ts";
 import { ControlSettingsGUI, CSettings, CSettingsValue } from "../settings.ts";
 import { SettingsField } from "../SettingsField.ts";
@@ -8,10 +7,10 @@ export class SubSField implements SettingsField{
     private sub: ControlSettingsGUI
     element: HTMLElement
 
-    constructor(settings: CSettings, wam_parameters_infos?: WamParameterInfoMap){
+    constructor(settings: CSettings){
         this.element = html.a`<input type="checkbox"/>` as HTMLInputElement
 
-        this.sub = new ControlSettingsGUI(settings, wam_parameters_infos)
+        this.sub = new ControlSettingsGUI(settings)
         this.element = html.a`<div class="menu _inner _vertical">${this.sub.element}</div>`
     }
 

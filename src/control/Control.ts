@@ -1,8 +1,8 @@
 import { WamNode, WebAudioModule } from "@webaudiomodules/api"
 import { CSettings, CSettingsValue, CSettingsValues } from "./controls/settings/settings.js"
 import { AbstractMesh, Scene, TransformNode } from "@babylonjs/core"
-import { ControlLibrary } from "../WamGUIGenerator.js"
 import { flatten } from "../utils/serializable.js";
+import { ShareMap } from "./ShareMap.js";
 
 export type ControlState =
   | string
@@ -53,7 +53,7 @@ export interface ControlContextTarget<C,T>{
     defineField(settings:{
         target: T,
         getName(): string,
-        getStepSize(): number,
+        getStepCount(): number,
         setValue(value:number): void,
         getValue(): number,
         stringify(value:number): string,
@@ -81,7 +81,7 @@ export const DEFAULT_CONTROL_CONTEXT_TARGET = {
  * The context of creation of the controls.
  * Also given when a GUI is created so it can be used to create the controls of the GUI.
  */
-export interface ControlContext{
+export interface ControlHost{
 
     /**
      * The web audio module associated to the control.
@@ -96,6 +96,22 @@ export interface ControlContext{
     html?: ControlContextTarget<HTMLElement,HTMLElement>
 }
 
+/**
+ * The environment of the control.
+ */
+export interface ControlEnv{
+
+    /** The host of the control. */
+    host: ControlHost
+
+    /** The data shared between the controls. */
+    shared: ShareMap
+
+    /** The data shared between the controls that is disposed off when the gui is freezed and no longer modifiable. */
+    sharedTemp: ShareMap
+
+}
+
 
 /**
  * @typedef {import("./settings.js").ControlSettings} ControlSettings
@@ -105,37 +121,36 @@ export interface ControlContext{
  */
 export abstract class Control{
 
-    static label: string = "Unnamed Control"
-
-    static description: string = "No description"
-
     wam?: WebAudioModule
+
+    env: ControlEnv
+
+    host: ControlHost
 
     /**
      * A factory for creating custom elements controls.
      * @param wam The wam associated to this controls, should be null if 
      * the parameters is just a display and not a fonctionnal parameter.
      */
-    constructor(readonly context: ControlContext){
-        this.wam = context.wam
+    constructor(
+        readonly factory: ControlFactory
+    ){
+        this.env = factory.env
+        this.host = this.env.host
+        this.wam = this.host.wam
     }
-    
-
-    // @ts-ignore
-    get factory(): ControlLibrary[0] { return this.constructor }
-
-    
-    /** Get the list of parameters */
-    static getSettings(): CSettings{ throw new Error("Not implemented") }
-    
-    /** The default values of the parameters. */
-    static getDefaultValues(): CSettingsValues{ throw new Error("Not implemented") }
 
     /** Set a value of a parameter */
     abstract updateValue(label: string, value: CSettingsValue): void
 
+
+    // Lifetime
     /** Free the resources used by the control */
     abstract destroy(): void
+
+    /** Free the resources needed to edit the control. */
+    freeze():void{ }
+
 
     /** Create the html element of the control. */
     abstract createElement(): HTMLElement
@@ -143,11 +158,13 @@ export abstract class Control{
     /** Destroy the html element of the control. */
     abstract destroyElement(): void
 
+
     /** Create the babylonjs node of the control. */
     abstract createNode(scene: Scene): TransformNode
 
     /** Destroy the babylonjs node. */
     abstract destroyNode(): void
+
 
     /** Get the state of the control */
     async getState(): Promise<ControlState> {
@@ -157,10 +174,6 @@ export abstract class Control{
     /** Set the state of the control */
     async setState(state: ControlState){ }
 
-    /** Get the list of parameters names. */
-    static getSettingsNames(){
-        return Object.keys(this.getSettings())
-    }
 
     /**
      * Reset the values of the parameters to the default values.
@@ -174,3 +187,29 @@ export abstract class Control{
     }
 
 }
+
+/** A factory for creating controls. */
+export interface ControlFactory{
+
+    /** Control environment. */
+    readonly env: ControlEnv
+
+    /** The name of the control. */
+    label: string
+
+    /** The name of the control. */
+    description: string
+
+    /** Get the settings of the control. */
+    getSettings(): CSettings
+
+    /** The default values of the settings. */
+    getDefaultValues(): CSettingsValues
+
+    /** Create the control. */
+    create(): Promise<Control>
+    
+}
+
+/** A type of control. */
+export type ControlType = (env: ControlEnv) => Promise<ControlFactory>

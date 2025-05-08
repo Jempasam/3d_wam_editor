@@ -207,10 +207,11 @@ export class AutoLayoutPane implements IContentRenderer{
 
                 const control = Object.values(this.library)[0]
                 for(const {x,y,width,height} of layout.parameters){
-                    const control = this.library[this.parameter.value.control]
+                    const type = this.library[this.parameter.value.control]
+                    const factory = await this.builder.getFactory(type)
                     const completable = structuredClone(this.parameter.value.values)
                     this.replace_value(completable, {color:layout.top_color})
-                    const values = {...structuredClone(control.getDefaultValues()), ...completable }
+                    const values = {...structuredClone(factory.getDefaultValues()), ...completable }
                     this.replace_value(values, {color:layout.top_color})
                     this.builder.addControl({control,x,y,width,height,values})
                 }

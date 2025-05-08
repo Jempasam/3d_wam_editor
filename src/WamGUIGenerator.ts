@@ -2,13 +2,14 @@ import { TransformNode } from "@babylonjs/core";
 import { WebAudioModule } from "@webaudiomodules/api";
 import { ControlMap } from "./control/ControlMap.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
-import { Control, ControlContext } from "./control/Control.ts";
+import { ControlEnv, ControlFactory, ControlHost, ControlType } from "./control/Control.ts";
 import { parallel, parallelFor } from "./utils/async.ts";
 import { Decoration } from "./utils/visual/Decoration.ts";
 import { CSettingsValues } from "./control/controls/settings/settings.ts";
+import { ShareMap } from "./control/ShareMap.ts";
 
 export interface ControlLibrary{
-    [id:string]: (new(context:ControlContext)=>Control) & (typeof Control)
+    [id:string]: ControlType
 }
 
 export type WamPadShape = "rectangle"
@@ -21,12 +22,16 @@ export type WamPadShape = "rectangle"
  */
 export class WamGUIGenerator{
     
+    private env
+    private controls_factories = new Map<ControlType, ControlFactory>()
+    private controls_factories_reverse = new Map<ControlFactory, ControlType>()
+
     readonly controls: ControlMap
 
     pad_element?: Element
     pad_node?: TransformNode
 
-    readonly context: ControlContext
+    readonly host: ControlHost
 
     private pad_decoration = new Decoration()
     private disposables = [] as (() => void)[]
@@ -44,15 +49,20 @@ export class WamGUIGenerator{
     readonly modifier_strength = this.pad_decoration.modifier_strength
     
     private constructor(
-        context: Partial<ControlContext>,
+        host: Partial<ControlHost>,
     ){
-        this.context = {
-            ...context,
+        this.host = {
+            ...host,
         }
 
+        this.env = {} as ControlEnv
+        this.env.host = host
+        this.env.shared = new ShareMap(this.env)
+        this.env.sharedTemp = new ShareMap(this.env)
 
-        if(this.context.babylonjs){
-            const {root} = this.context.babylonjs
+
+        if(this.host.babylonjs){
+            const {root} = this.host.babylonjs
 
             const visual = this.pad_decoration.createScene(root.getScene())
             const pad_node = this.pad_node = visual.node
@@ -74,8 +84,8 @@ export class WamGUIGenerator{
         }
 
 
-        if(this.context.html){
-            const {root} = this.context.html
+        if(this.host.html){
+            const {root} = this.host.html
 
             const visual = this.pad_decoration.createElement()
             const pad_element = this.pad_element = visual.element as HTMLElement
@@ -102,7 +112,7 @@ export class WamGUIGenerator{
 
 
         //// CONTROLS ////
-        this.controls = new ControlMap(this.context.html?.root, this.context.babylonjs?.root)
+        this.controls = new ControlMap(this.host.html?.root, this.host.babylonjs?.root)
 
     }
 
@@ -116,7 +126,7 @@ export class WamGUIGenerator{
      * @param groupId The groupd id of the web audio module host.
      * @returns 
      */
-    static async create_and_init(context: Partial<ControlContext>, init_code: WAMGuiInitCode, library: ControlLibrary, audioContext: BaseAudioContext, groupId: string): Promise<WamGUIGenerator>{
+    static async create_and_init(context: Partial<ControlHost>, init_code: WAMGuiInitCode, library: ControlLibrary, audioContext: BaseAudioContext, groupId: string): Promise<WamGUIGenerator>{
         const wam_type = (await import(init_code.wam_url))?.default as typeof WebAudioModule
         const wam_instance = await wam_type.createInstance(groupId, audioContext)
         context={...context, wam:wam_instance}
@@ -132,7 +142,7 @@ export class WamGUIGenerator{
      * @param context 
      * @returns 
      */
-    static create(context: Partial<ControlContext>): WamGUIGenerator{
+    static create(context: Partial<ControlHost>): WamGUIGenerator{
         return new WamGUIGenerator(context)
     }
 
@@ -143,9 +153,22 @@ export class WamGUIGenerator{
         this.controls.splice(0,this.controls.length)
     }
 
-    addControl(added: {control:ControlLibrary[0], values:CSettingsValues, x:number, y:number, width:number, height:number}){
-        const control = new added.control(this.context)
+    async addControl(added: {control:ControlType, values:CSettingsValues, x:number, y:number, width:number, height:number}){
+        const factory = await this.getFactory(added.control)
+        const control = await factory.create()
         this.controls.splice(this.controls.length, 0, {control, x:added.x, y:added.y, height:added.height, width:added.width, values:added.values})
+    }
+
+    async getFactory(control_type: ControlType): Promise<ControlFactory>{
+        if(this.controls_factories.has(control_type)) return this.controls_factories.get(control_type)!!
+        const factory = await control_type(this.env)
+        this.controls_factories.set(control_type, factory)
+        this.controls_factories_reverse.set(factory, control_type)
+        return factory
+    }
+
+    getType(factory: ControlFactory): ControlType | undefined{
+        return this.controls_factories_reverse.get(factory)
     }
 
     /**
@@ -153,7 +176,7 @@ export class WamGUIGenerator{
      * @param code the 3DWam GUI descriptor
      * @param library The control library to use for loading the controls
      */
-    load(code: WamGUICode, library: ControlLibrary){
+    async load(code: WamGUICode, library: ControlLibrary){
         this.aspect_ratio.value = code.aspect_ratio
         this.size.value = code.size ?? 1
         this.pad_shape.value = code.shape as WamPadShape ?? "rectangle"
@@ -167,9 +190,18 @@ export class WamGUIGenerator{
         this.modifier_strength.value = code.modifier_strength ?? 0
         this.controls.splice(0,this.controls.length)
         for(let {control,values,x,y,width,height} of code.controls){
-            const instance = new library[control](this.context)
+            const instance = await (await this.getFactory(library[control])).create()
             this.controls.splice(this.controls.length, 0, {control:instance, values, x, y, width, height})
         }
+    }
+
+    /**
+     * Free the resource useful for editing the GUI.
+     * The controls should not be modified after this call.
+     */
+    freeze(){
+        this.controls.values.forEach(it=>it.control.freeze())
+        for(const k of this.env.sharedTemp.keys)this.env.sharedTemp.free(k,9999)
     }
 
     /**
@@ -191,8 +223,10 @@ export class WamGUIGenerator{
             modifier: this.modifier.value,
             modifier_strength: this.modifier_strength.value,
             controls: this.controls.values.map(({control,values,x,y,width,height})=>{
-                const factory_id = Object.entries(library).find(([_,c])=>c===control.constructor)?.[0]
-                if(factory_id) return {x, y, width, height, values, control:factory_id}
+                const factory = control.factory
+                const type = this.controls_factories_reverse.get(factory)
+                const type_id = Object.entries(library).find(([_,c])=>c===type)?.[0]
+                if(type_id) return {x, y, width, height, values, control:type_id}
                 else return null
             }).filter(it=>it!=null)
         }
@@ -206,8 +240,8 @@ export class WamGUIGenerator{
         const state = {} as any
         await parallel(
             async()=>{
-                if(includeWAM && this.context.wam){
-                    state.wam = await this.context.wam.audioNode?.getState()
+                if(includeWAM && this.host.wam){
+                    state.wam = await this.host.wam.audioNode?.getState()
                 }
                 
             },
@@ -227,7 +261,7 @@ export class WamGUIGenerator{
         await parallel(
             async()=>{
                 if("wam" in state){
-                    await this.context.wam?.audioNode?.setState(state.wam)
+                    await this.host.wam?.audioNode?.setState(state.wam)
                 }
             },
             async()=>{

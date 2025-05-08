@@ -1,7 +1,8 @@
 import { AbstractMesh, Color3, MeshBuilder, Scene, StandardMaterial, Vector3 } from "@babylonjs/core"
-import { ControlContext } from "../../Control.ts"
+import { Control, ControlEnv } from "../../Control.ts"
 import { CSettings, CSettingsValue } from "../settings/settings.ts"
-import { ParameterControl } from "./ParameterControl.ts"
+import { ParameterControl, ParameterControlFactory } from "./ParameterControl.ts"
+import { NoneFieldValue } from "../../value/NoneFieldValue.ts"
 
 
 /**
@@ -9,30 +10,6 @@ import { ParameterControl } from "./ParameterControl.ts"
  */
 export class Joystick3DControl extends ParameterControl{
 
-    static label = "Joystick 3D"
-
-    constructor(context: ControlContext){
-        super(context)
-    }
-
-    protected static override getParameterLabels(){ return ["Target X", "Target Y", "Target Z"] }
-
-    static override getSettings(): CSettings{
-        return {
-            "Zone Color":"color",
-            "Cursor Color":"color",
-            "Cursor Size": [0.05,1],
-            ...super.getSettings()
-        }
-    }
-
-    static getDefaultValues(){
-        return {
-            "Zone Color": "#aaaaff",
-            "Cursor Color": "#ff0000",
-            "Cursor Size": 0.1,
-        }
-    }
 
     override updateValue(label: string, value: CSettingsValue){
         switch(label){
@@ -61,15 +38,15 @@ export class Joystick3DControl extends ParameterControl{
                 super.updateValue(label,value)
         }
         this.updatePosition()
-        if(this.xLine)this.xLine.isVisible = !!this.parameter[0]
-        if(this.yLine)this.yLine.isVisible = !!this.parameter[1]
-        if(this.zLine)this.zLine.isVisible = !!this.parameter[2]
+        if(this.xLine)this.xLine.isVisible = this.fields[0]!=NoneFieldValue.INSTANCE
+        if(this.yLine)this.yLine.isVisible = this.fields[1]!=NoneFieldValue.INSTANCE
+        if(this.zLine)this.zLine.isVisible = this.fields[2]!=NoneFieldValue.INSTANCE
     }
 
 
 
     updatePosition(){
-        const [x,y,z] = this.normalized
+        const [x,y,z] = this.fields.map(f => f==NoneFieldValue.INSTANCE ? 0.5 : f.getValue())
         if(this.cursorElement && this.zoneElement){
             const bounds = this.zoneElement.getBoundingClientRect()
             const myself = this.cursorElement.getBoundingClientRect()
@@ -151,29 +128,19 @@ export class Joystick3DControl extends ParameterControl{
         this.cursorMesh.parent = this.zoneMesh
 
         const control = this
-        this.context.babylonjs!!.defineDraggableField({
+        this.host.babylonjs!!.defineDraggableField({
             target: this.zoneMesh,
             getName() {
-                return control.parameter
-                    .map(p=> p==null ? null : p.label)
+                return control.fields
+                    .map(f => f==NoneFieldValue.INSTANCE ? null : f.getName())
                     .filter(it=>it!=null)
                     .join(", ")
             },
             getValue() {
-                return control.parameter
-                    .map((p,i)=>{
-                        if(!p)return null
-                        const v = control.normalized[i]
-                        const {minValue, maxValue} = p
-                        const unnormalized = v*(maxValue-minValue)+minValue
-                        if(p.valueString) return p.valueString(unnormalized)
-                        else{
-                            if(p.choices.length) return p.choices[Math.round(unnormalized)]
-                            else{
-                                const {units} = p
-                                return unnormalized.toPrecision(3)+units
-                            }
-                        }
+                return control.fields
+                    .map((f)=>{
+                        if(f==NoneFieldValue.INSTANCE)return null
+                        return f.stringify(f.getValue())
                     })
                     .filter(it=>it!=null)
                     .join(", ")
@@ -181,8 +148,8 @@ export class Joystick3DControl extends ParameterControl{
             drag(x, y, z) {
                 let i =0
                 for(const offset of [x,y,z]){
-                    const nvalue = control.value[i] + offset
-                    control.setParamValue(nvalue,i)
+                    const nvalue = control.fields[i].getValue() + offset
+                    control.fields[i].setValue(nvalue)
                     i++
                 }
             },
@@ -200,5 +167,41 @@ export class Joystick3DControl extends ParameterControl{
         this.yLine?.dispose()
         this.zLine?.dispose()
     }
+
+    static Factory = class _ extends ParameterControlFactory {
+    
+            constructor(readonly env: ControlEnv){super()}
+            
+            override label = "Joystick 3D"
+    
+            override description = "A control that work like a joystick in 3D space that control 3 values."
+    
+            override getParameterLabels(){ return ["Target X", "Target Y", "Target Z"] }
+
+            override getSettings(): CSettings{
+                return {
+                    "Zone Color":"color",
+                    "Cursor Color":"color",
+                    "Cursor Size": [0.05,1],
+                    ...super.getSettings()
+                }
+            }
+
+            override getDefaultValues(){
+                return {
+                    "Zone Color": "#aaaaff",
+                    "Cursor Color": "#ff0000",
+                    "Cursor Size": 0.1,
+                }
+            }
+            
+            override async create(): Promise<Control> {
+                await this.init()
+                return new Joystick3DControl(this)
+            }
+    
+        }
+    
+        static Type = async (env: ControlEnv) => new this.Factory(env)
 }
 

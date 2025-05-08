@@ -1,126 +1,108 @@
-import { WamParameterInfo } from "@webaudiomodules/api"
-import { Control, ControlContext, ControlContextTarget } from "../../Control.ts"
-import { CSettings, CSettingsValue } from "../settings/settings.ts"
-import { stringifyWamParameter } from "../../../utils/wam.ts"
+import { Control, ControlContextTarget, ControlFactory, ControlEnv } from "../../Control.ts"
+import { CSettings, CSettingsValue, CSettingsValues } from "../settings/settings.ts"
+import { FieldValue } from "../../value/FieldValue.ts"
+import { NoneFieldValue } from "../../value/NoneFieldValue.ts"
+import { ControlShared } from "../../ControlShared.ts"
 
 /**
  * A color coded controls that change a numeric value.
  */
 export abstract class ParameterControl extends Control{
 
-    timeout?: any
+    declare fields: FieldValue[]
 
-    constructor(context: ControlContext){
-        super(context)
-        if(this.wam){
-            const control = this
-            this.timeout = setTimeout(async function timeout(){
-                const param_ids = [] as string[]
-                const param_map = {} as {[id:string]:number}
-                let i=0
-                for(const p of control.parameter){
-                    if(p){
-                        param_ids.push(p.id)
-                        param_map[p.id] = i
-                    }
-                    i++
-                }
-                let newvalues = (await control.wam!!.audioNode.getParameterValues(false, ...param_ids))
-                let changed = []
-                for(const [id,{value}] of Object.entries(newvalues)){
-                    const param_index = param_map[id]
-                    if(param_index===undefined) continue
-                    if(value!=control.value[param_index]){
-                        const {minValue, maxValue} = control.parameter[param_index]!!
-                        control.value[param_index]=value
-                        control.normalized[param_index] = (control.value[param_index]-minValue)/(maxValue-minValue)
-                        changed.push(param_index)
-                    }
-                }
-                if(changed.length) control.onParamChange(changed)
-                if(control.timeout!=undefined)control.timeout = setTimeout(timeout,100)
-            },100)
-        }
+    promise = Promise.resolve()
 
-        this.parameter = Array.from((this.constructor as typeof ParameterControl).getParameterLabels(), ()=>null)
-        this.value = Array.from(this.parameter, ()=>0)
-        this.normalized = Array.from(this.parameter, ()=>0)
+    constructor(factory: ControlFactory){
+        super(factory)
+        this.fields = Array.from((factory as ParameterControlFactory).getParameterLabels(), ()=>NoneFieldValue.INSTANCE)
     }
-
-    protected static getParameterLabels(){ return ["Target"] }
-
-    static override getSettings(): CSettings{
-        const settings: CSettings = {}
-        for(const label of this.getParameterLabels()){
-            settings[label] = "parameter"
-        }
-        return settings
-    }
-
-    parameter: (WamParameterInfo|null)[]
-    value: number[]
-    normalized: number[]
 
     override updateValue(label: string, value: CSettingsValue){
         let i=0
-        for(const l of (this.constructor as typeof ParameterControl).getParameterLabels()){
+        const fields = this.env.sharedTemp.get(ControlShared.FIELDS)!!
+        for(const l of (this.factory as ParameterControlFactory).getParameterLabels()){
             if(label==l){
-                this.wam?.audioNode?.getParameterInfo(value as string)?.then(it=>{
-                    this.parameter[i]=it[value as string]
-                })
+                const newfield = fields[value as string] ?? NoneFieldValue.Factory.INSTANCE
+                this.fields[i].dispose()
+                ;(async()=>{
+                    this.fields[i] = await newfield.create(()=>{
+                        console.log("Field value changed", this.fields[i].getValue())
+                        this.onParamChange(i)
+                    })
+                })()
                 break
             }
             i++
         }
     }
 
-    onParamChange(index:number[]){
-
-    }
+    abstract onParamChange(index:number): void
 
     declareField<C,T>(target: ControlContextTarget<C,T>, mesh: T, index: number=0){
         const control = this
         target.defineField({
             target: mesh,
             getName() {
-                if(!control.parameter[index]) return "none"
-                return control.parameter[index].label
+                return control.fields[index].getName()
             },
             getValue() {
-                return control.normalized[index]
+                return control.fields[index].getValue()
             },
             setValue(value) {
-                if(!control.parameter[index]) return
-                const {minValue, maxValue} = control.parameter[index]
-                control.setParamValue(value*(maxValue-minValue)+minValue)
+                control.fields[index].setValue(value)
             },
-            getStepSize() {
-                if(!control.parameter[index]) return 0
-                const {minValue, maxValue, discreteStep} = control.parameter[index]
-                return discreteStep/(maxValue-minValue)
+            getStepCount() {
+                return control.fields[index].getStepCount()
             },
             stringify(value) {
-                const p = control.parameter[index]; if(!p) return "none"
-                return stringifyWamParameter(p, value)
+                return control.fields[index].stringify(value) ?? "none"
             },
         })
     }
 
-    setParamValue(value: number, index: number=0){
-        const p = this.parameter[index]; if(!p) return
-        value = Math.max(p.minValue, Math.min(p.maxValue, value))
-        if(this.wam){
-            this.wam.audioNode.setParameterValues({[p.id]:{value, normalized:false, id:p.id}})
-            this.value[index] = value
-            this.normalized[index] = (value-p.minValue)/(p.maxValue-p.minValue)
-            this.onParamChange([index])
-        }
+    setValue(value: number, index: number=0){
+        this.fields[index]?.setValue(value)
+    }
+
+    getValue(index: number=0): number {
+        return this.fields[index]?.getValue()??0
     }
 
     destroy(): void {
-        if(this.timeout!=undefined){
-            clearInterval(this.timeout)
-            this.timeout=undefined
-        }
+        this.fields.forEach(f=>f?.dispose())
+        this.env.sharedTemp.free(ControlShared.FIELDS)
     }
+
+}
+
+export abstract class ParameterControlFactory implements ControlFactory {
+    
+    abstract label: string
+    
+    abstract description: string
+
+    abstract env: ControlEnv
+    
+    abstract  getDefaultValues(): CSettingsValues
+
+    abstract create(): Promise<Control>
+
+    getParameterLabels(){ return ["Target"] }
+
+    declare names: string[]
+
+    getSettings(){
+        const settings: CSettings = {}
+        for(const label of this.getParameterLabels()){
+            settings[label] = {choice:this.names}
+        }
+        return settings
+    }
+
+    async init(){
+        const fields = await this.env.sharedTemp.allocate_async(ControlShared.FIELDS)
+        this.names = Object.keys(fields)
+    }
+
 }

@@ -14,3 +14,17 @@ export function stringifyWamParameter(parameter: WamParameterInfo, value: number
         }
     }
 }
+
+export function normalizeWamParameter(parameter: WamParameterInfo, value: number): number {
+    const p = parameter
+    if(p.normalize) return p.normalize(value)
+    const {minValue,maxValue} = p
+    return (value-minValue)/(maxValue-minValue)
+}
+
+export function denormalizeWamParameter(parameter: WamParameterInfo, value: number): number {
+    const p = parameter
+    if(p.denormalize) return p.denormalize(value)
+    const {minValue,maxValue} = p
+    return value*(maxValue-minValue)+minValue
+}

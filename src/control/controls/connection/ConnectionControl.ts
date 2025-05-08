@@ -1,24 +1,12 @@
 import { Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core"
-import { Control, ControlContext } from "../../Control.ts"
+import { Control, ControlEnv, ControlFactory } from "../../Control.ts"
 import { CSettings, CSettingsValue } from "../settings/settings.ts"
 
 
 /**
  * An event and audio input control that changes a numeric value.
  */
-export abstract class ConnectionControl extends Control{
-
-    constructor(context: ControlContext){
-        super(context)
-    }
-
-    static override getSettings(): CSettings{
-        return {"Color":"color"}
-    }
-
-    static override getDefaultValues(){
-        return {"Color":this.defaultColor}
-    }
+export class ConnectionControl extends Control{
 
     override updateValue(label: string, value: CSettingsValue){
         switch(label){
@@ -42,7 +30,7 @@ export abstract class ConnectionControl extends Control{
         this.element.style.backgroundColor = "#00FF00"
 
         const wam = this.wam
-        if(wam)((this.context.html as any)[this.getCallbackName()])({
+        if(wam)((this.host.html as any)[(this.factory as any).config.callbackName])({
             target: this.element,
             node: wam.audioNode,
             setConnected(connected: boolean) {
@@ -72,7 +60,7 @@ export abstract class ConnectionControl extends Control{
         mesh.position.y = -0.5
         
         const wam = this.wam
-        if(wam)((this.context.babylonjs as any)[this.getCallbackName()])({
+        if(wam)((this.host.babylonjs as any)[(this.factory as any).config.callbackName])({
             target: mesh,
             node: wam.audioNode,
             setConnected(connected: boolean) {
@@ -92,36 +80,68 @@ export abstract class ConnectionControl extends Control{
     /** @type {Control['destroy']} */
     destroy(){
     }
+
+    static Factory = class _ implements ControlFactory {
     
-    protected static defaultColor = "#00FF00"
+        constructor(
+            readonly env: ControlEnv,
+            readonly config: {
+                label: string,
+                description: string,
+                defaultColor: string,
+                callbackName: string,
+            }
+        ){
+            this.label = config.label
+            this.description = config.description
+        }
+        
+        label
+        description
 
-    protected getCallbackName(): string { return "defineAnInput" }
+        getSettings(): CSettings{
+            return {"Color":"color"}
+        }
+    
+        getDefaultValues(){
+            return {"Color":this.config.defaultColor}
+        }
 
-    static Input = class extends ConnectionControl{
-        static label = "Input"
-        static description = "An audio signal input"
-        protected static defaultColor = "#00FF00"
-        protected override getCallbackName(): string { return "defineAnInput" }
+        async create(): Promise<Control> {
+            return new ConnectionControl(this)
+        }
+
     }
 
-    static Output = class extends ConnectionControl{
-        static label = "Output"
-        static description = "An audio signal output"
-        protected static defaultColor = "#FF0000"
-        protected override getCallbackName(): string { return "defineAnOutput" }
+    static InputSettings = {
+        label: "Input",
+        description: "An audio signal input",
+        defaultColor: "#00FF00",
+        callbackName: "defineAnInput",
     }
+    static Input = async (env: ControlEnv) => new this.Factory(env, this.InputSettings)
 
-    static MidiInput = class extends ConnectionControl{
-        static label = "MIDI Input"
-        static description = "A MIDI signal input"
-        protected static defaultColor = "#33BB88"
-        protected override getCallbackName(): string { return "defineAnEventInput" }
+    static OutputSettings = {
+        label: "Output",
+        description: "An audio signal output",
+        defaultColor: "#FF0000",
+        callbackName: "defineAnOutput",
     }
+    static Output = async (env: ControlEnv) => new this.Factory(env, this.OutputSettings)
 
-    static MidiOutput = class extends ConnectionControl{
-        static label = "MIDI Output"
-        static description = "A MIDI signal output"
-        protected static defaultColor = "#BB3388"
-        protected override getCallbackName(): string { return "defineAnEventOutput" }
+    static MidiInputSettings = {
+        label: "MIDI Input",
+        description: "A MIDI signal input",
+        defaultColor: "#33BB88",
+        callbackName: "defineAnEventInput",
     }
+    static MidiInput = async (env: ControlEnv) => new this.Factory(env, this.MidiInputSettings)
+
+    static MidiOutputSettings = {
+        label: "MIDI Output",
+        description: "A MIDI signal output",
+        defaultColor: "#BB3388",
+        callbackName: "defineAnEventOutput",
+    }
+    static MidiOutput = async (env: ControlEnv) => new this.Factory(env, this.MidiOutputSettings)
 }

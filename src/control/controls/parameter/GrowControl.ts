@@ -1,29 +1,13 @@
 
 import { AbstractMesh, Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
-import { ControlContext } from "../../Control.js";
+import { Control, ControlEnv } from "../../Control.js";
 import { CSettings, CSettingsValue } from "../settings/settings.js";
-import { ParameterControl } from "./ParameterControl.js";
+import { ParameterControl, ParameterControlFactory } from "./ParameterControl.js";
 
 /**
  * A control that grow and shrink
  */
 export class GrowControl extends ParameterControl{
-
-    static label = "Size Changing"
-
-    static description = "A control that grow and shrink depending on its value."
-
-    constructor(context: ControlContext){
-        super(context)
-    }
-
-    static override getSettings(): CSettings{
-        return {"Color":"color", "Base Color":"color", ...super.getSettings()}
-    }
-
-    static override getDefaultValues(){
-        return {"Color":"#ff0000", "Base Color":"#666666"}
-    }
 
     ;["Color"]: Color3 = Color3.White()
     ;["Base Color"]: Color3 = Color3.White()
@@ -65,7 +49,7 @@ export class GrowControl extends ParameterControl{
         this.element.style.borderWidth="10%"
         this.element.style.borderStyle="solid"
 
-        this.declareField(this.context.html!!, this.element)
+        this.declareField(this.host.html!!, this.element)
 
         return this.element
     }
@@ -94,15 +78,15 @@ export class GrowControl extends ParameterControl{
         this.mesh.material = this.material
         this.mesh.setParent(this.transform)
 
-        this.declareField(this.context.babylonjs!!, this.mesh)
+        this.declareField(this.host.babylonjs!!, this.mesh)
 
         return this.transform
     }
 
     onParamChange(): void {
         if(this.mesh){
-            this.mesh.scaling.y=0.2+this.normalized[0]*0.8
-            this.mesh.position.y=this.normalized[0]*0.4-0.3
+            this.mesh.scaling.y=0.2+this.fields[0].getValue()*0.8
+            this.mesh.position.y=this.fields[0].getValue()*0.4-0.3
         }
     }
 
@@ -114,6 +98,31 @@ export class GrowControl extends ParameterControl{
         this.material?.dispose()
         this.base_material?.dispose()
     }
+
+    static Factory = class _ extends ParameterControlFactory {
+
+        constructor(readonly env: ControlEnv){super()}
+            
+        label = "Size Changing"
+
+        description = "A control that grow and shrink depending on its value."
+
+        getSettings(): CSettings{
+            return {"Color":"color", "Base Color":"color", ...super.getSettings()}
+        }
+
+        getDefaultValues(){
+            return {"Color":"#ff0000", "Base Color":"#666666"}
+        }
+
+        async create(): Promise<Control> {
+            await this.init()
+            return new GrowControl(this)
+        }
+
+    }
+
+    static Type = async (env: ControlEnv) => new this.Factory(env)
 
 }
 

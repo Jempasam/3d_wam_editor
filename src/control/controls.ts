@@ -1,7 +1,7 @@
 import { ColorControl } from "./controls/parameter/ColorControl.js"
 import { CursorControl } from "./controls/parameter/CursorControl.js"
 import { GrowControl } from "./controls/parameter/GrowControl.js"
-import { TextControl } from "./controls/text/TextControl.js"
+import { TextControl } from "./controls/decoration/TextControl.js"
 import { ConnectionControl } from "./controls/connection/ConnectionControl.js"
 import { Joystick3DControl } from "./controls/parameter/Joystick3DControl.js"
 import { DecorationControl } from "./controls/decoration/DecorationControl.js"
@@ -15,13 +15,13 @@ export const controls: ControlLibrary = {
     "output_control": ConnectionControl.Output,
     "midi_input_control": ConnectionControl.MidiInput,
     "midi_output_control": ConnectionControl.MidiOutput,
-    "color_control": ColorControl,
-    "cursor_control": CursorControl,
-    "3d_joystick_control": Joystick3DControl,
-    "grow_control": GrowControl,
-    "text": TextControl,
-    "decoration": DecorationControl,
-    "morph_control": MorphControl,
+    "color_control": ColorControl.Type,
+    "cursor_control": CursorControl.Type,
+    "3d_joystick_control": Joystick3DControl.Type,
+    "grow_control": GrowControl.Type,
+    "text": TextControl.Type,
+    "decoration": DecorationControl.Type,
+    "morph_control": MorphControl.Type,
 }
 
 type ControlCategory = {control:keyof ControlLibrary, values: CSettingsValues}[]

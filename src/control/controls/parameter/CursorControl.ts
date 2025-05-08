@@ -1,35 +1,12 @@
 import { AbstractMesh, Color3, MeshBuilder, Scene, StandardMaterial, TransformNode } from "@babylonjs/core";
-import { ControlContext } from "../../Control.js";
+import { Control, ControlEnv } from "../../Control.js";
 import { CSettings, CSettingsValue } from "../settings/settings.js";
-import { ParameterControl } from "./ParameterControl.js";
+import { ParameterControl, ParameterControlFactory } from "./ParameterControl.js";
 
 /**
  * A rotating control.
  */
 export class CursorControl extends ParameterControl{
-
-    static label = "Rotating Cursor"
-
-    static description = "A control that rotate a cursor depending on its value."
-
-    constructor(context: ControlContext){
-        super(context)
-    }
-
-    static override getSettings(): CSettings{
-        return {
-            "Base Color":"color",
-            "Cursor Color":"color",
-            ...super.getSettings(),
-        }
-    }
-
-    static override getDefaultValues(){
-        return {
-            "Base Color":"#222222",
-            "Cursor Color":"#0000ff",
-        }
-    }
 
     ;["Base Color"]: Color3 = Color3.White()
     ;["Cursor Color"]: Color3 = Color3.White()
@@ -70,7 +47,7 @@ export class CursorControl extends ParameterControl{
         this.element.style.boxSizing="border-box";
         this.element.style.position="relative"
 
-        this.declareField(this.context.html!!, this.element)
+        this.declareField(this.host.html!!, this.element)
 
         this.cursor = document.createElement("div")
         this.cursor.style.position="absolute"
@@ -109,14 +86,14 @@ export class CursorControl extends ParameterControl{
         this.cursor_material.specularColor.set(0,0,0)
         cursor.setParent(cylinder)
         
-        this.declareField(this.context.babylonjs!!, cylinder)
+        this.declareField(this.host.babylonjs!!, cylinder)
 
         return this.transform
     }
 
     onParamChange(): void {
-        if(this.cylinder) this.cylinder.rotation.y = (this.normalized[0]-0.5)*Math.PI
-        if(this.element) this.element.style.rotate = `${Math.round((this.normalized[0]-0.5)*180)}deg`
+        if(this.cylinder) this.cylinder.rotation.y = (this.fields[0].getValue()-0.5)*Math.PI
+        if(this.element) this.element.style.rotate = `${Math.round((this.fields[0].getValue()-0.5)*180)}deg`
     }
 
     override destroyNode(){
@@ -126,5 +103,37 @@ export class CursorControl extends ParameterControl{
         this.cylinder_material?.dispose()
         this.cursor_material?.dispose()
     }
+
+    static Factory = class _ extends ParameterControlFactory {
+
+        constructor(readonly env: ControlEnv){super()}
+                
+        label = "Rotating Cursor"
+
+        description = "A control that rotate a cursor depending on its value."
+    
+        getSettings(): CSettings{
+            return {
+                "Base Color":"color",
+                "Cursor Color":"color",
+                ...super.getSettings(),
+            }
+        }
+    
+        getDefaultValues(){
+            return {
+                "Base Color":"#222222",
+                "Cursor Color":"#0000ff",
+            }
+        }
+
+        async create(): Promise<Control> {
+            await this.init()
+            return new CursorControl(this)
+        }
+
+    }
+
+    static Type = async (env: ControlEnv) => new this.Factory(env)
 
 }
