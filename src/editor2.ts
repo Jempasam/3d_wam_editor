@@ -22,6 +22,7 @@ import { Test2DPane } from "./editor/Test2DPane.ts"
 import { ControlFactory, ControlType } from "./control/Control.ts"
 import { MenuBar, MenuBarConfig, menubarViewport } from "./editor/MenuBar.ts"
 import { OneWamPane } from "./editor/OneWamPane.ts"
+import { DebugPane } from "./editor/DebugPane.ts"
 
 let audioContext: AudioContext
 let host: string
@@ -44,6 +45,7 @@ const examples = new ExamplesPane(example_json as any, editor.gui_generator, wam
 const autolayout = new AutoLayoutPane(wam_loader.wam, wam_loader.url, controls, control_categories)
 const test2d = new Test2DPane(editor.gui_generator)
 const keyboard = new OneWamPane(audioContext!!, host!!, "https://mainline.i3s.unice.fr/wam2/packages/VirtualMidiKeyboardNoSound/src/index.js", wam_loader.wam)
+const debug = new DebugPane(editor.gui_generator)
 
 /* Settings */
 const settings = new SettingsPane(()=>wam_loader.parameters_info)
@@ -252,7 +254,7 @@ const components: Record<string,IContentRenderer> = {
     wam_loader, editor, view_3d, selector,
     settings, editor_toolbar, wampad, load_save,
     images, examples: examples, autolayout, test2d,
-    keyboard
+    keyboard, debug,
 }
 
 /* */

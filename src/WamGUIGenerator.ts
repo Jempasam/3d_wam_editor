@@ -131,7 +131,7 @@ export class WamGUIGenerator{
         const wam_instance = await wam_type.createInstance(groupId, audioContext)
         context={...context, wam:wam_instance}
         const generator = new WamGUIGenerator(context)
-        generator.load(init_code, library)
+        await generator.load(init_code, library)
         return generator
     }
 
@@ -277,19 +277,20 @@ export class WamGUIGenerator{
      * Can be used to determine how the wam has to be scaled.
      */
     calculateAverageControlSize(): number{
-        const controls = Array.from({length: this.controls.length}, (_,i)=>this.controls.get(i))
+        const sizes = Array.from({length: this.controls.length}, (_,i)=>this.controls.get(i))
             .map(it=>Math.max(it.width, it.height))
             .sort((a,b)=>a-b)
-
-        const from = Math.floor(controls.length/4)
-        const to = Math.ceil(controls.length*3/4)
+        
+        const from = Math.floor(sizes.length/4)
+        const to = Math.ceil(sizes.length*3/4)
         let accumulator = 0
         let count = 0
         for(let i=from; i<to; i++){
-            accumulator += controls[i]
+            accumulator += sizes[i]
             count++
         }
-        return accumulator/count
+        if(count==0) return 1
+        else return accumulator/count
     }
 }
 
