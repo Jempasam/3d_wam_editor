@@ -3,7 +3,6 @@ import { WebAudioModule } from "@webaudiomodules/api";
 import { ControlMap } from "./control/ControlMap.ts";
 import { MOValue } from "./observable/collections/OValue.ts";
 import { ControlEnv, ControlFactory, ControlHost, ControlType } from "./control/Control.ts";
-import { parallel, parallelFor } from "./utils/async.ts";
 import { Decoration } from "./utils/visual/Decoration.ts";
 import { CSettingsValues } from "./control/controls/settings/settings.ts";
 import { ShareMap } from "./control/ShareMap.ts";
@@ -146,13 +145,6 @@ export class WamGUIGenerator{
         return new WamGUIGenerator(context)
     }
 
-    dispose(){
-        this.pad_element?.remove()
-        this.pad_node?.dispose()
-        this.disposables.forEach(it=>it())
-        this.controls.splice(0,this.controls.length)
-    }
-
     async addControl(added: {control:ControlType, values:CSettingsValues, x:number, y:number, width:number, height:number}){
         const factory = await this.getFactory(added.control)
         const control = await factory.create()
@@ -204,6 +196,13 @@ export class WamGUIGenerator{
         for(const k of this.env.sharedTemp.keys)this.env.sharedTemp.free(k,9999)
     }
 
+    dispose(){
+        this.pad_element?.remove()
+        this.pad_node?.dispose()
+        this.disposables.forEach(it=>it())
+        this.controls.splice(0,this.controls.length)
+    }
+
     /**
      * Save the 3DWam GUI descriptor.
      * @param library The control library to use for saving the controls
@@ -230,46 +229,6 @@ export class WamGUIGenerator{
                 else return null
             }).filter(it=>it!=null)
         }
-    }
-
-    /**
-     * Get the state of the Wam GUI.
-     * @param includeWAM if true, the WAM state will be included in the result.
-     */
-    async getState(includeWAM: boolean = true): Promise<any> {
-        const state = {} as any
-        await parallel(
-            async()=>{
-                if(includeWAM && this.host.wam){
-                    state.wam = await this.host.wam.audioNode?.getState()
-                }
-                
-            },
-            async()=>{
-                state.controls = await Promise.all(this.controls.values.map(it=>it.control.getState()))
-            }
-        )
-        return state
-    }
-
-    /**
-     * Set the state of the Wam GUI.
-     * @param state the state to set
-     */
-    async setState(state: any): Promise<void> {
-        if(state==null)return
-        await parallel(
-            async()=>{
-                if("wam" in state){
-                    await this.host.wam?.audioNode?.setState(state.wam)
-                }
-            },
-            async()=>{
-                await parallelFor(0, this.controls.length, async i => {
-                    if(state.controls[i])this.controls.get(i)?.control.setState(state.controls[i])
-                })
-            }
-        )
     }
 
     /**

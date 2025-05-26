@@ -43,6 +43,9 @@ export const DECORATION_SHAPE_MODIFIER: Record<string,(from:Vector2, i: number)=
     "left_wide": it=>new Vector2(it.x, it.y*((.5-it.x)*.8+.2)),
     "noise": (it,i)=>new Vector2(it.x*(noise[i*2]*.3+.7), it.y*(noise[i*2+1]*.3+.7)),
     "thin": it=>new Vector2(it.x*(Math.abs(it.y)*2*.8+.2), it.y),
+    "skew_right": it=>new Vector2(it.x+(it.y), it.y),
+    "skew_left": it=>new Vector2(it.x+(it.y), it.y),
+    "v": it=>new Vector2(it.x, it.y-.5+Math.abs(it.x)),
 }
 
 

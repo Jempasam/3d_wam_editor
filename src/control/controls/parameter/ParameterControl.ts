@@ -1,4 +1,4 @@
-import { Control, ControlContextTarget, ControlFactory, ControlEnv } from "../../Control.ts"
+import { Control, ControlContextTarget, ControlFactory, ControlEnv, ControlState } from "../../Control.ts"
 import { CSettings, CSettingsValue, CSettingsValues } from "../settings/settings.ts"
 import { FieldValue } from "../../value/FieldValue.ts"
 import { NoneFieldValue } from "../../value/NoneFieldValue.ts"
@@ -50,6 +50,7 @@ export abstract class ParameterControl extends Control{
                 return control.fields[index].getValue()
             },
             setValue(value) {
+                control.onStateChange?.()
                 control.fields[index].setValue(value)
             },
             getStepCount() {
@@ -72,6 +73,18 @@ export abstract class ParameterControl extends Control{
     destroy(): void {
         this.fields.forEach(f=>f?.dispose())
         this.env.sharedTemp.free(ControlShared.FIELDS)
+    }
+
+    async getState(): Promise<ControlState> {
+        return this.fields.map(f=>f.getValue())
+    }
+
+    async setState(state: ControlState): Promise<void> {
+        if(Array.isArray(state)) state.forEach((value, i) => this.fields[i]?.setValue(value as number))
+    }
+
+    getStateName(): string {
+        return this.fields.map(f=>f.getName()).join(", ")
     }
 
 }

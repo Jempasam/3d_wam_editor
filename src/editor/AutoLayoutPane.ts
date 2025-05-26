@@ -124,7 +124,13 @@ export class AutoLayoutPane implements IContentRenderer{
 
         pad_height *= 1-handle
 
-        let infos = Object.entries((await wam?.audioNode.getParameterInfo()) ?? {})
+        let infos = Object.values((await wam?.audioNode.getParameterInfo()) ?? {})
+            .filter(info=>{
+                console.log(info)
+                return true
+            })
+            .filter(info=>info.maxValue<Number.MAX_SAFE_INTEGER && info.minValue>Number.MIN_SAFE_INTEGER) // Remove bad parameters
+
         let per_line = 1
         for(let i=2; i<infos.length; i++){
             if(infos.length/per_line<=per_line*pad_height/pad_width) break
@@ -143,7 +149,7 @@ export class AutoLayoutPane implements IContentRenderer{
                 y: pad_y + y*tile_height + spacing/2,
                 width: tile_width-spacing,
                 height: tile_height-spacing,
-                id: infos[i][0],
+                id: infos[i],
             })
         }
         

@@ -167,12 +167,17 @@ export abstract class Control{
 
 
     /** Get the state of the control */
-    async getState(): Promise<ControlState> {
-        return null
-    }
+    getState?(): Promise<ControlState>
 
     /** Set the state of the control */
-    async setState(state: ControlState){ }
+    setState?(state: ControlState): Promise<void>
+
+    /** Get the name of the control state */
+    getStateName?(): string
+
+    /** Called when the state change */
+    onStateChange?: ()=>void
+
 
 
     /**

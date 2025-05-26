@@ -19,7 +19,7 @@ export interface Item{
 
 export class ControlMap{
 
-    #controls: Item[] =  []
+    private controls: Item[] =  []
 
     readonly on_add = new OSource<Item>() 
 
@@ -69,7 +69,7 @@ export class ControlMap{
 
         // Remove
         for(let i=0; i<deleteCount; i++){
-            let control_info = this.#controls[index+i]
+            let control_info = this.controls[index+i]
             this.on_remove.notify(control_info)
             control_info.container?.remove()
             control_info.control.destroy()
@@ -77,20 +77,20 @@ export class ControlMap{
             control_info.control.destroyNode()
         }
 
-        this.#controls.splice(index,deleteCount,...added_controls)
+        this.controls.splice(index,deleteCount,...added_controls)
     }
 
     /** @type {number} */
-    get length(){ return this.#controls.length }
+    get length(){ return this.controls.length }
     
     /** Get the control at the index */
     get(index: number): Readonly<Item>{
-        return this.#controls[index]
+        return this.controls[index]
     }
 
     /** Move a control to a new position */
     move(index: number, x: number, y: number){
-        let control_info = this.#controls[index]
+        let control_info = this.controls[index]
         control_info.x = x
         control_info.y = y
         if(control_info.container){
@@ -104,7 +104,7 @@ export class ControlMap{
 
     /** Resize a control */
     resize(index: number, width: number, height: number){
-        let control_info = this.#controls[index]
+        let control_info = this.controls[index]
         control_info.width = width
         control_info.height = height
         if(control_info.container){
@@ -118,10 +118,10 @@ export class ControlMap{
 
     /** Set a value of a parameter */
     setValue(index: number, label: string, value: CSettingsValue){
-        let control_info = this.#controls[index]
+        let control_info = this.controls[index]
         control_info.values[label] = value
         control_info.control.updateValue(label,value)
     }
 
-    values = new FriendlyIterable<Readonly<Item>>(this.#controls)
+    values = new FriendlyIterable<Readonly<Item>>(this.controls)
 }
