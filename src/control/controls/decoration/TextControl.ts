@@ -80,6 +80,7 @@ export class TextControl extends Control{
         if(this.mesh) this.mesh.dispose()
 
         const textMesh = MeshBuilder.CreateText("Text", this.text, FONTS[this.font].babylon, {size:.6, depth:.15}, this.transform!!.getScene())!!
+        console.log(textMesh.getTotalIndices())
         textMesh.parent = this.transform
         textMesh.material = this.material!!
         textMesh.rotation.set(Math.PI/2,0,0)
