@@ -1,4 +1,4 @@
-import { CreateText, Engine, IFontData, Scene } from "@babylonjs/core"
+import { CreateText, Engine, IFontData, Scene, StandardMaterial } from "@babylonjs/core"
 
 // @ts-ignore
 window.earcut = (await import('earcut')).default
@@ -14,7 +14,7 @@ const files = [...(await new Promise<FileList|null>((resolve) => fileInput.addEv
 
 const jsons = await Promise.all(files.map(it=>it.text().then(JSON.parse))) as IFontData[]
 
-for(const json of jsons) for(let i=0; i<1; i++) simplifyFont(json)
+for(const json of jsons) for(let i=0; i<0; i++) simplifyFont(json)
 
 const text = JSON.stringify(jsons[0], null)
 window.open(URL.createObjectURL(new Blob([text], {type: 'application/json'})), '_blank')
@@ -33,12 +33,17 @@ scene.createDefaultEnvironment()
 
 scene.createDefaultCamera(true)
 
-const textMesh = CreateText("test", "Hello World", jsons[0],{size:8})
+const textMesh = CreateText("test", "Hello World", jsons[0],{size:8,resolution:2})!!
+const textMat  = textMesh.material = new StandardMaterial("textMat", scene)
 title.innerHTML = `Vertex Count : ${textMesh?.getTotalVertices()}`
 
 engine.runRenderLoop(() => {
     scene.render()
 })
+
+window.onkeydown = (e) => {
+    if(e.key == 'Escape')textMat.wireframe = !textMat.wireframe
+}
 
 // Lib
 function simplifyFont(data: IFontData, leaveness = 1){

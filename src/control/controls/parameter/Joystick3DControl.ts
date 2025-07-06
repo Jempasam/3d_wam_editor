@@ -129,7 +129,7 @@ export class Joystick3DControl extends ParameterControl{
 
         const control = this
         this.host.babylonjs!!.defineDraggableField({
-            target: this.zoneMesh,
+            target: [this.zoneMesh],
             getName() {
                 return control.fields
                     .map(f => f==NoneFieldValue.INSTANCE ? null : f.getName())

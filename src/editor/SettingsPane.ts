@@ -32,7 +32,7 @@ export class SettingsPane implements IContentRenderer{
                 this.title.textContent = title
                 this.description.textContent = config.description
 
-                let gui = new ControlSettingsGUI(settings,this.parameters_infos?.())
+                let gui = new ControlSettingsGUI(settings)
                 for(let [label,_] of Object.entries(flatternSettings(settings))){
                     const value = getValue(label)
                     if(value!=undefined) gui.setValue(label,value)

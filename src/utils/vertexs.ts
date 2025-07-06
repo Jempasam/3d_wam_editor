@@ -1,4 +1,4 @@
-import { AbstractMesh, Color4, FloatArray, Mesh, MeshBuilder, Scene, Vector2, Vector3, VertexBuffer, VertexData } from "@babylonjs/core";
+import { AbstractMesh, Color4, FloatArray, Mesh, Scene, Vector2, Vector3, VertexBuffer, VertexData } from "@babylonjs/core";
 
 // https://www.webaudiomodules.com/community/plugins/burns-audio/envmod/screenshot.png
 

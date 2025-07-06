@@ -10,6 +10,6 @@ const control_settings: CSettings = {
     Weight: {min:100, max:900, step:100},
 }
 
-const gui = new ControlSettingsGUI(control_settings, {})
+const gui = new ControlSettingsGUI(control_settings)
 
 target.replaceChildren(gui.element)

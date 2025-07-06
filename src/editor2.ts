@@ -125,22 +125,30 @@ async function replaceSelecteds(){
 
 function rearrage(xl: keyof Readonly<Item>, yl:keyof Readonly<Item>, wl:keyof Readonly<Item>, hl:keyof Readonly<Item>){
     const gui = editor.gui_generator.value
+    //@ts-ignore
     const selecteds = [...editor.selector.selecteds].sort((a,b)=>a.infos[xl]-b.infos[xl])
+    //@ts-ignore
     const minx = Math.min(...selecteds .map(it=>it.infos[xl]))
+    //@ts-ignore
     const maxx = Math.max(...selecteds .map(it=>it.infos[xl]+it.infos[wl]))
+    //@ts-ignore
     const centery = selecteds .map(it=>it.infos[yl]+it.infos[hl]/2) .reduce((a,b)=>a+b,0) / selecteds.length
+    //@ts-ignore
     const total_width = selecteds.map(it=>it.infos[wl]).reduce((a,b)=>a+b,0)
+    //@ts-ignore
     const spacing = (maxx-minx-total_width)/(selecteds.length-1)
 
     let x = minx
     for(const s of selecteds){
         const index = gui.controls.values.indexOf(s.infos)
-        const y = centery-s.infos[hl]/2
+        const y = centery-(s.infos[hl] as number)/2
         const position = {x:0,y:0} as Item
+        //@ts-ignore
         position[xl] = x
+        //@ts-ignore
         position[yl] = y
         gui.controls.move(index, position.x, position.y)
-        x += spacing + s.infos[wl]
+        x += spacing + (s.infos[wl] as number)
     }
 }
 

@@ -6,9 +6,9 @@ import { Transformer } from "./Transformer.ts"
  */
 export class Selector<T>{
 
-    on_select = (selected:T)=>{}
-    on_unselect = (unselected:T)=>{}
-    on_move = (moved:T,x:number,y:number,width:number,height:number)=>{}
+    on_select: (selected:T)=>void = ()=>{}
+    on_unselect: (unselected:T)=>void = ()=>{}
+    on_move: (moved:T,x:number,y:number,width:number,height:number)=>void = ()=>{}
 
     private _selecteds = new Set<T>()
     

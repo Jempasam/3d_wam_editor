@@ -12,7 +12,7 @@ export class EitherSField implements SettingsField{
     subs: ControlSettingsGUI[] = []
 
     constructor(choices: CSettings[], wam_parameters_infos?: WamParameterInfoMap){
-        const subs = choices.map(sub => new ControlSettingsGUI(sub,wam_parameters_infos))
+        const subs = choices.map((sub,i) => new ControlSettingsGUI(choices[i]))
 
         this.container = html.a`<div></div>`
 

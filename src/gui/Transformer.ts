@@ -15,7 +15,7 @@ export class Transformer {
     readonly element: HTMLElement
     private isPrecise = false
 
-    onmove = (x:number,y:number,width:number,height:number)=>{}
+    onmove: (x:number,y:number,width:number,height:number)=>void = ()=>{}
 
     constructor(){
         this.element = html.a`

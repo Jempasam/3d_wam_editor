@@ -1,6 +1,7 @@
 import { initializeWamHost } from "@webaudiomodules/sdk"
 import controls from "./control/controls.ts"
 import { WamGUIGenerator, WAMGuiInitCode } from "./WamGUIGenerator.ts"
+import { DEFAULT_CONTROL_CONTEXT_TARGET } from "./control/Control.ts"
 
 const json = decodeURIComponent(location.search.slice(1))
 const description = JSON.parse(json) as WAMGuiInitCode
@@ -13,8 +14,12 @@ container.className="wam_container"
 document.body.appendChild(container)
 
 const generator = WamGUIGenerator.create_and_init(
-    {},
-    {html:container},
+    {
+        html:{
+            root: container,
+            ...DEFAULT_CONTROL_CONTEXT_TARGET
+        }
+    },
     description,
     controls,
     audioContext,

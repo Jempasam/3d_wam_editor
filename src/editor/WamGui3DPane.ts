@@ -16,7 +16,7 @@ export class WamGui3DPane implements IContentRenderer{
         this.element.appendChild(canvas)
 
         canvas.classList.add("container")
-        canvas.style = `
+        canvas.style.cssText = `
             display: flex;
             aspect-ratio: 1/1;
             width: 100%;

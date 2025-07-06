@@ -7,6 +7,9 @@ import { Decoration } from "./utils/visual/Decoration.ts";
 import { CSettingsValues } from "./control/controls/settings/settings.ts";
 import { ShareMap } from "./control/ShareMap.ts";
 
+// @ts-ignore
+window.WAMExtensions ??= {}
+
 export interface ControlLibrary{
     [id:string]: ControlType
 }

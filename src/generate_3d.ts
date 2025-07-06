@@ -2,6 +2,7 @@ import { initializeWamHost } from "@webaudiomodules/sdk"
 import controls from "./control/controls.ts"
 import { WamGUIGenerator, WAMGuiInitCode } from "./WamGUIGenerator.ts"
 import { ArcRotateCamera, Engine, Scene, TransformNode, Vector3 } from "@babylonjs/core"
+import { DEFAULT_CONTROL_CONTEXT_TARGET } from "./control/Control.ts"
 
 const json = decodeURIComponent(location.search.slice(1))
 const description = JSON.parse(json) as WAMGuiInitCode
@@ -22,8 +23,12 @@ scene.createDefaultLight()
 const camera = new ArcRotateCamera("Camera", -Math.PI / 2, 0, 2, new Vector3(0, -.7, 0), scene)
 
 const generator = WamGUIGenerator.create_and_init(
-    {},
-    {babylonjs:transform},
+    {
+        babylonjs:{
+            root: transform,
+            ...DEFAULT_CONTROL_CONTEXT_TARGET
+        }
+    },
     description,
     controls,
     audioContext,

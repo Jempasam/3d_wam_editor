@@ -22,7 +22,7 @@ export class WamEditorPane implements IContentRenderer{
         wam: OValue<WebAudioModule|null>,
         node_container?: TransformNode,
     ){
-        this.container.style = `
+        this.container.style.cssText = `
             display: flex;
             aspect-ratio: 1/1;
             width: 100%;

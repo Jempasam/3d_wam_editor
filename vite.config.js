@@ -9,8 +9,9 @@ export default defineConfig({
     },
   },
   build: {
+    outDir: 'app',
     rollupOptions: {
-      input: ["index.html", "editor2.html", "generate_2d.html", "generate_3d.html", "src/index.ts"],
+      input: ["index.html", "generate_2d.html", "generate_3d.html", "src/index.ts"],
     }
   }
 });

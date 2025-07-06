@@ -79,7 +79,7 @@ export class TextControl extends Control{
         // Text Mesh
         if(this.mesh) this.mesh.dispose()
 
-        const textMesh = MeshBuilder.CreateText("Text", this.text, FONTS[this.font].babylon, {size:.6, depth:.15}, this.transform!!.getScene())!!
+        const textMesh = MeshBuilder.CreateText("Text", this.text, FONTS[this.font].babylon, {size:.6, depth:.15, resolution:2}, this.transform!!.getScene())!!
         console.log(textMesh.getTotalIndices())
         textMesh.parent = this.transform
         textMesh.material = this.material!!
