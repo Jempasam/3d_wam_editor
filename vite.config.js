@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export default defineConfig({
+  base: './',
   esbuild: {
     supported: {
       'top-level-await': true
