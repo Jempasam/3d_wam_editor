@@ -1,7 +1,7 @@
 {
   "name": "wam3dgenerator",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "scripts": {
     "dev": "vite dev --port 5172",
@@ -15,7 +15,7 @@
     "typescript": "~5.7.2"
   },
   "dependencies": {
-    "@babylonjs/core": "^7.54.0",
+    "@babylonjs/core": "^8.24.0",
     "@webaudiomodules/api": "^2.0.0-alpha.6",
     "@webaudiomodules/sdk": "^0.0.12",
     "dockview-core": "^4.2.1",
