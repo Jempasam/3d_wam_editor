@@ -30,6 +30,7 @@ export abstract class ParameterControl extends Control{
                         console.log("Field value changed", this.fields[i].getValue())
                         this.onParamChange(i)
                     })
+                    this.onParamChange(i)
                 })()
                 break
             }
