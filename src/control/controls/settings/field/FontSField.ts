@@ -36,7 +36,8 @@ export class FontSField implements SettingsField{
 
 
 export const FONTS: Record<string,{css:string, babylon:IFontData}> = {}
-for(const [file, url] of Object.entries(import.meta.glob("../../../../../media/fonts/*"))){
+
+await Promise.all(Object.entries(import.meta.glob("../../../../../media/fonts/*")).map(async ([file,url])=>{
     const file_full_name = file.split("/").pop() ?? ""
     const [name,extension] = file_full_name.split(".")
     FONTS[name] ??= {css:"", babylon:{} as IFontData}
@@ -48,4 +49,4 @@ for(const [file, url] of Object.entries(import.meta.glob("../../../../../media/f
     else{
         FONTS[name].babylon = (await url()) as IFontData
     }
-}
+}))

@@ -1,4 +1,4 @@
-import { Scene, TransformNode } from "@babylonjs/core"
+import { AbstractMesh, Color3, CreateBox, HighlightLayer, Scene, TransformNode } from "@babylonjs/core"
 import { Control, ControlEnv, flattenCDefault } from "../../Control.ts"
 import { CSettings, CSettingsValue } from "../settings/settings.ts"
 import { ParameterControl, ParameterControlFactory } from "./ParameterControl.ts"
@@ -78,7 +78,6 @@ export class JaugeControl extends ParameterControl{
             unfilled_html.element.style.position = "absolute"
             unfilled_html.element.style.left = `${unfilled.x*100}%`
             unfilled_html.element.style.top = `${(1-unfilled.y-unfilled.h)*100}%`
-            
         }
 
         this.declareField(this.host.html!!, [filled_html.element, unfilled_html.element])
@@ -98,6 +97,7 @@ export class JaugeControl extends ParameterControl{
 
     private filled_node?: {node:TransformNode,dispose():void}
     private unfilled_node?: {node:TransformNode,dispose():void}
+    private hitbox_node?: AbstractMesh
     private container_node?: TransformNode
 
     override createNode(scene: Scene){
@@ -108,6 +108,10 @@ export class JaugeControl extends ParameterControl{
 
         const unfilled_node = this.unfilled_node = this.unfilled.createScene(scene)
         unfilled_node.node.setParent(container_node)
+
+        const hitbox_node = this.hitbox_node = CreateBox("jauge_hitbox", {size:1.01}, scene)
+        hitbox_node.visibility = 0.01
+        hitbox_node.setParent(container_node)
 
         const resize=()=>{
             const [filled,unfilled] = this.getDim()
@@ -123,7 +127,7 @@ export class JaugeControl extends ParameterControl{
         this.filling.link(resize)
         this.direction.link(resize)
 
-        this.declareField(this.host.babylonjs!!, [filled_node.node, unfilled_node.node])
+        this.declareField(this.host.babylonjs!!, [hitbox_node])
 
         return container_node
     }
@@ -133,6 +137,7 @@ export class JaugeControl extends ParameterControl{
         this.filled_node?.dispose()
         this.unfilled_node?.dispose()
         this.container_node?.dispose(true)
+        this.hitbox_node?.dispose()
     }
 
     static Factory = class _ extends ParameterControlFactory {

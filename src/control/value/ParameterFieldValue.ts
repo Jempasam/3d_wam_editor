@@ -29,6 +29,13 @@ export class ParameterFieldValue implements FieldValue{
         },100)
     }
 
+    async init(){
+        const values = await this.wam.audioNode.getParameterValues(false, this.info.id)
+        this.value = values[this.info.id]?.value ?? 0
+        this.normalized = normalizeWamParameter(this.info, this.value)
+        return this
+    }
+
     getName(): string {
         return this.info.label
     }
@@ -66,7 +73,7 @@ export class ParameterFieldValue implements FieldValue{
         constructor(private wam: WebAudioModule, private info: WamParameterInfo){}
 
         async create(onChange: (value: number) => void) {
-            return new ParameterFieldValue(this.wam, this.info, onChange)
+            return await new ParameterFieldValue(this.wam, this.info, onChange)?.init()
         }
 
     }
