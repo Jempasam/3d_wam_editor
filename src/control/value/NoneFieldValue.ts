@@ -4,7 +4,7 @@ import { FieldValue, FieldValueFactory } from "./FieldValue.ts";
 export class NoneFieldValue implements FieldValue{
 
     getName(): string { return "None" }
-
+    
     getStepCount(): number { return 0 }
 
     getValue(): number { return 0 }

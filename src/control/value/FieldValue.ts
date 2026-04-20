@@ -70,7 +70,7 @@ export async function createFieldFactories(wam?: WebAudioModule){
         // Parameters
         const parameters = await wam.audioNode.getParameterInfo()
         for(const info of Object.values(parameters)){
-            ret[info.label] = new ParameterFieldValue.Factory(wam, info)
+            ret[info.id] = new ParameterFieldValue.Factory(wam, info)
         }
 
         // Anayzer Fields
