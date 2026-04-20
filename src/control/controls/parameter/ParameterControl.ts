@@ -85,7 +85,7 @@ export abstract class ParameterControl extends Control{
     }
 
     getStateName(): string {
-        return this.fields.map(f=>f.getId()).join(", ")
+        return this.fields.map(f=>f.getName()).join(", ")
     }
 
 }
