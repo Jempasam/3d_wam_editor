@@ -8,14 +8,7 @@ import { CSettings, CSettingsValue } from "../settings/settings.ts"
  */
 export class ConnectionControl extends Control{
 
-    override updateValue(label: string, value: CSettingsValue){
-        switch(label){
-            case "Color":
-                if(this.element) this.element.style.backgroundColor = value as string
-                if(this.material) this.material.diffuseColor = Color3.FromHexString(value as string)
-                break
-        }
-    }
+    override updateValue(label: string, value: CSettingsValue){ }
 
     private element?: HTMLElement
     private  material?: StandardMaterial
@@ -25,9 +18,9 @@ export class ConnectionControl extends Control{
         this.element.style.display="block"
         this.element.style.width="100%"
         this.element.style.height="100%"
-        this.element.style.borderRadius="50%"
+        if((this.factory as any).config.shape=="circle") this.element.style.borderRadius="50%"
         this.element.style.boxSizing="border-box";
-        this.element.style.backgroundColor = "#00FF00"
+        this.element.style.backgroundColor = (this.factory as any).config.color
 
         const wam = this.wam
         if(wam)((this.host.html as any)[(this.factory as any).config.callbackName])({
@@ -51,12 +44,15 @@ export class ConnectionControl extends Control{
 
     override createNode(scene: Scene){
         const transform = new TransformNode("input", scene)
-        const mesh = MeshBuilder.CreateIcoSphere("input", {radius:0.5}, scene)
+        const mesh = (this.factory as any).config.shape=="circle" 
+            ? MeshBuilder.CreateIcoSphere("input", {radius:0.5}, scene)
+            : MeshBuilder.CreateBox("input", {size:1}, scene)
 
         mesh.setParent(transform)
         this.material = new StandardMaterial("input", scene)
         this.transform = transform
         mesh.material = this.material
+        this.material.diffuseColor = Color3.FromHexString((this.factory as any).config.color)
         mesh.position.y = -0.5
         
         const wam = this.wam
@@ -88,7 +84,8 @@ export class ConnectionControl extends Control{
             readonly config: {
                 label: string,
                 description: string,
-                defaultColor: string,
+                color: string,
+                shape: "rect"|"circle",
                 callbackName: string,
             }
         ){
@@ -99,13 +96,9 @@ export class ConnectionControl extends Control{
         label
         description
 
-        getSettings(): CSettings{
-            return {"Color":"color"}
-        }
+        getSettings(): CSettings{ return {} }
     
-        getDefaultValues(){
-            return {"Color":this.config.defaultColor}
-        }
+        getDefaultValues(){ return {} }
 
         async create(): Promise<Control> {
             return new ConnectionControl(this)
@@ -116,7 +109,8 @@ export class ConnectionControl extends Control{
     static InputSettings = {
         label: "Input",
         description: "An audio signal input",
-        defaultColor: "#00FF00",
+        color: "#00FF00",
+        shape: "rect" as "rect",
         callbackName: "defineAnInput",
     }
     static Input = async (env: ControlEnv) => new this.Factory(env, this.InputSettings)
@@ -124,7 +118,8 @@ export class ConnectionControl extends Control{
     static OutputSettings = {
         label: "Output",
         description: "An audio signal output",
-        defaultColor: "#FF0000",
+        color: "#00FF00",
+        shape: "circle" as "circle",
         callbackName: "defineAnOutput",
     }
     static Output = async (env: ControlEnv) => new this.Factory(env, this.OutputSettings)
@@ -132,7 +127,8 @@ export class ConnectionControl extends Control{
     static MidiInputSettings = {
         label: "MIDI Input",
         description: "A MIDI signal input",
-        defaultColor: "#33BB88",
+        color: "#33BB88",
+        shape: "rect" as "rect",
         callbackName: "defineAnEventInput",
     }
     static MidiInput = async (env: ControlEnv) => new this.Factory(env, this.MidiInputSettings)
@@ -140,7 +136,8 @@ export class ConnectionControl extends Control{
     static MidiOutputSettings = {
         label: "MIDI Output",
         description: "A MIDI signal output",
-        defaultColor: "#BB3388",
+        color: "#33BB88",
+        shape: "circle" as "circle",
         callbackName: "defineAnEventOutput",
     }
     static MidiOutput = async (env: ControlEnv) => new this.Factory(env, this.MidiOutputSettings)
