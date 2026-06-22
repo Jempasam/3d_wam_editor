@@ -2,6 +2,8 @@ import { WebAudioModule } from "@webaudiomodules/api"
 import { ProgramFieldValue } from "./ProgramFieldValue.ts"
 import { NoneFieldValue } from "./NoneFieldValue.ts"
 import { ParameterFieldValue } from "./ParameterFieldValue.ts"
+import { ControlEnv } from "../Control.ts"
+import { AnalyzerFieldValue } from "./AnalyzerFieldValue.ts"
 
 /**
  * A value that can be get and set by a control.
@@ -57,23 +59,33 @@ export interface FieldValueFactory{
 /**
  * Create a set of field value factories.
  */
-export async function createFieldFactories(wam?: WebAudioModule){
+export async function createFieldFactories(env: ControlEnv){
     const ret = {} as Record<string,FieldValueFactory>
 
     // No field
     ret["None"] = new NoneFieldValue.Factory()
 
-    if(wam){
+    if(env.host.wam){
         // Program Change
-        ret["Program Change"] = new ProgramFieldValue.Factory(wam)
+        ret["Program Change"] = new ProgramFieldValue.Factory(env.host.wam)
+
+        // Analyzer Node
+        ret["Analyzed Decibel"] = new AnalyzerFieldValue.Factory(env, {
+            name: "Analyzed Decibel",
+            value: (node: AnalyserNode) =>{
+                const array = new Float32Array(node.frequencyBinCount)
+                node.getFloatTimeDomainData(array)
+                return array[0]
+            },
+            min: 0,
+            size: 1,
+        })
 
         // Parameters
-        const parameters = await wam.audioNode.getParameterInfo()
+        const parameters = await env.host.wam.audioNode.getParameterInfo()
         for(const info of Object.values(parameters)){
-            ret[info.id] = new ParameterFieldValue.Factory(wam, info)
+            ret[info.id] = new ParameterFieldValue.Factory(env.host.wam, info)
         }
-
-        // Anayzer Fields
         
     }
 

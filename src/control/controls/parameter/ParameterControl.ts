@@ -27,7 +27,6 @@ export abstract class ParameterControl extends Control{
                 this.fields[i].dispose()
                 ;(async()=>{
                     this.fields[i] = await newfield.create(()=>{
-                        console.log("Field value changed", this.fields[i].getValue())
                         this.onParamChange(i)
                     })
                     this.onParamChange(i)

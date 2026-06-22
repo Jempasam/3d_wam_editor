@@ -126,7 +126,6 @@ export class AutoLayoutPane implements IContentRenderer{
 
         let infos = Object.values((await wam?.audioNode.getParameterInfo()) ?? {})
             .filter(info=>{
-                console.log(info)
                 return true
             })
             .filter(info=>info.maxValue<Number.MAX_SAFE_INTEGER && info.minValue>Number.MIN_SAFE_INTEGER) // Remove bad parameters

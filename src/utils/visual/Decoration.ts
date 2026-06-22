@@ -190,8 +190,8 @@ export class Decoration{
         material.diffuseColor = new Color3(1, 1, 1)
         material.specularColor = new Color3(0, 0, 0)
 
-        let root = new TransformNode("decoration root",scene)
-        let transform = new TransformNode("decoration transform",scene)
+        let root = new TransformNode("decoration root", scene)
+        let transform = new TransformNode("decoration transform", scene)
         transform.parent = root
         let mesh = null as Mesh|null
         let outline_mesh = null as Mesh|null
