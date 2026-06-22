@@ -41,6 +41,7 @@ export class WamLoaderPane implements IContentRenderer{
                 this.parameters_info = await instance.audioNode.getParameterInfo()
                 this.indicator.set("valid","WAM loaded")
                 this.wam.value = instance
+                instance.audioNode.connect(this.audioContext.destination)
             }catch(e){
                 this.indicator.set("invalid","Error loading the WAM")
                 console.error(e)
@@ -49,7 +50,6 @@ export class WamLoaderPane implements IContentRenderer{
 
         // Wam to GUI
         this.wam.observable.register(async({from:oldwam, to:wam})=>{
-            console.log("new gui")
             this.indicator.set("wait","Loading the GUI")
             if(oldwam){
                 oldwam.destroyGui(this.gui.value!!)

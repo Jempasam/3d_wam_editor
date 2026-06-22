@@ -12,13 +12,13 @@ export const ControlShared = {
     } as ShareMapDataType<StandardMaterial>,
 
     FIELDS: {
-        create(env){ return createFieldFactories(env.host.wam) },
+        create(env){ return createFieldFactories(env) },
         dispose(_){ },
     } as AsyncShareMapDataType<Record<string,FieldValueFactory>>,
 
     ANALYZER: {
         create(env){
-            if(env.host.wam) return new SharedGainAnalyzer(env.host.wam.audioContext.createGain())
+            if(env.host.wam) return new SharedGainAnalyzer(env.host.wam.audioNode)
             else return null
         },
         dispose(ret){ ret?.dispose() },
