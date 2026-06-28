@@ -1,12 +1,11 @@
 import { WamParameterInfo, WebAudioModule } from "@webaudiomodules/api";
 import { FieldValue, FieldValueFactory } from "./FieldValue.ts";
-import { denormalizeWamParameter, normalizeWamParameter, stringifyWamParameter } from "../../utils/wam.ts";
+import { stringifyWamParameter } from "../../utils/wam.ts";
 
 
 export class ParameterFieldValue implements FieldValue{
 
     private value = 0
-    private normalized = 0
 
     private timeout: any
 
@@ -20,10 +19,8 @@ export class ParameterFieldValue implements FieldValue{
             const newvalues = (await wam.audioNode.getParameterValues(false, info.id))
             const newvalue = newvalues[info.id]?.value
             if(newvalue!=control.value){
-                const normalized = normalizeWamParameter(info, newvalue??0)
                 control.value = newvalue??0
-                control.normalized = normalized
-                control.onChange(normalized)
+                control.onChange(newvalue)
             }
             if(control.timeout!=undefined)control.timeout = setTimeout(timeout,100)
         },100)
@@ -32,31 +29,28 @@ export class ParameterFieldValue implements FieldValue{
     async init(){
         const values = await this.wam.audioNode.getParameterValues(false, this.info.id)
         this.value = values[this.info.id]?.value ?? 0
-        this.normalized = normalizeWamParameter(this.info, this.value)
         return this
     }
 
-    getName(): string {
-        return this.info.label
-    }
+    getLabel(): string { return this.info.label }
 
-    getStepCount(): number {
-        const {minValue,maxValue,discreteStep} = this.info
-        if(discreteStep==0) return 0
-        return Math.floor((maxValue-minValue)/discreteStep)+1
-    }
+    getMax(): number { return this.info.maxValue }
+
+    getMin(): number { return this.info.minValue }
+
+    getExponant(): number { return this.info.exponent }
+
+    getStepSize(): number { return this.info.discreteStep }
 
     getValue(): number {
-        return this.normalized
+        return this.value
     }
 
-    setValue(normalized: number): void {
+    setValue(value: number): void {
         const {id} = this.info
-        let value = denormalizeWamParameter(this.info, normalized)
-        this.wam.audioNode.setParameterValues({[id]:{value, normalized:false, id:id}})
+        this.wam.audioNode.setParameterValues({[id]:{id, value, normalized:false}})
         this.value = value
-        this.normalized = normalizeWamParameter(this.info, value)
-        this.onChange(this.normalized)
+        this.onChange(value)
     }
 
     stringify(value: number): string {

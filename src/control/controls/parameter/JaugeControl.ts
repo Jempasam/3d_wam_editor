@@ -33,7 +33,8 @@ export class JaugeControl extends ParameterControl{
     }
 
     getDim():{x:number,y:number,w:number,h:number}[]{
-        const v = this.fields[0].getValue()
+        const v = this.getNormalizedValue(0)
+        console.log("JaugeControl: getDim", v, this.direction.value)
         switch(this.direction.value){
             case "+x":
                 return [{x:0, y:0, w:v, h:1}, {x:v, y:0, w:1-v, h:1}]
@@ -48,7 +49,8 @@ export class JaugeControl extends ParameterControl{
     }
 
     onParamChange(): void {
-        this.filling.value = this.fields[0].getValue()
+        this.filling.value = this.getNormalizedValue(0)
+        console.log("Filling", this.filling.value)
     }
 
 
@@ -110,10 +112,11 @@ export class JaugeControl extends ParameterControl{
         unfilled_node.node.setParent(container_node)
 
         const hitbox_node = this.hitbox_node = CreateBox("jauge_hitbox", {size:1.01}, scene)
-        hitbox_node.visibility = 0.01
+        hitbox_node.visibility = 0.1
         hitbox_node.setParent(container_node)
 
         const resize=()=>{
+            console.log("JaugeControl: resizing nodes", this.getDim())
             const [filled,unfilled] = this.getDim()
             filled_node.node.scaling.x = filled.w
             filled_node.node.scaling.z = filled.h
@@ -126,6 +129,15 @@ export class JaugeControl extends ParameterControl{
         }
         this.filling.link(resize)
         this.direction.link(resize)
+
+        const resize_hitbox = ()=>{
+            const h  = Math.max(this.unfilled.height.value, this.filled.height.value)
+            this.hitbox_node!.scaling.y = h
+            this.hitbox_node!.position.y = h/2 - .5
+        }
+        this.unfilled.height.observable.add(resize_hitbox)
+        this.filled.height.observable.add(resize_hitbox)
+        resize_hitbox()
 
         this.declareField(this.host.babylonjs!!, [hitbox_node])
 

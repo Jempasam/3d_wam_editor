@@ -11,26 +11,28 @@ export class ProgramFieldValue implements FieldValue{
         private onChange: (value: number) => void,
     ){}
 
-    getName(): string {
-        return "Program Change"
-    }
+    getLabel(): string { return "Program Change" }
 
-    getStepCount(): number {
-        return 127
-    }
 
-    getValue(): number {
-        return this.program/127
-    }
+    getMin(): number { return 0 }
+
+    getMax(): number { return 127 }
+
+    getStepSize(): number { return 1 }
+
+    getExponant(): number { return 1 } 
+
+
+    getValue(): number { return this.program }
 
     setValue(value: number): void {
-        this.program = Math.round(value*127)
+        this.program = value
         this.wam.audioNode.scheduleEvents({type:'wam-midi', data:{bytes:[192, this.program, 0]}})
-        this.onChange(this.program/127)
+        this.onChange(this.program)
     }
 
     stringify(value: number): string {
-        const program = Math.round(value*127)
+        const program = value
         return `Program n°${program}`
     }
 

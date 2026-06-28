@@ -7,6 +7,8 @@ export class AnalyzerFieldValue implements FieldValue{
     private analyzer
     private interval
 
+    private _actualValue = 0
+
     constructor(
         private env: ControlEnv,
         private options: {
@@ -19,15 +21,23 @@ export class AnalyzerFieldValue implements FieldValue{
     ){
         this.analyzer = env.shared.allocate(ControlShared.ANALYZER)!
         this.interval = setInterval(()=>{
+            let newValue = Math.max(0, Math.min(1, (this.options.value(this.analyzer.node)-this.options.min)/this.options.size))
+            this._actualValue = Math.sqrt((this._actualValue*this._actualValue+newValue*newValue)/2)
             this.onChange(this.getValue())
-        },100)
+        },50)
     }
 
-    getName(): string { return this.options.name }
+    getLabel(): string { return this.options.name }
 
-    getStepCount(): number { return 0 }
+    getMin(): number { return 0 }
 
-    getValue(): number { return Math.max(0, Math.min(1, (this.options.value(this.analyzer.node)-this.options.min)/this.options.size)) }
+    getMax(): number { return 1 }
+
+    getExponant(): number { return 1 }
+
+    getStepSize(): number { return 0 }
+
+    getValue(): number { return this._actualValue }
 
     setValue(_: number): void {}
 

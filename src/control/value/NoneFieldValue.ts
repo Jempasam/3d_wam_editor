@@ -3,12 +3,15 @@ import { FieldValue, FieldValueFactory } from "./FieldValue.ts";
 
 export class NoneFieldValue implements FieldValue{
 
-    getName(): string { return "None" }
-    
-    getStepCount(): number { return 0 }
+    getLabel(): string { return "None" }
+
+
+    getMin(): number { return 0 }
+    getMax(): number { return 0 }
+    getExponant(): number { return 1 }
+    getStepSize(): number { return 0 }
 
     getValue(): number { return 0 }
-
     setValue(_: number): void {}
 
     stringify(_: number): string { return "None" }

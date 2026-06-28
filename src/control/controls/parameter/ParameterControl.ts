@@ -1,6 +1,6 @@
 import { Control, ControlContextTarget, ControlFactory, ControlEnv, ControlState } from "../../Control.ts"
 import { CSettings, CSettingsValue, CSettingsValues } from "../settings/settings.ts"
-import { FieldValue } from "../../value/FieldValue.ts"
+import { FieldValue, FieldValueUtils } from "../../value/FieldValue.ts"
 import { NoneFieldValue } from "../../value/NoneFieldValue.ts"
 import { ControlShared } from "../../ControlShared.ts"
 
@@ -10,12 +10,14 @@ import { ControlShared } from "../../ControlShared.ts"
 export abstract class ParameterControl extends Control{
 
     declare fields: FieldValue[]
+    declare fields_ids: string[]
 
     promise = Promise.resolve()
 
     constructor(factory: ControlFactory){
         super(factory)
         this.fields = Array.from((factory as ParameterControlFactory).getParameterLabels(), ()=>NoneFieldValue.INSTANCE)
+        this.fields_ids = Array.from((factory as ParameterControlFactory).getParameterLabels(), ()=>"none")
     }
 
     override updateValue(label: string, value: CSettingsValue){
@@ -25,6 +27,7 @@ export abstract class ParameterControl extends Control{
             if(label==l){
                 const newfield = fields[value as string] ?? NoneFieldValue.Factory.INSTANCE
                 this.fields[i].dispose()
+                this.fields_ids[i] = value as string
                 ;(async()=>{
                     this.fields[i] = await newfield.create(()=>{
                         this.onParamChange(i)
@@ -39,13 +42,33 @@ export abstract class ParameterControl extends Control{
 
     abstract onParamChange(index:number): void
 
+    getNormalizedValue(index: number=0): number {
+        const field = this.fields[index]
+        if(!field) return 0
+        const value = field.getValue()
+        const normalized = FieldValueUtils.normalize(value, field)
+        return normalized
+    }
+
+    getNormalizedStepSize(index: number=0): number {
+        const field = this.fields[index]
+        if(!field) return 0
+        return FieldValueUtils.getNormalizedStepSize(field)
+    }
+
     declareField<C,T>(target: ControlContextTarget<C,T>, mesh: T|(T[]), index: number=0){
         const control = this
         target.defineField({
+            id: control.fields_ids[index],
             target: Array.isArray(mesh) ? mesh : [mesh],
-            getName() {
-                return control.fields[index].getName()
-            },
+
+            getLabel() { return control.fields[index].getLabel() },
+            
+            getMin() { return control.fields[index].getMin() },
+            getMax() { return control.fields[index].getMax() },
+            getStepSize() { return control.fields[index].getStepSize() },
+            getExponant() { return control.fields[index].getExponant() },
+            
             getValue() {
                 return control.fields[index].getValue()
             },
@@ -53,9 +76,7 @@ export abstract class ParameterControl extends Control{
                 control.onStateChange?.()
                 control.fields[index].setValue(value)
             },
-            getStepCount() {
-                return control.fields[index].getStepCount()
-            },
+            
             stringify(value) {
                 return control.fields[index].stringify(value) ?? "none"
             },
@@ -84,7 +105,7 @@ export abstract class ParameterControl extends Control{
     }
 
     getStateName(): string {
-        return this.fields.map(f=>f.getName()).join(", ")
+        return this.fields.map(f=>f.getLabel()).join(", ")
     }
 
 }

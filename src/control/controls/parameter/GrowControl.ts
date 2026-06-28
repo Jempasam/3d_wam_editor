@@ -85,8 +85,8 @@ export class GrowControl extends ParameterControl{
 
     onParamChange(): void {
         if(this.mesh){
-            this.mesh.scaling.y=0.2+this.fields[0].getValue()*0.8
-            this.mesh.position.y=this.fields[0].getValue()*0.4-0.3
+            this.mesh.scaling.y = 0.2+this.getNormalizedValue(0)*0.8
+            this.mesh.position.y = this.getNormalizedValue(0)*0.4-0.3
         }
     }
 

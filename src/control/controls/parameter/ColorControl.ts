@@ -25,7 +25,7 @@ export class ColorControl extends ParameterControl{
     }
 
     updateColor(){
-        const color = Color3.Lerp(this["Low Color"]??Color3.White, this["High Color"]??Color3.White, this.fields[0].getValue())
+        const color = Color3.Lerp(this["Low Color"]??Color3.White, this["High Color"]??Color3.White, this.getNormalizedValue(0))
         if(this.element) this.element.style.backgroundColor = color.toHexString()
         if(this.material) this.material.diffuseColor = color
     }

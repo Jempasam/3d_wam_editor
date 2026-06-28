@@ -11,36 +11,52 @@ import { AnalyzerFieldValue } from "./AnalyzerFieldValue.ts"
  */
 export interface FieldValue{
 
-    /**
-     * The display name of the value.
-     */
-    getName(): string
+    /** The display name of the value. */
+    getLabel(): string
 
-    /**
-     * The value of the field, normalized between 0 and 1.
-     */
+
+    /** The maximum value of the field, normalized between 0 and 1. */
+    getMax(): number
+
+    /** The minimum value of the field, normalized between 0 and 1. */
+    getMin(): number
+
+    /** The exponential factor of the value. 1 means linear. */
+    getExponant(): number
+
+    /** The discrete step size of the value. 0 means continuous. */
+    getStepSize(): number
+    
+
+    /** The value of the field, normalized between 0 and 1. */
     getValue(): number
 
-    /**
-     * The number of discrete steps of the value.
-     * 0 means continuous.
-     */
-    getStepCount(): number
-
-    /**
-     * Set the value of the field, normalized between 0 and 1.
-     */
+    /** Set the value of the field, normalized between 0 and 1. */
     setValue(value: number): void
 
-    /**
-     * Stringify the value for display.
-     */
+
+    /** Stringify the value for display. */
     stringify(value: number): string
 
-    /**
-     * Dispose of the value, releasing any resources.
-     */
+    /** Dispose of the value, releasing any resources. */
     dispose(): void
+}
+
+export namespace FieldValueUtils{
+    /** Normalize a value between 0 and 1 based on the field's min and max. */
+    export function normalize(value: number, field: FieldValue): number{
+        const span = (field.getMax()-field.getMin())
+        if(span==0) return 0
+        return (value-field.getMin())/span
+    }
+    /** Get normalized step size based on the field's step size and min/max. */
+    export function getNormalizedStepSize(field: FieldValue): number{
+        const stepSize = field.getStepSize()
+        if(stepSize==0) return 0
+        const span = (field.getMax()-field.getMin())
+        if(span==0) return 0
+        return stepSize/span
+    }
 }
 
 /**
