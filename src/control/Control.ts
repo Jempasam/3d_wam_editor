@@ -23,6 +23,7 @@ export interface ControlContextTarget<C,T>{
 
     /** A callback called on each output of the control. */
     defineAnOutput(settings:{
+        id: string,
         target: T[],
         node: AudioNode,
         setConnected(connected:boolean): void,
@@ -30,6 +31,7 @@ export interface ControlContextTarget<C,T>{
 
     /** A callback called on each input of the control. */
     defineAnInput(settings:{
+        id: string,
         target: T[],
         node: AudioNode,
         setConnected(connected:boolean): void,
@@ -37,6 +39,7 @@ export interface ControlContextTarget<C,T>{
 
     /** A callback called on each midi/event output of the control. */
     defineAnEventInput(settings:{
+        id: string,
         target: T[],
         node: WamNode,
         setConnected(connected:boolean): void,
@@ -44,6 +47,7 @@ export interface ControlContextTarget<C,T>{
 
     /** A callback called on each midi/event input of the control. */
     defineAnEventOutput(settings:{
+        id: string,
         target: T[],
         node: WamNode,
         setConnected(connected:boolean): void,
@@ -51,11 +55,19 @@ export interface ControlContextTarget<C,T>{
 
     /** A callback called on each field of the control. */
     defineField(settings:{
+        id: string,
         target: T[],
-        getName(): string,
-        getStepCount(): number,
+
+        getLabel(): string,
+
+        getMin(): number,
+        getMax(): number,
+        getStepSize(): number,
+        getExponant(): number,
+
         setValue(value:number): void,
         getValue(): number,
+        
         stringify(value:number): string,
     }): void
 

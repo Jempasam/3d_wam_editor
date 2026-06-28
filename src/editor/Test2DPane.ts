@@ -52,24 +52,24 @@ export class Test2DPane implements IContentRenderer{
                         for(const target of config.target){
                             target.style.cursor = "pointer"
                             target.addEventListener("mouseenter", () => {
-                                text.innerText = `${config.getName()}: ${config.stringify(config.getValue())}`
+                                text.innerText = `${config.getLabel()}: ${config.stringify(config.getValue())}`
                             })
                             target.addEventListener("mouseleave", () => {
                                 text.innerText = `...`
                             })
                             target.addEventListener("mousedown", (e) => {
                                 const startingValue = config.getValue()
-                                const stepSize = 1/(config.getStepCount()||1000000)
-                                const speed = 3/(config.getStepCount()||10)
+                                const stepSize = config.getStepSize()||(config.getMax()-config.getMin())/100
+                                const speed = stepSize*2
                                 const startY = e.clientY
                                 const drag = (e: MouseEvent) => {
                                     e.preventDefault()
                                     const offset  = (startY - e.clientY) * speed
                                     let newvalue = startingValue + offset/100
                                     newvalue = Math.round(newvalue/stepSize)*stepSize
-                                    newvalue = Math.max(0, Math.min(1, newvalue))
+                                    newvalue = Math.max(config.getMin(), Math.min(config.getMax(), newvalue))
                                     config.setValue(newvalue)
-                                    text.innerText = `${config.getName()}: ${config.stringify(newvalue)}`
+                                    text.innerText = `${config.getLabel()}: ${config.stringify(newvalue)}`
                                 }
                                 document.addEventListener("mousemove", drag)
                                 document.addEventListener("mouseup", () => {

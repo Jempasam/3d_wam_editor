@@ -240,7 +240,7 @@ export class Decoration{
                 face!!.parent = mesh
                 face!!.position.y = 0.510
                 const faceMaterial = face!!.material = new StandardMaterial("wampad face mat", scene)
-                const texture = new Texture(url)
+                const texture = new Texture(url, scene)
                 texture.hasAlpha = true
                 faceMaterial.diffuseTexture = texture
                 faceMaterial.specularColor = new Color3(0, 0, 0)

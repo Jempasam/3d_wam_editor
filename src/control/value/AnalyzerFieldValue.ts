@@ -23,9 +23,15 @@ export class AnalyzerFieldValue implements FieldValue{
         },100)
     }
 
-    getName(): string { return this.options.name }
+    getLabel(): string { return this.options.name }
 
-    getStepCount(): number { return 0 }
+    getMin(): number { return 0 }
+
+    getMax(): number { return 1 }
+
+    getExponant(): number { return 1 }
+
+    getStepSize(): number { return 0 }
 
     getValue(): number { return Math.max(0, Math.min(1, (this.options.value(this.analyzer.node)-this.options.min)/this.options.size)) }
 

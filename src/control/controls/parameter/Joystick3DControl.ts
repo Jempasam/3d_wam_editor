@@ -132,7 +132,7 @@ export class Joystick3DControl extends ParameterControl{
             target: [this.zoneMesh],
             getName() {
                 return control.fields
-                    .map(f => f==NoneFieldValue.INSTANCE ? null : f.getName())
+                    .map(f => f==NoneFieldValue.INSTANCE ? null : f.getLabel())
                     .filter(it=>it!=null)
                     .join(", ")
             },

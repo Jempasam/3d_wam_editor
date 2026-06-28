@@ -43,13 +43,13 @@ export class ConnectionControl extends Control{
     transform?: TransformNode
 
     override createNode(scene: Scene){
-        const transform = new TransformNode("input", scene)
+        const transform = new TransformNode(`${this.factory.label} Root`, scene)
         const mesh = (this.factory as any).config.shape=="circle" 
-            ? MeshBuilder.CreateIcoSphere("input", {radius:0.5}, scene)
-            : MeshBuilder.CreateBox("input", {size:1}, scene)
+            ? MeshBuilder.CreateIcoSphere(`${this.factory.label}`, {radius:0.5}, scene)
+            : MeshBuilder.CreateGeodesic(`${this.factory.label}`, {size:.55}, scene)
 
         mesh.setParent(transform)
-        this.material = new StandardMaterial("input", scene)
+        this.material = new StandardMaterial(`${this.factory.label} Material`, scene)
         this.transform = transform
         mesh.material = this.material
         this.material.diffuseColor = Color3.FromHexString((this.factory as any).config.color)
@@ -57,6 +57,7 @@ export class ConnectionControl extends Control{
         
         const wam = this.wam
         if(wam)((this.host.babylonjs as any)[(this.factory as any).config.callbackName])({
+            id: this.factory.label,
             target: [mesh],
             node: wam.audioNode,
             setConnected(connected: boolean) {
@@ -107,7 +108,7 @@ export class ConnectionControl extends Control{
     }
 
     static InputSettings = {
-        label: "Input",
+        label: "Audio Input",
         description: "An audio signal input",
         color: "#00FF00",
         shape: "rect" as "rect",
@@ -116,7 +117,7 @@ export class ConnectionControl extends Control{
     static Input = async (env: ControlEnv) => new this.Factory(env, this.InputSettings)
 
     static OutputSettings = {
-        label: "Output",
+        label: "Audio Output",
         description: "An audio signal output",
         color: "#00FF00",
         shape: "circle" as "circle",

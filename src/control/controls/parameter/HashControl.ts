@@ -29,7 +29,7 @@ export class HashControl extends ParameterControl{
     }
 
     updateColor(){
-        let v = this.fields[0].getValue()*(this.fields[0].getStepCount()||100)
+        let v = this.getNormalizedValue(0)/(this.getNormalizedStepSize(0)||.01)
         let hash = (v+this.seed)*10*(this.seed+1) + 100
         hash ^= (hash << 13);
         hash ^= (hash >>> 17);        

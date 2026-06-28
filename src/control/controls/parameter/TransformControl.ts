@@ -5,40 +5,52 @@ import { ParameterControl, ParameterControlFactory } from "./ParameterControl.ts
 import { Decoration } from "../../../utils/visual/Decoration.ts"
 import { animate } from "../../../utils/visual/animate.ts"
 
+// TODO: Finish this
+
+function lerp(a:number, b:number, t:number){
+    return a + (b-a)*t
+}
 
 /**
- * A morphing controls that change a numeric value.
+ * A transformation based controls that change a numeric value.
  */
-export class MorphControl extends ParameterControl{
+export class TransformControl extends ParameterControl{
 
     private from: any = {}
-    private to: any = {}
     private decoration = new Decoration()
+    
+    private min_width = .5
+    private max_width = 1
+
+    private min_height = 1
+    private max_height = 1
+
+    private min_depth = 1
+    private max_depth = 1
+
+    private min_rotation = 0
+    private max_rotation = 0
 
     override updateValue(label: string, value: CSettingsValue){
-        if(label.startsWith("Low Shape/")){
-            const sublabel = label.substring("Low Shape/".length)
-            if(Decoration.SETTINGS_SETTERS[sublabel]) this.from[sublabel] = value
-            this.updateShape()
+        if(label.startsWith("Shape/")){
+            const sublabel = label.substring("Shape/".length)
+            Decoration.SETTINGS_SETTERS[sublabel]?.(this.decoration, value)
         }
-        else if(label.startsWith("High Shape/")){
-            const sublabel = label.substring("High Shape/".length)
-            if(Decoration.SETTINGS_SETTERS[sublabel]) this.to[sublabel] = value
-            this.updateShape()
-        }
+        else if(label==="Min Width") this.min_width = value as number
+        else if(label==="Max Width") this.max_width = value as number
+        else if(label==="Min Height") this.min_height = value as number
+        else if(label==="Max Height") this.max_height = value as number
+        else if(label==="Min Depth") this.min_depth = value as number
+        else if(label==="Max Depth") this.max_depth = value as number
+        else if(label==="Min Rotation") this.min_rotation = value as number
+        else if(label==="Max Rotation") this.max_rotation = value as number
         else super.updateValue(label, value)
+
+        this.updateShape()
     }
 
     updateShape(){
-        // It try to not change too much values because some parameters of a decoration can trigger an entire mesh reconstruction.
-        for(const [key, from_value] of Object.entries(this.from)){
-            const to_value = this.to[key]
-            if(!from_value || !to_value) continue
-            let value = from_value==to_value ? from_value : animate(from_value,to_value,this.getNormalizedValue(0))
-            if(Decoration.SETTINGS_GETTERS[key]?.(this.decoration)!=value){
-                Decoration.SETTINGS_SETTERS[key] ?.(this.decoration, value)
-            }
-        }
+        
     }
 
     onParamChange(): void {
@@ -82,9 +94,9 @@ export class MorphControl extends ParameterControl{
 
         constructor(readonly env: ControlEnv){super()}
         
-        label = "Morph"
+        label = "Transform"
 
-        description = "A control that work like a decoration whose settings change based on its value."
+        description = "A control that work like a decoration whose transformation change based on its value."
 
         getSettings(): CSettings{
             return {
@@ -104,7 +116,7 @@ export class MorphControl extends ParameterControl{
 
         async create(): Promise<Control> {
             await this.init()
-            return new MorphControl(this)
+            return new TransformControl(this)
         }
 
     }

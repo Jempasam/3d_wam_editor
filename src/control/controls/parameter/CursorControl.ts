@@ -86,14 +86,14 @@ export class CursorControl extends ParameterControl{
         this.cursor_material.specularColor.set(0,0,0)
         cursor.setParent(cylinder)
         
-        this.declareField(this.host.babylonjs!!, cylinder)
+        this.declareField(this.host.babylonjs!!, [cylinder,cursor])
 
         return this.transform
     }
 
     onParamChange(): void {
-        if(this.cylinder) this.cylinder.rotation.y = (this.fields[0].getValue()-0.5)*Math.PI
-        if(this.element) this.element.style.rotate = `${Math.round((this.fields[0].getValue()-0.5)*180)}deg`
+        if(this.cylinder) this.cylinder.rotation.y = (this.getNormalizedValue(0)-0.5)*Math.PI
+        if(this.element) this.element.style.rotate = `${Math.round((this.getNormalizedValue(0)-0.5)*180)}deg`
     }
 
     override destroyNode(){
