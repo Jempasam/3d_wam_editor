@@ -33,7 +33,7 @@ export interface FieldValue{
 
     /** Set the value of the field, normalized between 0 and 1. */
     setValue(value: number): void
-    
+
 
     /** Stringify the value for display. */
     stringify(value: number): string
