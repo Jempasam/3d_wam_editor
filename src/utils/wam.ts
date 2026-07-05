@@ -3,17 +3,15 @@ import { WamParameterInfo } from "@webaudiomodules/api";
 
 export function stringifyWamParameter(parameter: WamParameterInfo, value: number): string {
     const p = parameter
-    const {minValue, maxValue} = p
-    const unnormalized = value*(maxValue-minValue)+minValue
-    if(p.valueString) return p.valueString(unnormalized)
+    if(p.valueString) return p.valueString(value)
     else{
-        if(p.choices.length) return p.choices[Math.round(unnormalized)]
+        if(p.choices.length) return p.choices[Math.round(value)]
         else{
             const {units} = p
             let rounded = 0
-            if(unnormalized<10)rounded = Math.round(unnormalized*100)/100
-            else if(unnormalized<100)rounded = Math.round(unnormalized*10)/10
-            else rounded = Math.round(unnormalized)
+            if(value<10)rounded = Math.round(value*100)/100
+            else if(value<100)rounded = Math.round(value*10)/10
+            else rounded = Math.round(value)
             return rounded.toString()+units
         }
     }
@@ -29,7 +27,7 @@ export function normalizeWamParameter(parameter: WamParameterInfo, value: number
     return normalized
 }
 
-export function correctWamParameter(parameter: WamParameterInfo, value: number): number {
+export function correctNormalizedWamParameter(parameter: WamParameterInfo, value: number): number {
     const p = parameter
     const {minValue,maxValue} = p
     const discreteStep = p.discreteStep || 1/1000
