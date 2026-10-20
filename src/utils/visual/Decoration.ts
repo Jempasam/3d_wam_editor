@@ -306,6 +306,7 @@ export class Decoration{
             dispose(){
                 dispose.forEach(it=>it())
                 material.dispose()
+                root.dispose()
                 transform.dispose()
                 mesh?.dispose()
             }

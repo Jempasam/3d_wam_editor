@@ -120,6 +120,7 @@ export class WamGUIGenerator{
 
     /**
      * Create a WAM GUI from a WAM GUI code.
+     * Don't forget to dispose the wam instance from the control host when you don't need it anymore.
      * @param context The context to use for the WAM GUI.
      * @param gui_target The target of the WAM GUI (An HTML GUI or a 3D GUI ror both)
      * @param init_code The gui code to load.
